@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:videoPlayer="modules.videoPlayer.*"
+			   xmlns:control="control.*"
+			   preinitialize="init()"
+			   width="500"
+			   height="400"
+			   creationComplete="complete()">
+	
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+
+	<videoPlayer:VideoPlayerBabelia id="VP"
+									autoPlay="true"
+									skin="white"
+									seek="true"
+									subtitles="true"
+									autoScale="false"
+									arrows="false"
+									subtitlingControls="false"
+									width="{app.width - 20}"
+									height="{VP.width * 10 / 16}"
+									streamSource="{DataModel.getInstance().streamingResourcesPath}"
+									controlsEnabled="true"/>
+	
+	<fx:Declarations>
+		<control:Controller/>
+		<control:Extern/>
+	</fx:Declarations>
+
+	<fx:Script>
+		<![CDATA[
+			import events.SetupConnectionEvent;
+			
+			import model.DataModel;
+			
+			import modules.videoPlayer.events.VideoPlayerEvent;
+			
+			import mx.controls.Alert;
+			import mx.core.FlexGlobals;
+			import mx.utils.ObjectUtil;
+			
+			import view.CustomAlert;
+
+			private var videoId:String=null;
+			
+			[Bindable]
+			private var app:Object = FlexGlobals.topLevelApplication;
+
+			private function init():void
+			{
+				// Setups video player's connection with Red5 Server 
+				new SetupConnectionEvent().dispatch();
+				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
+				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+			}
+
+			private function complete():void
+			{
+				VP.stopVideo();
+				VP.state=VideoPlayerBabelia.PLAY_STATE;
+
+				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+
+				if (videoId != null)
+					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
+
+				// Setups javascripts external controls
+				Extern.getInstance().setup(VP);
+
+				// Launching videoplayer ready external function
+				Extern.getInstance().onVideoPlayerReady();
+			}
+
+			private function onConnect(e:Event):void
+			{
+
+			}
+
+			private function set onUpdateVPHeight(height:int):void
+			{
+				Extern.getInstance().resizeHeight(height);
+			}
+
+			private function set onUpdateVPWidth(width:int):void
+			{
+				Extern.getInstance().resizeWidth(width);
+			}
+		]]>
+	</fx:Script>
+	<fx:Binding source="{VP.height}"
+				destination="this.onUpdateVPHeight"/>
+	<fx:Binding source="{VP.width}"
+				destination="this.onUpdateVPWidth"/>
+</s:Application>
