@@ -14,14 +14,14 @@
 	</s:layout>
 
 	<videoPlayer:VideoPlayerBabelia id="VP"
-									autoPlay="true"
+									autoPlay="false"
 									skin="white"
 									seek="true"
 									subtitles="true"
 									autoScale="false"
 									arrows="false"
 									subtitlingControls="false"
-									width="{app.width - 20}"
+									width="500"
 									height="{VP.width * 10 / 16}"
 									streamSource="{DataModel.getInstance().streamingResourcesPath}"
 									controlsEnabled="true"/>
@@ -54,16 +54,16 @@
 			{
 				// Setups video player's connection with Red5 Server 
 				new SetupConnectionEvent().dispatch();
-				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
 				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
 			}
 
 			private function complete():void
 			{
+				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
 				VP.stopVideo();
 				VP.state=VideoPlayerBabelia.PLAY_STATE;
 
-				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+				//videoId=FlexGlobals.topLevelApplication.parameters.videoId;
 
 				if (videoId != null)
 					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
@@ -82,11 +82,13 @@
 
 			private function set onUpdateVPHeight(height:int):void
 			{
+				trace("VP Height: "+VP.height);
 				Extern.getInstance().resizeHeight(height);
 			}
 
 			private function set onUpdateVPWidth(width:int):void
 			{
+				trace("VP Width: "+VP.width);
 				Extern.getInstance().resizeWidth(width);
 			}
 		]]>

@@ -25,6 +25,7 @@ package model
 		[Bindable] public var netConnectionDelegate:NetConnectionDelegate;
 		[Bindable] public var netConnection:NetConnection;
 		[Bindable] public var netConnected:Boolean;
+		[Bindable] public var netConnectOngoingAttempt:Boolean;
 		
 		//Exercise uploading related data
 		[Bindable] public var server: String = "babelia";

@@ -31,8 +31,7 @@ div, input /** Layers will be rounded **/
 }
 
 #title {
-	width: 100%;
-	height: 80px;
+	display: block;
 }
 
 #right-column {

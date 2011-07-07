@@ -73,11 +73,11 @@ package modules.videoPlayer
 		private var _autoScale:Boolean=true;
 		protected var _duration:Number=0;
 		protected var _started:Boolean=false;
-		protected var _defaultMargin:Number=5;
+		protected var _defaultMargin:Number=0;
 
 		private var _bgVideo:Sprite;
-		protected var _ppBtn:PlayButton;
-		protected var _stopBtn:StopButton;
+		public var _ppBtn:PlayButton;
+		public var _stopBtn:StopButton;
 		protected var _eTime:ElapsedTime;
 		protected var _bg:Sprite;
 		protected var _videoBarPanel:UIComponent;
@@ -465,23 +465,51 @@ package modules.videoPlayer
 			BindingUtils.bindSetter(onStreamNetConnect, DataModel.getInstance(), "netConnected");
 
 			// Disable controls until streaming connection is made
-			disableControls();
-
-			if (_streamSource)
-				connectToStreamingServer(_streamSource);
+			//disableControls();
+			//if (_streamSource)
+			//	connectToStreamingServer(_streamSource);
 
 			// Dispatch CREATION_COMPLETE event
 			dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.CREATION_COMPLETE));
 		}
 
+		/**
+		 * On stream connect
+		 */
+		private function onStreamNetConnect(value:Boolean):void
+		{
+			if (DataModel.getInstance().netConnected == true)
+			{
+				//Get the netConnection reference
+				_nc=DataModel.getInstance().netConnection;
 
+				playVideo();
+				_ppBtn.State=PlayButton.PAUSE_STATE;
+				if(!_autoPlay)
+					pauseVideo();
+
+				//if (_autoPlay)
+				//{
+				//	playVideo();
+				//	_ppBtn.State=PlayButton.PAUSE_STATE;
+				//}
+
+				enableControls();
+
+				this.dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.CONNECTED));
+			}
+			else{
+				disableControls();
+				if (_streamSource){
+					connectToStreamingServer(_streamSource);
+				}
+			}
+		}
 
 		public function connectToStreamingServer(streamSource:String):void
 		{
 			if (!DataModel.getInstance().netConnection.connected)
-			{
 				new StartConnectionEvent(streamSource).dispatch();
-			}
 			else
 				onStreamNetConnect(true);
 		}
@@ -492,34 +520,10 @@ package modules.videoPlayer
 				new CloseConnectionEvent().dispatch();
 		}
 
-		/**
-		 * On stream connect
-		 */
-		private function onStreamNetConnect(value:Boolean):void
-		{	
-			if (DataModel.getInstance().netConnected == true)
-			{
-
-				//Get the netConnection reference
-				_nc=DataModel.getInstance().netConnection;
-
-				if (_autoPlay)
-				{
-					playVideo();
-					_ppBtn.State=PlayButton.PAUSE_STATE;
-				}
-
-				enableControls();
-
-				dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.CONNECTED));
-			}
-			else
-				disableControls();
-		}
-
-
 		private function netStatus(e:NetStatusEvent):void
 		{
+			trace("Exercise status: " + e.info.code);
+
 			switch (e.info.code)
 			{
 				case "NetStream.Play.StreamNotFound":
@@ -539,6 +543,8 @@ package modules.videoPlayer
 						playbackState=PLAYBACK_STARTED_STATE;
 						dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_STARTED_PLAYING));
 					}
+					if(playbackState == PLAYBACK_BUFFERING_STATE)
+						playbackState = PLAYBACK_STARTED_STATE;
 					break;
 				case "NetStream.Buffer.Empty":
 					if (playbackState == PLAYBACK_STOPPED_STATE)
@@ -558,9 +564,6 @@ package modules.videoPlayer
 				default:
 					break;
 			}
-
-			//trace("code: " + e.info.code, "level: " + e.info.level);
-
 		}
 
 		protected function asyncErrorHandler(event:AsyncErrorEvent):void
@@ -583,6 +586,10 @@ package modules.videoPlayer
 		 */
 		public function playVideo():void
 		{
+			if(!_nc){
+				_ppBtn.State=PlayButton.PLAY_STATE;
+				return;
+			}
 			if (!_nc.connected)
 			{
 				_ppBtn.State=PlayButton.PLAY_STATE;
@@ -600,9 +607,13 @@ package modules.videoPlayer
 
 			if (_videoSource != '')
 			{
-				try{
+				try
+				{
+					trace("NetStream Play: " + _videoSource);
 					_ns.play(_videoSource);
-				}catch (e:Error){
+				}
+				catch (e:Error)
+				{
 					trace("Error: Can't play. Not connected to the server");
 					return;
 				}
@@ -622,11 +633,13 @@ package modules.videoPlayer
 		{
 			if (_ns)
 			{
-				_ns.pause();
-				_ns.seek(0);
+				//_ns.pause();
+				//_ns.seek(0);
 				
-				if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
-					_ppBtn.State = PlayButton.PLAY_STATE;
+				//if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
+				//	_ppBtn.State = PlayButton.PLAY_STATE;
+				_ns.play(false);
+				_video.clear();
 			}
 
 			_ppBtn.State=PlayButton.PLAY_STATE;
@@ -637,7 +650,8 @@ package modules.videoPlayer
 			stopVideo();
 			if (_ns)
 				_ns.close();
-			_timer.stop();
+			if(_timer && _timer.running)
+				_timer.stop();
 		}
 
 
@@ -646,21 +660,23 @@ package modules.videoPlayer
 			if (_ns)
 			{
 				_ns.pause();
-				if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
-					_ppBtn.State = PlayButton.PLAY_STATE;
+				//if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
+				//_ppBtn.State = PlayButton.PLAY_STATE;
 			}
+			_ppBtn.State=PlayButton.PLAY_STATE;
 		}
 
 		public function resumeVideo():void
 		{
 			if (_ns)
 			{
-				//_ns.seek(_currentTime);
+				_ns.seek(_currentTime);
 				_ns.resume();
-				if ( _ppBtn.getState() == PlayButton.PLAY_STATE )
-					_ppBtn.State = PlayButton.PAUSE_STATE;
+				//if ( _ppBtn.getState() == PlayButton.PLAY_STATE )
+				//_ppBtn.State = PlayButton.PAUSE_STATE;
 				//trace(_currentTime, _ns.time);
 			}
+			_ppBtn.State=PlayButton.PAUSE_STATE;
 		}
 
 
@@ -676,9 +692,9 @@ package modules.videoPlayer
 		{
 			
 			/*
-			trace("metadata: ");
+				trace("metadata: ");
 
-			for (var a:* in msg)
+				for (var a:* in msg)
 				trace(a + " : " + msg[a]);
 			*/
 
@@ -703,16 +719,16 @@ package modules.videoPlayer
 		 */
 		public function onSourceChange(e:VideoPlayerEvent):void
 		{
-			trace("Video source has changed");
+			trace("Requested to play another video");
 			//trace(e.currentTarget);
-			if ( _ns ) 
-			{
+			//if ( _ns ) 
+			//{
 				playVideo();
 				_ppBtn.State=PlayButton.PAUSE_STATE;
 
 				if (!autoPlay)
 					pauseVideo();
-			}
+			//}
 		}
 
 		/**
@@ -720,9 +736,11 @@ package modules.videoPlayer
 		 */
 		protected function onPPBtnChanged(e:PlayPauseEvent):void
 		{
+			if(!_ns)
+				return;
 			if (_ppBtn.getState() == PlayButton.PAUSE_STATE)
 			{
-				if (_ns)
+				if (_ns.time !=0)
 				{
 					resumeVideo();
 				}
@@ -809,6 +827,7 @@ package modules.videoPlayer
 		 */
 		protected function onVideoFinishedPlaying(e:VideoPlayerEvent):void
 		{
+			trace("onVideoFinishedPlaying");
 			stopVideo();
 		}
 
@@ -823,7 +842,7 @@ package modules.videoPlayer
 
 			_ns.soundTransform=new SoundTransform(e.volumeAmount);
 
-			trace(_ns.soundTransform.volume, e.volumeAmount);
+			//trace(_ns.soundTransform.volume, e.volumeAmount);
 		}
 
 		/**

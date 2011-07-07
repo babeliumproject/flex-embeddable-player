@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<common:CustomTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
-						  xmlns:s="library://ns.adobe.com/flex/spark"
-						  xmlns:mx="library://ns.adobe.com/flex/mx"
-						  xmlns:common="view.*"
-						  showCloseButton="true"
-						  width="355"
-						  height="180"
-						  creationComplete="creationCompleteHandler()"
-						  title="{resourceManager.getString('myResources','TITLE_PRIVACY_SETTINGS')}">
+<view:CustomTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+						xmlns:s="library://ns.adobe.com/flex/spark"
+						xmlns:mx="library://ns.adobe.com/flex/mx"
+						xmlns:skins="skins.*"
+						width="360"
+						height="220"
+						styleName="privacyRightsPopup"
+						creationComplete="creationCompleteHandler()"
+						title="{resourceManager.getString('myResources','TITLE_PRIVACY_SETTINGS')}"
+						xmlns:view="view.*">
+	<view:layout>
+		<s:VerticalLayout paddingLeft="10"
+						  paddingRight="10"
+						  paddingTop="10"
+						  paddingBottom="10"/>
+	</view:layout>
+
 	<fx:Script>
 
 		<![CDATA[
@@ -217,16 +225,18 @@
 				<s:HGroup>
 					<mx:Text width="100%"
 							 text="{resourceManager.getString('myResources','TEXT_MIC_NOT_FOUND')}"/>
-					<mx:Image source="resources/images/microphone_error.png"/>
+					<mx:Image source="resources/images/privacy_micError.png"/>
 				</s:HGroup>
 				<s:HGroup>
 					<s:Button id="micNotFoundErrorRetryButton"
 							  label="{resourceManager.getString('myResources','BUTTON_RETRY')}"
-							  click="initDevices()"/>
+							  click="initDevices()"
+							  buttonMode="true"/>
 
 					<s:Button id="micNotFoundErrorCancelButton"
 							  label="{resourceManager.getString('myResources','BUTTON_CANCEL')}"
-							  click="cancelButtonClickHandler(event)"/>
+							  click="cancelButtonClickHandler(event)"
+							  buttonMode="true"/>
 				</s:HGroup>
 			</s:VGroup>
 		</s:NavigatorContent>
@@ -238,15 +248,17 @@
 						  verticalAlign="middle">
 					<mx:Text width="100%"
 							 text="{resourceManager.getString('myResources','TEXT_CAMERA_NOT_FOUND')}"/>
-					<mx:Image source="resources/images/webcam_error.png"/>
+					<mx:Image source="resources/images/privacy_webcamError.png"/>
 				</s:HGroup>
 				<s:HGroup>
 					<s:Button id="camNotFoundErrorRetryButton"
 							  label="{resourceManager.getString('myResources','BUTTON_RETRY')}"
-							  click="initDevices()"/>
+							  click="initDevices()"
+							  buttonMode="true"/>
 					<s:Button id="camNotFoundErrorCancelButton"
 							  label="{resourceManager.getString('myResources','BUTTON_CANCEL')}"
-							  click="cancelButtonClickHandler(event)"/>
+							  click="cancelButtonClickHandler(event)"
+							  buttonMode="true"/>
 				</s:HGroup>
 			</s:VGroup>
 		</s:NavigatorContent>
@@ -258,7 +270,8 @@
 						 text="{resourceManager.getString('myResources','TEXT_ADMINISTRATIVELY_DISABLED')}"/>
 				<s:Button id="adminErrorButton"
 						  label="{resourceManager.getString('myResources','BUTTON_OK')}"
-						  click="cancelButtonClickHandler(event)"/>
+						  click="cancelButtonClickHandler(event)"
+						  buttonMode="true"/>
 			</s:VGroup>
 		</s:NavigatorContent>
 
@@ -274,13 +287,20 @@
 							  height="102"/>
 				</s:HGroup>
 				<s:HGroup width="100%"
-						  horizontalAlign="left">
+						  height="100%"
+						  horizontalAlign="left"
+						  verticalAlign="bottom"
+						  paddingTop="8">
 					<s:Button id="privacyRecButton"
 							  label="{resourceManager.getString('myResources','BUTTON_OK')}"
-							  click="okButtonClickHandler(event)"/>
+							  click="okButtonClickHandler(event)"
+							  styleName="bigBlueButton"
+							  buttonMode="true"/>
 					<s:Button id="privacyCancelButton"
 							  label="{resourceManager.getString('myResources','BUTTON_CANCEL')}"
-							  click="cancelButtonClickHandler(event)"/>
+							  click="cancelButtonClickHandler(event)"
+							  styleName="bigBlueButton"
+							  buttonMode="true"/>
 				</s:HGroup>
 			</s:VGroup>
 		</s:NavigatorContent>
@@ -295,4 +315,4 @@
 	</mx:ViewStack>
 
 
-</common:CustomTitleWindow>
+</view:CustomTitleWindow>
