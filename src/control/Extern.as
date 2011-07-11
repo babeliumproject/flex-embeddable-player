@@ -5,6 +5,7 @@ package control
 	import model.DataModel;
 	
 	import modules.videoPlayer.VideoPlayerBabelia;
+	import modules.videoPlayer.events.babelia.StreamEvent;
 	
 	import mx.collections.ArrayCollection;
 	import mx.utils.ObjectUtil;
@@ -86,6 +87,10 @@ package control
 		public function onVideoPlayerReady():void
 		{
 			ExternalInterface.call("onBabeliaPlayerReady", ExternalInterface.objectID);
+		}
+		
+		public function onEnterFrame(e:StreamEvent):void{
+			ExternalInterface.call("onEnterFrame", e.time);
 		}
 		
 		/**
