@@ -13,6 +13,9 @@ function onBabeliaPlayerReady(playerid)
 	
 	if ( !bplayer ) 
 		return;
+	
+	ex = {'id':73,'name':'U1MbBtkIGZQ.flv', 'title':'Sintel'};
+	testInit(bplayer, ex);
 
 	// Play button
 	$("input[name='btnPlay']").click(

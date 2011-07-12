@@ -1,5 +1,7 @@
-function cueObject(subtitleId, startTime, endTime=-1, text=null, roleId=0, role=null, startCommand=null, endCommand=null, textColor=0xffffff)
+function cueObject(subtitleId, startTime, endTime, text, roleId, role, startCommand, endCommand, textColor)
 {
+	this.defaultParamValues = [0,-1,-1,null,0,null,null,null,0xffffff];
+	
 	this.subtitleId=subtitleId;
 	this.startTime=startTime;
 	this.endTime=endTime;
@@ -8,7 +10,8 @@ function cueObject(subtitleId, startTime, endTime=-1, text=null, roleId=0, role=
 	this.role=role;
 	this.startCommand=startCommand;
 	this.endCommand=endCommand;
-	this.textColor=textColor;
+	if(textColor == null)
+		this.textColor=defaultParamValues[9];
 		
 	this.startCommand;
 	this.endCommand;

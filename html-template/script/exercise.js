@@ -1,515 +1,439 @@
+var bpPlayer = null;
+var cueManager = null;
+var server = 'http://babeliumhtml5/rest';
+var EXERCISE_FOLDER = 'exercises';
+var RESPONSE_FOLDER = 'responses';
+
+var bpPlayerStates = {PLAY_STATE: 0, PLAY_BOTH_STATE: 1, RECORD_MIC_STATE: 2, RECORD_BOTH_STATE: 3};
+
+var currentExercise = null;
+var exerciseName;
+var exerciseTitle;
+var exerciseId;
+
+var rolesReady = false;
+var localesReady = false;
+var cueManagerReady = false;
+
+var locales = [];
+var characterNames = [];
+var roles = [];
+
+var selectedRole;
+var recordedFilename;
+
+function testInit(videoPlayer, ex){
+	bpPlayer = videoPlayer;
+	cueManager = new cuePointManager();
+	onExerciseSelected(ex);
+}
+
 function onExerciseSelected(exercise){
 
-	//Store selected exercises's information
-	_exerciseName=exercise.name;
-	_exerciseTitle=exercise.title;
-	_exerciseId=exercise.id;
-	_currentExercise=exercise;
+	//Store selected exercise's information
+	exerciseName=exercise.name;
+	exerciseTitle=exercise.title;
+	exerciseId=exercise.id;
+	currentExercise=exercise;
 
-	// Need to retrieve again exercise's information
-	_rolesReady=false;
-	_localesReady=false;
-	_cueManagerReady=false;
+	rolesReady=false;
+	localesReady=false;
+	cueManagerReady=false;
 	
 	//If the user is logged-in we should have enabled the rating and report widget below the videoplayer
 	//in that case set the exercise data on this widget aswell
+	//TODO	
 	
-	//TODO
-	
-	showSelectedExercise();
 	prepareExercise();
 	resetCueManager();
 }
 
-
-
-/**
- * Preparing exercise
- */
-private function prepareExercise():void
+function prepareExercise()
 {
 	// Prepare new video in VideoPlayer
-	VP.stopVideo();
-	VP.state=VideoPlayerBabelia.PLAY_STATE;
-	VP.videoSource=EXERCISE_FOLDER + '/' + _exerciseName;
+	bpPlayer.stopVideo();
+	bpPlayer.state(bpPlayerStates.PLAY_STATE);
+	bpPlayer.videoSource(EXERCISE_FOLDER + '/' + _exerciseName);
+	
+	alert(EXERCISE_FOLDER + '/' + _exerciseName);
 
-	// Retrieving roles for selected exercise
-	var auxExRol:ExerciseRoleVO=new ExerciseRoleVO();
-	auxExRol.exerciseId=_exerciseId;
-	new ExerciseRoleEvent(ExerciseRoleEvent.GET_EXERCISE_ROLES, auxExRol).dispatch();
-
-	// Retrieving available locales for selected exercise's
-	// subtitles
-	var auxEx:ExerciseVO=new ExerciseVO();
-	auxEx.id=_exerciseId;
-	new ExerciseEvent(ExerciseEvent.GET_EXERCISE_LOCALES, auxEx).dispatch();
+	//Ajax call to the appointed REST service
+	var auxExRol = {'exerciseId' : exerciseId};
+	var srvClass = 'ExerciseRole';
+	var srvMethod = 'getExerciseRoles';
+	var srvParams = auxExRol;
+	
+	//server = http://babeliumhtml5/rest
+	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	alert(srvQueryString);
+	$.getJSON(srvQueryString, onRolesRetrieved(data)).error(function(){ alert("Couldn't retrieve the roles of the current exercise.") });
+	
+	
+	//Ajax call to the appointed REST service
+	var auxEx = {'id': exerciseId};
+	var srvClass = 'Exercise';
+	var srvMethod = 'getExerciseLocales';
+	var srvParams = auxEx;
+	
+	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	$.getJSON(srvQueryString, onLocalesRetrieved(data)).error(function(){ alert("Couldn't retrieve the available subtitle languages of the current exercise.") });
+	
 }
 
-/**
- * On locales retrieved
- */
-private function set onLocalesRetrieved(value:Boolean):void
-{
-	if (value)
-	{
-		_locales=DataModel.getInstance().availableExerciseLocales;
+function onLocalesRetrieved(data){
+	
+	locales=data;
 
-		if (_locales == null)
-		{
-			availableLocales.enabled=false;
-			_localesReady=false;
+	if (locales == null){
+		$('#localesCombo').attr('disabled','disabled');
+		localesReady=false;
+	}else{
+		for(var i in locales){
+			$('#localesCombo').append('<option value="'+locales[i]+'">'+locales[i]+'</option>');
 		}
-		else
-		{
-			availableLocales.enabled=true;
-			_localesReady=true;
-
-			// Preparing subtitles
-			prepareCueManager();
-		}
-
-		DataModel.getInstance().availableExerciseLocalesRetrieved=false;
+		availableLocales.enabled=true;
+		localesReady=true;
+		// Preparing subtitles
+		prepareCueManager();
 	}
 }
 
-/**
- * On roles retrieved
- */
-private function set onRolesRetrieved(value:Boolean):void
-{
-	if (value)
-	{
-		_roles=DataModel.getInstance().availableExerciseRoles.getItemAt(DataModel.RECORDING_MODULE) as ArrayCollection;
-		_characterNames.removeAll();
+function onRolesRetrieved(data){
+	roles=data;
+	characterNames = [];
 
-		if (_roles == null)
-		{
-			availableRoles.enabled=false;
-			_rolesReady=false;
+	if (roles == null){
+		availableRoles.enabled=false;
+		rolesReady=false;
+	} else {
+		availableRoles.enabled=true;
+		rolesReady=true;
+		for (var i in roles){
+			if (roles[i].characterName != "NPC")
+				characterNames.push(roles[i].characterName);
 		}
-		else
-		{
-			availableRoles.enabled=true;
-			_rolesReady=true;
-
-			for each (var role:ExerciseRoleVO in _roles)
-			{
-				if (role.characterName != "NPC")
-					_characterNames.addItem(role.characterName);
-			}
-		}
-
-		DataModel.getInstance().availableExerciseRolesRetrieved.setItemAt(false, DataModel.RECORDING_MODULE);
 	}
 }
 
-/**
- * Reset Cuepoint Manager
- */
-private function resetCueManager():void
-{
-	_cueManager.reset();
-	VP.removeEventListener(StreamEvent.ENTER_FRAME, _cueManager.monitorCuePoints);
-	_cueManager.removeEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
 
+function resetCueManager(){
+	//TODO
+	cueManager.reset();
+	
+	//VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
 }
 
-/**
- * Prepare Cuepoint Manager
- */
-private function prepareCueManager():void
-{
-	var cached:Boolean=_cueManager.setVideo(_exerciseId);
+function prepareCueManager(){
+	//TODO
+	/*
+	cueManager.setVideo(exerciseId);
+	
+	selectedLocale=$('#localesCombo option:selected').text();
+	cueManager.setCuesFromSubtitleUsingLocale(selectedLocale);
 
-_cueManager.addEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
-_cueManager.setCuesFromSubtitleUsingLocale(availableLocales.selectedItem.code);
+	cueManager.addEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
+	cueManager.setCuesFromSubtitleUsingLocale(availableLocales.selectedItem.code);
 
-VP.removeEventListener(StreamEvent.ENTER_FRAME, _cueManager.monitorCuePoints);
-VP.addEventListener(StreamEvent.ENTER_FRAME, _cueManager.monitorCuePoints);
+	VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	VP.addEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	*/
 }
 
-/**
- * On subtitles retrieved
- */
-private function onSubtitlesRetrieved(e:CueManagerEvent):void
-{
+//cuemanagerevent
+function onSubtitlesRetrieved(){
 	setupPlayCommands();
 }
 
-/**
- * Setup commands for playing sample video
- */
-private function setupPlayCommands():void
-{
-	var auxList:ArrayCollection=_cueManager.getCuelist();
+function setupPlayCommands(){
+	var auxList=cueManager.getCuelist();
 
-if (auxList.length <= 0)
-	return;
+	if (auxList.length <= 0)
+		return;
 
-for each (var cueobj:CueObject in auxList)
-{
-	cueobj.setStartCommand(new ShowHideSubtitleCommand(cueobj, VP));
-	cueobj.setEndCommand(new ShowHideSubtitleCommand(null, VP));
-}
-
-_cueManagerReady=true;
-onVideoStartedPlaying(null);
-}
-
-/**
- * Setup commands for playing the recorded response
- */
-private function setupReplayCommands():void
-{
-	var auxList:ArrayCollection=_cueManager.getCuelist();
-
-if (auxList.length <= 0)
-	return;
-
-for each (var cueobj:CueObject in auxList)
-{
-	cueobj.setStartCommand(new ReplayResponseCommand(cueobj, VP));
-	cueobj.setEndCommand(new ReplayResponseCommand(null, VP));
-}
-
-_cueManagerReady=true;
-}
-
-/**
- * Setup recording commands
- */
-private function setupRecordingCommands():void
-{
-	var auxList:ArrayCollection=_cueManager.getCuelist();
-
-if (auxList.length <= 0)
-	return;
-
-for each (var cueobj:CueObject in auxList)
-{
-	if (cueobj.role != _selectedRole)
+	for (var i in auxList)
 	{
-		cueobj.setStartCommand(new RecordingOtherRoleCommand(cueobj, VP));
-
-		cueobj.setEndCommand(new ShowHideSubtitleCommand(null, VP));
+		auxList[i].setStartCommand(new onPlaybackCuePoint(auxList[i], bpPlayer));
+		auxList[i].setEndCommand(new onPlaybackCuePoint(null, bpPlayer));
 	}
-	else
-	{
-		cueobj.setStartCommand(new StartRecordingSelectedRoleCommand(cueobj, VP));
 
-		cueobj.setEndCommand(new StopRecordingSelectedRoleCommand(VP));
-	}
+	cueManagerReady=true;
+	onVideoStartedPlaying(null);
 }
 
-_cueManagerReady=true;
+function setupReplayCommands(){
+	var auxList=cueManager.getCuelist();
+
+	if (auxList.length <= 0)
+		return;
+
+	for (var i in auxList){
+		auxList[i].setStartCommand(new onReplayRecordingCuePoint(auxList[i], bpPlayer));
+		auxList[i].setEndCommand(new onReplayRecordingCuePoint(null, bpPlayer));
+	}
+
+	cueManagerReady=true;
 }
 
-/**
- * On locale combo box changed
- */
- private function onLocaleComboChanged(e:Event):void
- {
-	 resetCueManager();
-	 prepareCueManager();
- }
+function setupRecordingCommands(){
+	var auxList=cueManager.getCuelist();
 
- /**
-  * Show/Hide selected exercise
-  */
- private function showSelectedExercise():void
- {
-	 videoPlayerAndRecordingControls.includeInLayout=true;
-	 videoPlayerAndRecordingControls.visible=true;
+	if (auxList.length <= 0)
+		return;
 
-	 // Update URL
-	 BabeliaBrowserManager.getInstance().updateURL(BabeliaBrowserManager.index2fragment(ViewChangeEvent.VIEWSTACK_EXERCISE_MODULE_INDEX), BabeliaBrowserManager.VIEW, _exerciseName);
+	for (var i in auxList){
+		if (auxList[i].role != selectedRole){
+			auxList[i].setStartCommand(new RecordingOtherRoleCommand(auxList[i], bpPlayer));
+			auxList[i].setEndCommand(new ShowHideSubtitleCommand(null, bpPlayer));
+		} else {
+			auxList[i].setStartCommand(new StartRecordingSelectedRoleCommand(auxList[i], bpPlayer));
+			auxList[i].setEndCommand(new StopRecordingSelectedRoleCommand(bpPlayer));
+		}
+	}
 
-	 _exerciseSelected=true;
- }
+	cueManagerReady=true;
+}
 
- private function hideSelectedExercise():void
- {
-	 videoPlayerAndRecordingControls.includeInLayout=false;
-	 videoPlayerAndRecordingControls.visible=false;
-
-	 _exerciseSelected=false;
- }
-
+$("#localeCombo").change(function() { 
+	resetCueManager();
+	prepareCueManager();
+	
+});
  
+//Mouse click on record button
+$("#startRecordingBtn").click(function() {
+	
+	//Hide and show the needed panels
+	$('#exerciseInfoPanel').hide();
+	$('#recordingEndOptions').show();
 
- /**
-  * On start recording clicked
-  */
- private function onStartRecordingClicked(e:MouseEvent):void
- {
-	 panelSelectedExercise.includeInLayout=false;
-	 panelSelectedExercise.visible=false;
-	 recordingEndOptions.includeInLayout=true;
-	 recordingEndOptions.visible=true;
-
-	 // Commands with selected role
-	 _selectedRole=availableRoles.selectedItem.toString();
-	 setupRecordingCommands();
+	// Commands with selected role
+	selectedRole=$('#availableRolesCombo option:selected').text();
+	setupRecordingCommands();
 
 	 // Recording mode
 	 if (micOnly.selected)
-		 VP.state=VideoPlayerBabelia.RECORD_MIC_STATE;
+		 bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
 	 else
-		 VP.state=VideoPlayerBabelia.RECORD_BOTH_STATE;
+		 bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
 
 	 // Prepare arrows
 	 showArrows();
 
-	 // Disable events and tabs
-	 DataModel.getInstance().recordingExercise=true;
-
 	 // Save statistical data
 	 statisticRecAttempt();
- }
+});
 
- private function statisticRecAttempt():void
- {
-	 var subtitlesAreUsed:Boolean=VP.subtitlePanelVisible;
- var subtitleId:int=_cueManager.currentSubtitle;
- var roleId:int=0;
- for each (var role:ExerciseRoleVO in _roles)
- {
-	 if (role.characterName == _selectedRole)
-	 {
-		 roleId=role.id;
-		 break;
-	 }
- }
- var videoData:UserVideoHistoryVO=new UserVideoHistoryVO(0, 0, _exerciseId, true, 0, '', subtitlesAreUsed, subtitleId, roleId);
- new UserVideoHistoryEvent(UserVideoHistoryEvent.STAT_ATTEMPT_RESPONSE, videoData).dispatch();
- }
+function statisticRecAttempt(){
+	var subtitlesAreUsed=bpPlayer.subtitlePanelVisible;
+ 	var subtitleId=cueManager.currentSubtitle;
+ 	var roleId=0;
+ 	for (var i in roles)
+ 	{
+ 		if (roles[i].characterName == selectedRole){
+ 			roleId=roles[i].id;
+ 			break;
+ 		}
+ 	}
+ 
+ 	//Ajax call to the appointed REST service
+ 	var videoData={'id': 0, 'userSessionId': 0, 'exerciseId' : exerciseId, 'responseAttempt': true, 'responseId': 0, 'incidenceDate':'', 'subtitlesAreUsed': subtitlesAreUsed, 'subtitleId': subtitleId, 'exerciseRoleId': roleId};
+	var srvClass = 'UserVideoHistory';
+	var srvMethod = 'exerciseAttemptResponse';
+	var srvParams = videoData;
+	
+	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	$.getJSON(srvQueryString, statisticRecSave(data)).error(function(){ alert("Couldn't save the statistic data.") });
+ 	
+}
 
- /**
-  * On recording end successfully
-  */
- private function onRecordingEnd(e:RecordingEvent):void
- {
+/**
+ * On recording end successfully
+ */
+//RecordingEvent
+function onRecordingEnd(){
 	 // Store last recorded response's filename
-	 _recordedFilename=e.fileName;
-
-	 DataModel.getInstance().recordingExercise=false;
+	 recordedFilename=e.fileName;
 
 	 // Set the videoplayer to playback both the exercise and the
 	 // last response.
-	 VP.videoSource=EXERCISE_FOLDER + '/' + _exerciseName;
-	 VP.state=VideoPlayerBabelia.PLAY_BOTH_STATE;
-	 VP.secondSource=RESPONSE_FOLDER + '/' + _recordedFilename
+	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
+	 bpPlayer.state=VideoPlayerBabelia.PLAY_BOTH_STATE;
+	 bpPlayer.secondSource=RESPONSE_FOLDER + '/' + recordedFilename;
 
-	 VP.seek=false;
-	 VP.stopVideo();
- }
+	 bpPlayer.seek=false;
+	 bpPlayer.stopVideo();
+}
 
  /**
   * On recording aborted
   */
- private function onRecordingAborted(e:RecordingEvent):void
- {
+//RecordingEvent
+function onRecordingAborted(){
 	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
 	 recordingError();
- }
+}
 
  /**
   * On cam access denied
   */
- private function onCamAccessDenied(e:RecordingEvent):void
- {
+//RecordingEvent
+function onCamAccessDenied(){
 	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
 	 recordingError();
- }
+}
 
- /**
-  * On mic access denied
-  */
- private function onMicAccessDenied(e:RecordingEvent):void
- {
+/**
+ * On mic access denied
+ */
+//RecordingEvent
+function onMicAccessDenied(){
 	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
 	 recordingError();
- }
+}
 
- private function recordingError():void
- {
-	 DataModel.getInstance().recordingExercise=false;
+function recordingError(){
 	 hideArrows();
-	 VP.unattachUserDevices();
-	 VP.state=VideoPlayerBabelia.PLAY_STATE;
-	 VP.removeEventListener(StreamEvent.ENTER_FRAME, _cueManager.monitorCuePoints);
+	 bpPlayer.unattachUserDevices();
+	 bpPlayer.state=bpPlayerStates.PLAY_STATE;
+	 
+	 //TODO
+	 //VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
 
-	 recordingEndOptions.includeInLayout=false;
-	 recordingEndOptions.visible=false;
-	 panelSelectedExercise.visible=true;
-	 panelSelectedExercise.includeInLayout=true;
+	//Restore the panels
+	$('#exerciseInfoPanel').show();
+	$('#recordingEndOptions').hide();	 
+}
 
+function showArrows(){
+	 bpPlayer.arrows=true;
+	 bpPlayer.setArrows(cueManager.cues2rolearray(), selectedRole);
  }
 
- /**
-  * Show Arrows
-  */
- private function showArrows():void
- {
-	 VP.arrows=true;
-	 VP.setArrows(_cueManager.cues2rolearray(), _selectedRole);
- }
 
- /**
-  * Hide Arroes
-  */
- private function hideArrows():void
- {
-	 VP.arrows=false;
-	 VP.removeArrows();
- }
+function hideArrows(){
+	 bpPlayer.arrows=false;
+	 bpPlayer.removeArrows();
+}
 
- /**
-  * On tab change - reset selected video and stop streaming
-  */
- private function set onTabChange(value:Boolean):void
- {
-	 if(_creationComplete && DataModel.getInstance().oldContentViewStackIndex == ViewChangeEvent.VIEWSTACK_EXERCISE_MODULE_INDEX)
-		 resetComponent();
- }
-
- private function resetComponent():void
- {
-	 VP.endVideo(); // Stop video
-	 VP.setSubtitle(""); // Clear subtitles if any
-	 VP.videoSource=""; // Reset video source
-	 VP.state=VideoPlayerBabelia.PLAY_STATE; // Reset the player
-	 // window to display
-	 // only the exercise
-
-	 VP.arrows=false; // Hide arrows
-
-	 _exerciseTitle=resourceManager.getString('myResources', 'LABEL_EXERCISE_TITLE');
-	 _currentExercise=null; // Reset current exercise
-
-	 hideSelectedExercise(); // Information of selected exercise
-
-	 exerciseList.exerciseListDataGroup.selectedIndex = -1;
-
-	 // Remove cueManager's Listeners
-	 _cueManager.removeEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
-
-	 // Remove the current exercise's info
-	 ratingShareReport.exerciseData=null;
- }
-
- // Watch both
- private function onWatchExerciseAndResponse(e:Event):void
- {
+// Watch both
+$('#watchExerciseAndResponseBtn').click(function(){
 	 showArrows();
 	 setupRecordingCommands();
 
-	 VP.videoSource=EXERCISE_FOLDER + '/' + _exerciseName;
-	 VP.state=VideoPlayerBabelia.PLAY_BOTH_STATE;
-	 VP.secondSource=RESPONSE_FOLDER + '/' + _recordedFilename
+	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
+	 bpPlayer.state=bpPlayerStates.PLAY_BOTH_STATE;
+	 bpPlayer.secondSource=RESPONSE_FOLDER + '/' + recordedFilename
 
-	 VP.seek=false;
- }
+	 bpPlayer.seek=false;
+});
 
- // Watch response
- private function onWatchResponse(e:Event):void
- {
-	 showArrows();
-	 setupReplayCommands();
+$('#watchResponseBtn').click(function(){
+	showArrows();
+	setupReplayCommands();
 
-	 VP.videoSource=RESPONSE_FOLDER + '/' + _recordedFilename;
-	 VP.state=VideoPlayerBabelia.PLAY_STATE;
+	bpPlayer.videoSource=RESPONSE_FOLDER + '/' + recordedFilename;
+	bpPlayer.state=bpPlayerStates.PLAY_STATE;
 
-	 VP.seek=false;
- }
+	bpPlayer.seek=false;
+});
 
  // Record again
- private function onRecordAgain(e:Event):void
- {
-	 VP.videoSource=EXERCISE_FOLDER + '/' + _exerciseName;
+$('#recordAgainBtn').click(function(){
+	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
 	 setupRecordingCommands();
 	 showArrows();
-	 DataModel.getInstance().recordingExercise=true;
-
+	 
 	 // Recording mode
-	 if (micOnly.selected)
-		 VP.state=VideoPlayerBabelia.RECORD_MIC_STATE;
+	 var micOnly = $("input[name='micOnly']:checked").val();
+	 
+	 if (!isEmpty(micOnly))
+		 bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
 	 else
-		 VP.state=VideoPlayerBabelia.RECORD_BOTH_STATE;
+		 bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
 
 	 // Save this new record attempt
 	 statisticRecAttempt();
- }
+});
 
- private function onAbortRecording(e:Event):void
- {
+$('#abortRecordingBtn').click(function(){
 	 recordingError();
 	 prepareExercise();
 	 resetCueManager();
+});
+
+// Save response
+$('#saveResponseBtn').click(function(){
+	
+	//TODO
+	//Centralized data
+	var userCredCount = 30;
+	var credsEvalRequest= 20;
+
+ 	if (userCredCount - credsEvalRequest >= 0)
+ 	{
+ 		// This must be changed by some function that takes a
+ 		// snapshot of the Response video
+ 		var responseThumbnail="nothumb.png";
+ 		var subtitleId=cueManager.currentSubtitle;
+ 		
+ 		//Prepare an AJAX call to the appointed service
+ 		var responseData={'id':0, 'exerciseId':exerciseId, 'fileIdentifier':recordedFilename, 'isPrivate':true, 'thumbnailUri':responseThumbnail, 'source':'Red5', 'duration':bpPlayer.duration, 'addingDate':new Date(), 'ratingAmount':0, 'characterName':selectedRole, 'transcriptionId':0, 'subtitleId':subtitleId};
+ 		var srvClass = 'Response';
+ 		var srvMethod = 'saveResponse';
+ 		var srvParams = responseData;
+ 		
+ 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+ 		$.getJSON(srvQueryString, saveResponseCallback(data)).error(function(){ alert("Couldn't save your response.") });
+
+ 		//Restore the panels
+ 		$('#exerciseInfoPanel').show();
+ 		$('#recordingEndOptions').hide();
+
+ 		resetComponent();
+ 	} else {
+ 		$('#insufficientCreditsDialog').dialog('open');
+ 	}
+});
+
+function saveResponseCallback(data){
+	
+	var subtitlesAreUsed=bpPlayer.subtitlePanelVisible;
+	var subtitleId=cueManager.currentSubtitle;
+	var roleId=0;
+	var responseId=data.responseId;
+	for (var i in roles){
+	 	if (roles[i].characterName == selectedRole){
+	 		roleId=roles[i].id;
+	 		break;
+	 	}
+	}
+	
+	//Ajax call to the appointed REST service
+ 	var videoData={'id': 0, 'userSessionId': 0, 'exerciseId' : exerciseId, 'responseAttempt': false, 'responseId': responseId, 'incidenceDate':'', 'subtitlesAreUsed': subtitlesAreUsed, 'subtitleId': subtitleId, 'exerciseRoleId': roleId};
+	var srvClass = 'UserVideoHistory';
+	var srvMethod = 'exerciseSaveResponse';
+	var srvParams = videoData;
+	
+	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	$.getJSON(srvQueryString, statisticRecSave(data)).error(function(){ alert("Couldn't save the statistic data.") });
+	
  }
 
- // Save response
- private function onSaveResponse(e:Event):void
- {
-
-	 var userCredCount:int=DataModel.getInstance().loggedUser.creditCount;
- var credsEvalRequest:int=DataModel.getInstance().prefDic['evaluationRequestCredits'];
- if (userCredCount - credsEvalRequest >= 0)
- {
-	 // This must be changed by some function that takes a
-	 // snapshot of the Response video
-	 var responseThumbnail:String="nothumb.png";
- var subtitleId:int=_cueManager.currentSubtitle;
- var responseData:ResponseVO=new ResponseVO(0, _exerciseId, _recordedFilename, true, responseThumbnail, "Red5", VP.duration, (new Date().toString()), 0, _selectedRole, 0, subtitleId);
-
- // Third, save response
- new ResponseEvent(ResponseEvent.SAVE_RESPONSE, responseData).dispatch();
-
- recordingEndOptions.includeInLayout=false;
- recordingEndOptions.visible=false;
- panelSelectedExercise.includeInLayout=true;
- panelSelectedExercise.visible=true;
-
-
- resetComponent();
- }
- else
- {
-	 CustomAlert.error(resourceManager.getString('myResources', 'ERROR_INSUFICCIENT_CREDITS'));
- }
- }
-
- private function set statisticRecSave(value:Boolean):void
- {
-	 if (DataModel.getInstance().savedResponseId)
+//Videplyarevent
+function onVideoStartedPlaying(){
+	 exerciseStartedPlaying=true;
+	 if (/*DataModel.getInstance().isLoggedIn &&*/ cueManagerReady && rolesReady && localesReady && exerciseStartedPlaying)
 	 {
-		 var subtitlesAreUsed:Boolean=VP.subtitlePanelVisible;
-	 var subtitleId:int=_cueManager.currentSubtitle;
-	 var roleId:int=0;
-	 var responseId:int=DataModel.getInstance().savedResponseId;
-	 for each (var role:ExerciseRoleVO in _roles)
-	 {
-		 if (role.characterName == _selectedRole)
-		 {
-			 roleId=role.id;
-			 break;
-		 }
-	 }
-	 var videoData:UserVideoHistoryVO=new UserVideoHistoryVO(0, 0, _exerciseId, false, responseId, '', subtitlesAreUsed, subtitleId, roleId);
-	 new UserVideoHistoryEvent(UserVideoHistoryEvent.STAT_SAVE_RESPONSE, videoData).dispatch();
-	 }
- }
-
- private function onVideoStartedPlaying(e:VideoPlayerEvent):void
- {
-	 _exerciseStartedPlaying=true;
-	 if (DataModel.getInstance().isLoggedIn && _cueManagerReady && _rolesReady && _localesReady && _exerciseStartedPlaying)
-	 {
-		 _exerciseStartedPlaying=false;
-		 var subtitlesAreUsed:Boolean=VP.subtitlePanelVisible;
-		 var subtitleId:int=_cueManager.currentSubtitle;
-		 var videoData:UserVideoHistoryVO=new UserVideoHistoryVO(0, 0, _exerciseId, false, 0, '', subtitlesAreUsed, subtitleId, 0);
-		 if (_exerciseId > 0 && subtitleId > 0)
-			 new UserVideoHistoryEvent(UserVideoHistoryEvent.STAT_EXERCISE_WATCH, videoData).dispatch();
+		 exerciseStartedPlaying=false;
+		 var subtitlesAreUsed=bpPlayer.subtitlePanelVisible;
+		 var subtitleId=cueManager.currentSubtitle;
+		 var videoData={'id': 0, 'userSessionId': 0, 'exerciseId' : exerciseId, 'responseAttempt': false, 'responseId': 0, 'incidenceDate':'', 'subtitlesAreUsed': subtitlesAreUsed, 'subtitleId': subtitleId, 'exerciseRoleId': 0};
+		 var srvClass = 'UserVideoHistory';
+		 var srvMethod = 'watchExercise';
+		 var srvParams = videoData;
+		 
+		 var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+		 if (exerciseId > 0 && subtitleId > 0)
+			 $.getJSON(srvQueryString, function(data){ /*Do sth here*/ }).error(function(){ alert("Couldn't save the statistic data.") });
 	 }
  }
