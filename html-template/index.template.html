@@ -19,9 +19,10 @@ Learn more about Flex at http://flex.org
 <!--  END Browser History required section -->
 
 <title>${title}</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js" language="javascript"></script>
 <script src="script/AC_OETags.js" language="javascript"></script>
-<script src="script/jquery-1.4.2.js" language="javascript"></script>
 <script src="script/jsFlashBridge.js" language="javascript"></script>
+<script src="script/functions.js" language="javascript"></script>
 <script src="script/exercise.js" language="javascript"></script>
 <script src="script/cuePointManager.js" language="javascript"></script>
 <script src="script/cueObject.js" language="javascript"></script>
@@ -189,10 +190,10 @@ var requiredRevision = ${version_revision};
 			<br />
 			Choose recording method:
 			<br />
-			<input type="radio" name="micOnly" checked="checked" value="Microphone only">
-			<input type="radio" name="micAndWebcam" value="Webcam and microphone">
+			<input type="radio" name="recmethod" checked="checked" value="micOnly">Microphone only<br />
+			<input type="radio" name="recmethod" value="micAndWebcam">Webcam and microphone<br />
 			<br />
-			<input id="startRecordingBtn" type="submit" name="startRecordingBtn" value="Start Recording">
+			<input id="startRecordingBtn" class="bbutton" type="submit" name="startRecordingBtn" value="Start Recording">
 		</div>
 	</div>
 </div>

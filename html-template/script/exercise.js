@@ -35,7 +35,6 @@ function onExerciseSelected(exercise){
 	exerciseTitle=exercise.title;
 	exerciseId=exercise.id;
 	currentExercise=exercise;
-
 	rolesReady=false;
 	localesReady=false;
 	cueManagerReady=false;
@@ -53,65 +52,72 @@ function prepareExercise()
 	// Prepare new video in VideoPlayer
 	bpPlayer.stopVideo();
 	bpPlayer.state(bpPlayerStates.PLAY_STATE);
-	bpPlayer.videoSource(EXERCISE_FOLDER + '/' + _exerciseName);
-	
-	alert(EXERCISE_FOLDER + '/' + _exerciseName);
+	bpPlayer.videoSource(EXERCISE_FOLDER + '/' + exerciseName);
 
 	//Ajax call to the appointed REST service
-	var auxExRol = {'exerciseId' : exerciseId};
+	var auxExRol = exerciseId;
 	var srvClass = 'ExerciseRole';
 	var srvMethod = 'getExerciseRoles';
 	var srvParams = auxExRol;
 	
-	//server = http://babeliumhtml5/rest
 	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-	alert(srvQueryString);
-	$.getJSON(srvQueryString, onRolesRetrieved(data)).error(function(){ alert("Couldn't retrieve the roles of the current exercise.") });
-	
+	$.getJSON(srvQueryString, null, function(data){
+		onRolesRetrieved(data);
+	}).error(function(){
+		console.log("Couldn't retrieve the roles for this exercise.");
+	});
 	
 	//Ajax call to the appointed REST service
-	var auxEx = {'id': exerciseId};
+	var auxEx = exerciseId;
 	var srvClass = 'Exercise';
 	var srvMethod = 'getExerciseLocales';
 	var srvParams = auxEx;
-	
 	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-	$.getJSON(srvQueryString, onLocalesRetrieved(data)).error(function(){ alert("Couldn't retrieve the available subtitle languages of the current exercise.") });
+	$.getJSON(srvQueryString, null, function(data){
+		onLocalesRetrieved(data);
+	}).error(function(){ 
+		console.log("Couldn't retrieve the available subtitle languages of the current exercise.") 
+	});
 	
 }
 
 function onLocalesRetrieved(data){
-	
-	locales=data;
+	//console.log("Exercise subtitle languages retrieved");
+	$('#localeCombo').empty();
 
 	if (locales == null){
-		$('#localesCombo').attr('disabled','disabled');
+		$('#localeCombo').attr('disabled','disabled');
 		localesReady=false;
 	}else{
-		for(var i in locales){
-			$('#localesCombo').append('<option value="'+locales[i]+'">'+locales[i]+'</option>');
-		}
-		availableLocales.enabled=true;
+		$('#localeCombo').removeAttr('disabled');
+		$.each(data.Exercise.getExerciseLocales, function(i,item){
+			if(item != undefined && item != 'success')
+				$('#localeCombo').append('<option value="'+item+'">'+item+'</option>');
+		});
 		localesReady=true;
+	
 		// Preparing subtitles
 		prepareCueManager();
 	}
 }
 
 function onRolesRetrieved(data){
-	roles=data;
+	//console.log("Exercise roles retrieved");
+	$('#roleCombo').empty();
 	characterNames = [];
 
-	if (roles == null){
-		availableRoles.enabled=false;
+	if (data == null){
+		$('#roleCombo').attr('disabled','disabled');
 		rolesReady=false;
 	} else {
-		availableRoles.enabled=true;
+		$('#roleCombo').removeAttr('disabled');
 		rolesReady=true;
-		for (var i in roles){
-			if (roles[i].characterName != "NPC")
-				characterNames.push(roles[i].characterName);
-		}
+		$.each(data.Subtitle.getExerciseRoles, function(i,item){
+			if(item.characterName != undefined && item.characterName != "NPC"){
+				characterNames.push(item.characterName);
+				$('#roleCombo').append('<option value="'+item.characterName+'">'+item.characterName+'</option>');
+			}
+		});
 	}
 }
 
@@ -125,18 +131,16 @@ function resetCueManager(){
 
 function prepareCueManager(){
 	//TODO
-	/*
 	cueManager.setVideo(exerciseId);
 	
-	selectedLocale=$('#localesCombo option:selected').text();
+	//cueManager.addEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
+	
+	selectedLocale=$('#localeCombo option:selected').text();
 	cueManager.setCuesFromSubtitleUsingLocale(selectedLocale);
 
-	cueManager.addEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
-	cueManager.setCuesFromSubtitleUsingLocale(availableLocales.selectedItem.code);
-
-	VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
-	VP.addEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
-	*/
+	//VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	//VP.addEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	
 }
 
 //cuemanagerevent

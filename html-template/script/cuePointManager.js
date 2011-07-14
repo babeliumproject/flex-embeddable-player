@@ -1,7 +1,7 @@
 function cuePointManager(){
 	
 	this.cuelist=[];//new ArrayCollection();
-	this.exerciseId=-1;
+	this.cpmExerciseId=-1;
 	this.subtitleId=-1;
 	
 	this.roleColors = [0xffffff, 0xfffd22, 0x69fc00, 0xfd7200, 0x056cf9, 0xff0f0b, 0xc314c9, 0xff6be5];
@@ -9,14 +9,14 @@ function cuePointManager(){
 
 	
 	this.reset = function(){
-		exerciseId=-1;
+		cpmExerciseId=-1;
 		subtitleId=-1;
 		cuelist = [];
 	}
 	
 
 	this.setVideo = function(videoId){
-		this.exerciseId=videoId;
+		this.cpmExerciseId=videoId;
 	}
 	
 
@@ -106,14 +106,16 @@ function cuePointManager(){
 	 * Get cuepoints from subtitle
 	 **/
 	this.setCuesFromSubtitleUsingLocale = function(language){
-		var subtitle = {'exerciseId' : this.exerciseId, 'language': language};
+		var subtitle = {'id': 0, 'exerciseId' : this.cpmExerciseId, 'language': language};
 		
 		var srvClass = 'Subtitle';
 		var srvMethod = 'getSubtitleLines';
-		var srvParams = subtitle;
+		var srvParams = base64_encode(JSON.stringify(subtitle));
 		
 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, subtitlesRetrievedCallback(data)).error(function(){ alert("Error while retrieving subtitle lines") });
+		$.getJSON(srvQueryString, this.subtitlesRetrievedCallback).error(function(){ 
+			alert("Error while retrieving subtitle lines") 
+		});
 	}
 
 	this.setCuesFromSubtitleUsingId = function(subtitleId){
@@ -123,29 +125,26 @@ function cuePointManager(){
 		var srvParams = subtitleId;
 		
 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, subtitlesRetrievedCallback(data)).error(function(){ alert("Error while retrieving subtitle lines") });
+		$.getJSON(srvQueryString, this.subtitlesRetrievedCallback).error(function(){ 
+			alert("Error while retrieving subtitle lines") 
+		});
 		
 	}
 	
 	
 	this.subtitlesRetrievedCallback = function(data){
-		var result=data.result;
-
-		if (typeof result == 'object' && !isEmpty(result))
-		{
-			var resultCollection = result;
-
-			if (resultCollection.length > 0)
-			{
-				colorDictionary = new Array();
-				for (var i=0; i < resultCollection.length; i++)
-				{
-					addCueFromSubtitleLine(resultCollection[i]);
-				}
-				subtitleId=resultCollection[0].subtitleId;
+		var result=data.Subtitle.getSubtitleLines;
+		colorDictionary = [];
+		
+		for (var i in result){
+			
+			if(typeof result[i] == 'object')
+				console.log(result[i]);
+				this.addCueFromSubtitleLine(result[i]);
 			}
-		}
-
+		this.subtitleId=result[0].subtitleId;
+		console.log(this.subtitleId);
+		
 		//dispatchEvent(new CueManagerEvent(CueManagerEvent.SUBTITLES_RETRIEVED));
 	}
 
@@ -182,7 +181,7 @@ function cuePointManager(){
 	this.cues2rolearray = function(){
 		var arrows = [];
 		var cuelist = this.getCuelist();
-		for each (var i in cuelist)
+		for (var i in cuelist)
 			arrows.push({'startTime': cuelist[i].startTime, 'endTime': cuelist[i].endTime, 'role': cuelist[i].role});
 
 		return arrows;
