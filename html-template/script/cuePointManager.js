@@ -1,56 +1,62 @@
 function cuePointManager(){
 	
-	this.cuelist=[];//new ArrayCollection();
-	this.cpmExerciseId=-1;
-	this.subtitleId=-1;
+	this.cpm_cuelist=[];//new ArrayCollection();
+	this.cpm_exerciseId=-1;
+	this.cpm_subtitleId=-1;
 	
 	this.roleColors = [0xffffff, 0xfffd22, 0x69fc00, 0xfd7200, 0x056cf9, 0xff0f0b, 0xc314c9, 0xff6be5];
 	this.colorDictionary = [];
+	
+	this.subtitlesRetrievedListener;
 
 	
 	this.reset = function(){
-		cpmExerciseId=-1;
-		subtitleId=-1;
-		cuelist = [];
+		cpm_exerciseId=-1;
+		cpm_subtitleId=-1;
+		cpm_cuelist = [];
 	}
 	
 
 	this.setVideo = function(videoId){
-		this.cpmExerciseId=videoId;
+		this.cpm_exerciseId=videoId;
 	}
 	
 
 	this.currentSubtitle = function(){
-		return subtitleId;
+		return cpm_subtitleId;
 	}
 	
 	this.addCue = function(cueobj){
-		cuelist.push(cueobj);
-		cuelist.sort(sortByStartTime);
+		this.cpm_cuelist.push(cueobj);
+		this.cpm_cuelist.sort(this.sortByStartTime);
 	}
 
 	this.setCueAt = function(cueobj, pos){
-		cuelist.setItemAt(cueobj, pos);
+		this.cpm_cuelist.setItemAt(cueobj, pos);
 	}
 
 	this.getCueAt = function(pos){
-		return cuelist[pos];
+		return this.cpm_cuelist[pos];
 	}
 
 	this.removeCueAt = function(pos){
-		return cuelist.removeItemAt(pos);
+		return this.cpm_cuelist.removeItemAt(pos);
 	}
 
 	this.getCueIndex = function(cueobj){
-		return cuelist.getItemIndex(cueobj);
+		return this.cpm_cuelist.getItemIndex(cueobj);
 	}
 
 	this.removeAllCue = function(){
-		cuelist = [];
+		this.cpm_cuelist = [];
 	}
 
 	this.setCueList = function (cuelist){
-		this.cuelist=cuelist;
+		this.cpm_cuelist=cuelist;
+	}
+	
+	this.getCuelist = function(){
+		return this.cpm_cuelist;
 	}
 	
 	this.sortByStartTime = function(a,b){
@@ -66,14 +72,14 @@ function cuePointManager(){
 	}
 
 	this.setCueListStartCommand = function(command){
-		for (var i in cuelist){
-			cuelist[i].setStartCommand(command);
+		for (var i in this.cpm_cuelist){
+			this.cpm_cuelist[i].setStartCommand(command);
 		}
 	}
 
 	this.setCueListEndCommand = function(command){	
-		for (var i in cuelist){
-			cuelist[i].setEndCommand(command);
+		for (var i in this.cpm_cuelist){
+			this.cpm_cuelist[i].setEndCommand(command);
 		}
 	}
 
@@ -85,17 +91,17 @@ function cuePointManager(){
 	this.monitorCuePoints = function(ev){
 		var curTime=ev.time;
 
-		for (var i in cuelist)
+		for (var i in this.cpm_cuelist)
 		{
-			if (((curTime - 0.08) < cuelist[i].startTime && cuelist[i].startTime < (curTime + 0.08)))
+			if (((curTime - 0.08) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.08)))
 			{
-				cuelist[i].executeStartCommand();
+				this.cpm_cuelist[i].executeStartCommand();
 				break;
 			}
 
-			if (((curTime - 0.08) < cuelist[i].endTime && cuelist[i].endTime < (curTime + 0.08)))
+			if (((curTime - 0.08) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.08)))
 			{
-				cuelist[i].executeEndCommand();
+				this.cpm_cuelist[i].executeEndCommand();
 				break;
 			}
 		}
@@ -106,15 +112,18 @@ function cuePointManager(){
 	 * Get cuepoints from subtitle
 	 **/
 	this.setCuesFromSubtitleUsingLocale = function(language){
-		var subtitle = {'id': 0, 'exerciseId' : this.cpmExerciseId, 'language': language};
+		var subtitle = {'id': 0, 'exerciseId' : this.cpm_exerciseId, 'language': language};
 		
 		var srvClass = 'Subtitle';
 		var srvMethod = 'getSubtitleLines';
 		var srvParams = base64_encode(JSON.stringify(subtitle));
 		
 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, this.subtitlesRetrievedCallback).error(function(){ 
-			alert("Error while retrieving subtitle lines") 
+		$.getJSON(srvQueryString, function(data){
+			//Make the call using the global scope object cueManager because this subclass has no access to the methods as is
+			cueManager.subtitlesRetrievedCallback(data);
+		}).error(function(){ 
+			alert("Error while retrieving subtitle lines"); 
 		});
 	}
 
@@ -125,54 +134,48 @@ function cuePointManager(){
 		var srvParams = subtitleId;
 		
 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, this.subtitlesRetrievedCallback).error(function(){ 
-			alert("Error while retrieving subtitle lines") 
+		$.getJSON(srvQueryString, function(data){
+			//Make the call using the global scope object cueManager because this subclass has no access to the methods as is
+			cueManager.subtitlesRetrievedCallback(data);
+		}).error(function(){ 
+			alert("Error while retrieving subtitle lines"); 
 		});
 		
 	}
 	
-	
 	this.subtitlesRetrievedCallback = function(data){
 		var result=data.Subtitle.getSubtitleLines;
-		colorDictionary = [];
+		this.colorDictionary = [];
 		
-		for (var i in result){
-			
-			if(typeof result[i] == 'object')
-				console.log(result[i]);
-				this.addCueFromSubtitleLine(result[i]);
+		for (var key in result){
+			if(typeof result[key] == 'object'){
+			    this.addCueFromSubtitleLine(result[key]);
 			}
-		this.subtitleId=result[0].subtitleId;
-		console.log(this.subtitleId);
-		
-		//dispatchEvent(new CueManagerEvent(CueManagerEvent.SUBTITLES_RETRIEVED));
+		}
+		for (var key in result){
+			this.cpm_subtitleId=result[key].subtitleId;
+			break;
+		}
+		this.subtitlesRetrievedListener();
 	}
 
-	//subtitlelinevo
 	this.addCueFromSubtitleLine = function(subline){
 		var found = false;
-		var color = roleColors[0];
-		for(var i=0; i < colorDictionary.length; i++){
-			if(colorDictionary[i] == subline.exerciseRoleId){
+		var color = this.roleColors[0];
+		for(var i=0; i < this.colorDictionary.length; i++){
+			if(this.colorDictionary[i] == subline.exerciseRoleId){
 				found = true;
-				color = roleColors[i];
+				color = this.roleColors[i];
 				break;
 			}
 		}
 		if(!found){
-			colorDictionary.push(subline.exerciseRoleId);
-			color = roleColors[colorDictionary.length-1];
+			this.colorDictionary.push(subline.exerciseRoleId);
+			color = this.roleColors[this.colorDictionary.length-1];
 		}
 		
-		var cueObj=new CueObject(subline.subtitleId, subline.showTime, subline.hideTime, subline.text, subline.exerciseRoleId, subline.exerciseRoleName,null,null,color);
+		var cueObj=new cueObject(subline.subtitleId, subline.showTime, subline.hideTime, subline.text, subline.exerciseRoleId, subline.exerciseRoleName,null,null,color);
 		this.addCue(cueObj);
-	}
-
-	/**
-	 * Getting cuelists for set their commands
-	 **/
-	this.getCuelist = function(){
-		return cuelist;
 	}
 
 	/**
@@ -187,7 +190,17 @@ function cuePointManager(){
 		return arrows;
 	}
 
-
+	this.addEventListener = function(event,listener){
+		switch(event){
+			case 'onSubtitlesRetrieved':
+				if(typeof listener == "function"){
+					this.subtitlesRetrievedListener = listener;
+				}	
+				break;
+			default:
+				break;
+		}
+	}
 	
 	
 	

@@ -1,8 +1,12 @@
 var bpPlayer = null;
 var cueManager = null;
 var server = 'http://babeliumhtml5/rest';
-var EXERCISE_FOLDER = 'exercises';
-var RESPONSE_FOLDER = 'responses';
+
+/**
+ * Not needed. The video folders are specified internally
+ * var EXERCISE_FOLDER = 'exercises';
+ * var RESPONSE_FOLDER = 'responses';
+*/
 
 var bpPlayerStates = {PLAY_STATE: 0, PLAY_BOTH_STATE: 1, RECORD_MIC_STATE: 2, RECORD_BOTH_STATE: 3};
 
@@ -52,7 +56,7 @@ function prepareExercise()
 	// Prepare new video in VideoPlayer
 	bpPlayer.stopVideo();
 	bpPlayer.state(bpPlayerStates.PLAY_STATE);
-	bpPlayer.videoSource(EXERCISE_FOLDER + '/' + exerciseName);
+	bpPlayer.videoSource(exerciseName);
 
 	//Ajax call to the appointed REST service
 	var auxExRol = exerciseId;
@@ -123,20 +127,21 @@ function onRolesRetrieved(data){
 
 
 function resetCueManager(){
-	//TODO
 	cueManager.reset();
-	
-	//VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	bpPlayer.removeEventListener('onEnterFrame','cueManager.monitorCuePoints');
 }
 
 function prepareCueManager(){
 	//TODO
 	cueManager.setVideo(exerciseId);
 	
+	cueManager.addEventListener('onSubtitlesRetrieved', onSubtitlesRetrieved);
+	
 	//cueManager.addEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
 	
 	selectedLocale=$('#localeCombo option:selected').text();
 	cueManager.setCuesFromSubtitleUsingLocale(selectedLocale);
+	bpPlayer.addEventListener('onEnterFrame','cueManager.monitorCuePoints');
 
 	//VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
 	//VP.addEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
@@ -150,7 +155,6 @@ function onSubtitlesRetrieved(){
 
 function setupPlayCommands(){
 	var auxList=cueManager.getCuelist();
-
 	if (auxList.length <= 0)
 		return;
 
@@ -161,6 +165,7 @@ function setupPlayCommands(){
 	}
 
 	cueManagerReady=true;
+	
 	onVideoStartedPlaying(null);
 }
 
@@ -260,9 +265,9 @@ function onRecordingEnd(){
 
 	 // Set the videoplayer to playback both the exercise and the
 	 // last response.
-	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
+	 bpPlayer.videoSource=exerciseName;
 	 bpPlayer.state=VideoPlayerBabelia.PLAY_BOTH_STATE;
-	 bpPlayer.secondSource=RESPONSE_FOLDER + '/' + recordedFilename;
+	 bpPlayer.secondSource=recordedFilename;
 
 	 bpPlayer.seek=false;
 	 bpPlayer.stopVideo();
@@ -324,9 +329,9 @@ $('#watchExerciseAndResponseBtn').click(function(){
 	 showArrows();
 	 setupRecordingCommands();
 
-	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
+	 bpPlayer.videoSource=exerciseName;
 	 bpPlayer.state=bpPlayerStates.PLAY_BOTH_STATE;
-	 bpPlayer.secondSource=RESPONSE_FOLDER + '/' + recordedFilename
+	 bpPlayer.secondSource=recordedFilename
 
 	 bpPlayer.seek=false;
 });
@@ -335,7 +340,7 @@ $('#watchResponseBtn').click(function(){
 	showArrows();
 	setupReplayCommands();
 
-	bpPlayer.videoSource=RESPONSE_FOLDER + '/' + recordedFilename;
+	bpPlayer.videoSource=recordedFilename;
 	bpPlayer.state=bpPlayerStates.PLAY_STATE;
 
 	bpPlayer.seek=false;
@@ -343,7 +348,7 @@ $('#watchResponseBtn').click(function(){
 
  // Record again
 $('#recordAgainBtn').click(function(){
-	 bpPlayer.videoSource=EXERCISE_FOLDER + '/' + exerciseName;
+	 bpPlayer.videoSource=exerciseName;
 	 setupRecordingCommands();
 	 showArrows();
 	 

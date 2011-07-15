@@ -5,7 +5,6 @@
 var bplayer = null;
 var PLAY_STATE = 0;
 var PLAY_BOTH_STATE = 1;
-var exerciseFolder = "exercises/";
 
 function onBabeliaPlayerReady(playerid)
 {

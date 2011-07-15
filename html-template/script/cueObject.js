@@ -13,22 +13,19 @@ function cueObject(subtitleId, startTime, endTime, text, roleId, role, startComm
 	if(textColor == null)
 		this.textColor=defaultParamValues[9];
 		
-	this.startCommand;
-	this.endCommand;
-
-	this.prototype.executeStartCommand = function(){
-		startCommand.execute();
+	this.executeStartCommand = function(){
+		this.startCommand.execute();
 	}
 		
-	this.prototype.executeEndCommand = function(){
-		endCommand.execute();
+	this.executeEndCommand = function(){
+		this.endCommand.execute();
 	}
 		
-	this.prototype.setStartCommand = function(command){
+	this.setStartCommand = function(command){
 		this.startCommand = command;
 	}
 		
-	this.prototype.setEndCommand = function(command){
+	this.setEndCommand = function(command){
 		this.endCommand=command;
 	}
 

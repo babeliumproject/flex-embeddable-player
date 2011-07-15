@@ -1,6 +1,7 @@
 package control
 {
 	import flash.external.ExternalInterface;
+	import flash.utils.Dictionary;
 	
 	import model.DataModel;
 	
@@ -8,6 +9,7 @@ package control
 	import modules.videoPlayer.events.babelia.StreamEvent;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
 	
 	import view.CustomAlert;
@@ -16,6 +18,8 @@ package control
 	{
 		private static var instance:Extern;
 		private var VP:VideoPlayerBabelia;
+		
+		private var jsListeners:Dictionary;
 		
 		/**
 		 * Constructor
@@ -60,6 +64,9 @@ package control
 			addCB("subtitles",subtitles);
 			addCB("subtitlingControls",subtitlingControls);
 			addCB("videoSource",videoSource);
+			
+			addCB("addEventListener",addEventListener);
+			addCB("removeEventListener",removeEventListener);
 		}
 		
 		/**
@@ -90,7 +97,7 @@ package control
 		}
 		
 		public function onEnterFrame(e:StreamEvent):void{
-			ExternalInterface.call("onEnterFrame", e.time);
+			ExternalInterface.call(jsListeners['onEnterFrame'], e.time);
 		}
 		
 		/**
@@ -146,7 +153,7 @@ package control
 		
 		private function secondSource(video:String):void
 		{
-			VP.secondSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
+			VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function seek(flag:Boolean):void
@@ -193,5 +200,31 @@ package control
 			
 			VP.setArrows(aux, role);
 		}
+		
+		private function addEventListener(event:String, listener:String):void{
+			
+			switch(event){
+				case 'onEnterFrame':
+					if(listener){
+						jsListeners['onEnterFrame'] = listener;
+						VP.addEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
+					}
+					break;
+				default:
+					break;
+			}
+		}
+		
+		private function removeEventListener(event:String, listener:String):void{
+			switch(event){
+				case 'onEnterFrame':
+					delete jsListeners['onEnterFrame'];
+					VP.removeEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
+					break;
+				default:
+					break;
+			}
+		}
+		
 	}
 }
