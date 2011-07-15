@@ -19,7 +19,7 @@ package control
 		private static var instance:Extern;
 		private var VP:VideoPlayerBabelia;
 		
-		private var jsListeners:Dictionary;
+		private var jsListeners:Dictionary = new Dictionary();
 		
 		/**
 		 * Constructor
@@ -45,7 +45,7 @@ package control
 			addCB("resumeVideo",VP.resumeVideo);
 			addCB("seekTo",VP.seekTo);
 			addCB("setArrows",setArrows);
-			addCB("setSubtitle",VP.setSubtitle);
+			addCB("setSubtitle",setSubtitle);
 			addCB("startTalking",VP.startTalking);
 			addCB("stopVideo",VP.stopVideo);
 			addCB("toggleControls",VP.toggleControls);
@@ -151,6 +151,10 @@ package control
 			return VP.duration;
 		}
 		
+		private function setSubtitle(text:String, color:uint):void{
+			VP.setSubtitle(text,color);
+		}
+		
 		private function secondSource(video:String):void
 		{
 			VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
@@ -218,7 +222,8 @@ package control
 		private function removeEventListener(event:String, listener:String):void{
 			switch(event){
 				case 'onEnterFrame':
-					delete jsListeners['onEnterFrame'];
+					if(jsListeners['onEnterFrame'])
+						delete jsListeners['onEnterFrame'];
 					VP.removeEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
 					break;
 				default:

@@ -14,7 +14,7 @@
 	</s:layout>
 
 	<videoPlayer:VideoPlayerBabelia id="VP"
-									autoPlay="false"
+									autoPlay="true"
 									skin="white"
 									seek="true"
 									subtitles="true"

@@ -4,11 +4,11 @@ function onRecordingSelectedRoleStartCuePoint(cue, VP){
 	this.cue = cue;
 
 	this.execute = function(){
-		VP.setSubtitle(cue.text, cue.textColor);
-		VP.muteVideo(true);
-		VP.muteRecording(false);
-		var time= cue.endTime - cue.startTime;
-		VP.startTalking(cue.role, time);
-		VP.highlight = true;
+		this.VP.setSubtitle(this.cue.text, this.cue.textColor);
+		this.VP.muteVideo(true);
+		this.VP.muteRecording(false);
+		var time= this.cue.endTime - this.cue.startTime;
+		this.VP.startTalking(this.cue.role, time);
+		this.VP.highlight = true;
 	}
 }

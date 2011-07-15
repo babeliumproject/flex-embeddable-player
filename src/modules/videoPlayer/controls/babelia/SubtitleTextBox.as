@@ -10,6 +10,7 @@ package modules.videoPlayer.controls.babelia
 	
 	import modules.videoPlayer.controls.SkinableComponent;
 	
+	import mx.controls.Alert;
 	import mx.controls.Text;
 	
 	import spark.components.HGroup;
@@ -86,7 +87,7 @@ package modules.videoPlayer.controls.babelia
 		}
 
 		public function setText(text:String,textColor:uint=0xffffff):void
-		{
+		{	
 			_textBox.setStyle("color", textColor);
 			_textBox.text=text;
 		}

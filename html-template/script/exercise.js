@@ -1,6 +1,6 @@
 var bpPlayer = null;
 var cueManager = null;
-var server = 'http://babeliumhtml5/rest';
+var server = 'http://html5babelium/rest/rest';
 
 /**
  * Not needed. The video folders are specified internally
@@ -94,7 +94,7 @@ function onLocalesRetrieved(data){
 		localesReady=false;
 	}else{
 		$('#localeCombo').removeAttr('disabled');
-		$.each(data.Exercise.getExerciseLocales, function(i,item){
+		$.each(data.getExerciseLocales, function(i,item){
 			if(item != undefined && item != 'success')
 				$('#localeCombo').append('<option value="'+item+'">'+item+'</option>');
 		});
@@ -116,7 +116,7 @@ function onRolesRetrieved(data){
 	} else {
 		$('#roleCombo').removeAttr('disabled');
 		rolesReady=true;
-		$.each(data.Subtitle.getExerciseRoles, function(i,item){
+		$.each(data.getExerciseRoles, function(i,item){
 			if(item.characterName != undefined && item.characterName != "NPC"){
 				characterNames.push(item.characterName);
 				$('#roleCombo').append('<option value="'+item.characterName+'">'+item.characterName+'</option>');
@@ -128,7 +128,7 @@ function onRolesRetrieved(data){
 
 function resetCueManager(){
 	cueManager.reset();
-	bpPlayer.removeEventListener('onEnterFrame','cueManager.monitorCuePoints');
+	bpPlayer.removeEventListener('onEnterFrame','enterFrameListener');
 }
 
 function prepareCueManager(){
@@ -141,11 +141,16 @@ function prepareCueManager(){
 	
 	selectedLocale=$('#localeCombo option:selected').text();
 	cueManager.setCuesFromSubtitleUsingLocale(selectedLocale);
-	bpPlayer.addEventListener('onEnterFrame','cueManager.monitorCuePoints');
+	bpPlayer.removeEventListener('onEnterFrame','enterFrameListener');
+	bpPlayer.addEventListener('onEnterFrame','enterFrameListener');
 
 	//VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
 	//VP.addEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
 	
+}
+
+function enterFrameListener(event){
+	cueManager.monitorCuePoints(event);
 }
 
 //cuemanagerevent
@@ -158,8 +163,7 @@ function setupPlayCommands(){
 	if (auxList.length <= 0)
 		return;
 
-	for (var i in auxList)
-	{
+	for (var i in auxList){
 		auxList[i].setStartCommand(new onPlaybackCuePoint(auxList[i], bpPlayer));
 		auxList[i].setEndCommand(new onPlaybackCuePoint(null, bpPlayer));
 	}
@@ -210,7 +214,6 @@ $("#localeCombo").change(function() {
  
 //Mouse click on record button
 $("#startRecordingBtn").click(function() {
-	
 	//Hide and show the needed panels
 	$('#exerciseInfoPanel').hide();
 	$('#recordingEndOptions').show();
@@ -301,12 +304,11 @@ function onMicAccessDenied(){
 }
 
 function recordingError(){
-	 hideArrows();
-	 bpPlayer.unattachUserDevices();
-	 bpPlayer.state=bpPlayerStates.PLAY_STATE;
-	 
-	 //TODO
-	 //VP.removeEventListener(StreamEvent.ENTER_FRAME, cueManager.monitorCuePoints);
+	hideArrows();
+	bpPlayer.unattachUserDevices();
+	bpPlayer.state=bpPlayerStates.PLAY_STATE;
+
+	bpPlayer.removeEventListener('onEnterFrame','onEnterFrameListener');
 
 	//Restore the panels
 	$('#exerciseInfoPanel').show();

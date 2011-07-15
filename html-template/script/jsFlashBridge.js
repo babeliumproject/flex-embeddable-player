@@ -16,6 +16,7 @@ function onBabeliaPlayerReady(playerid)
 	ex = {'id':73,'name':'U1MbBtkIGZQ.flv', 'title':'Sintel'};
 	testInit(bplayer, ex);
 
+	/*
 	// Play button
 	$("input[name='btnPlay']").click(
 		function()
@@ -160,4 +161,5 @@ function onBabeliaPlayerReady(playerid)
 			// Comienza a hablar
 			bplayer.startTalking("Usuario", 3);
 		});
+	*/
 }

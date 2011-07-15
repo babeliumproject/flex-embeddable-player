@@ -88,19 +88,14 @@ function cuePointManager(){
 	 *
 	 **/
 	//streamevent
-	this.monitorCuePoints = function(ev){
-		var curTime=ev.time;
-
-		for (var i in this.cpm_cuelist)
-		{
-			if (((curTime - 0.08) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.08)))
-			{
+	this.monitorCuePoints = function(time){
+		var curTime=time;
+		for (var i in this.cpm_cuelist){
+			if (((curTime - 0.08) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.08))){
 				this.cpm_cuelist[i].executeStartCommand();
 				break;
 			}
-
-			if (((curTime - 0.08) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.08)))
-			{
+			if (((curTime - 0.08) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.08))){
 				this.cpm_cuelist[i].executeEndCommand();
 				break;
 			}
@@ -144,7 +139,7 @@ function cuePointManager(){
 	}
 	
 	this.subtitlesRetrievedCallback = function(data){
-		var result=data.Subtitle.getSubtitleLines;
+		var result=data.getSubtitleLines;
 		this.colorDictionary = [];
 		
 		for (var key in result){

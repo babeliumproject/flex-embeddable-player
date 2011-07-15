@@ -2,9 +2,9 @@ function onRecordingSelectedRoleStopCuePoint(VP){
 	this.VP=VP;
 
 	this.execute = function(){
-		VP.setSubtitle("");
-		VP.muteVideo(false);
-		VP.muteRecording(true);
-		VP.highlight = false;
+		this.VP.setSubtitle("");
+		this.VP.muteVideo(false);
+		this.VP.muteRecording(true);
+		this.VP.highlight = false;
 	}
 }

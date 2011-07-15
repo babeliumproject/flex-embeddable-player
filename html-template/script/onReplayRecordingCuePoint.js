@@ -4,11 +4,11 @@ function onReplayRecordingCuePoint(cue, subHolder)
 	this.cue = cue;
 
 	this.execute = function(){
-		if(cue){
-			VP.setSubtitle(cue.text, cue.textColor);
-			var time = cue.endTime - cue.startTime;
-			VP.startTalking(cue.role, time);
+		if(this.cue){
+			this.VP.setSubtitle(this.cue.text, this.cue.textColor);
+			var time = this.cue.endTime - this.cue.startTime;
+			this.VP.startTalking(this.cue.role, time);
 		} else
-			VP.setSubtitle('');
+			this.VP.setSubtitle('');
 	}	
 }

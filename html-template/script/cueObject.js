@@ -12,6 +12,8 @@ function cueObject(subtitleId, startTime, endTime, text, roleId, role, startComm
 	this.endCommand=endCommand;
 	if(textColor == null)
 		this.textColor=defaultParamValues[9];
+	else
+		this.textColor=textColor;
 		
 	this.executeStartCommand = function(){
 		this.startCommand.execute();
