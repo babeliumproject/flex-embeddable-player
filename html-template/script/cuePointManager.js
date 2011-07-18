@@ -139,7 +139,9 @@ function cuePointManager(){
 	}
 	
 	this.subtitlesRetrievedCallback = function(data){
-		var result=data.getSubtitleLines;
+		var srvClass = 'Subtitle';
+		var srvMethod = 'getSubtitleLines';
+		var result=data[srvClass][srvMethod];
 		this.colorDictionary = [];
 		
 		for (var key in result){

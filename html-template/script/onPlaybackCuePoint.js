@@ -13,7 +13,6 @@ function onPlaybackCuePoint(cue, videoPlayer, dg)
 			//if(dg != null && dg.rowCount > index)
 			//	dg.selectedIndex = index;
 		} else {
-			this.VP.subtitles(true);
 			this.VP.setSubtitle('');
 		}
 	}

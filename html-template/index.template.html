@@ -197,7 +197,13 @@ var requiredRevision = ${version_revision};
 			<input type="radio" name="recmethod" checked="checked" value="micOnly">Microphone only<br />
 			<input type="radio" name="recmethod" value="micAndWebcam">Webcam and microphone<br />
 			<br />
-			<input id="startRecordingBtn" class="bbutton" type="submit" name="startRecordingBtn" value="Start Recording">
+			<input class="bbutton" type="submit" id="startRecordingBtn" value="Start Recording" >
+		</div>
+		<div id="recordingEndOptions">
+			<input type="submit" class="bbutton" id="saveResponseBtn" value="Save response"><br />
+			<input type="submit" class="bbutton" id="watchExerciseAndResponseBtn" value="View response"><br />
+			<input type="submit" class="bbutton" id="recordAgainBtn" value="Record again"><br />
+			<input type="submit" class="bbutton" id="abortRecordingBtn" value="Discard response"><br />			
 		</div>
 	</div>
 </div>

@@ -5,6 +5,6 @@ function onRecordingSelectedRoleStopCuePoint(VP){
 		this.VP.setSubtitle("");
 		this.VP.muteVideo(false);
 		this.VP.muteRecording(true);
-		this.VP.highlight = false;
+		this.VP.highlight(false);
 	}
 }

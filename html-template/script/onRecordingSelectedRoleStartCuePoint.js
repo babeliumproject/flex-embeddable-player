@@ -9,6 +9,6 @@ function onRecordingSelectedRoleStartCuePoint(cue, VP){
 		this.VP.muteRecording(false);
 		var time= this.cue.endTime - this.cue.startTime;
 		this.VP.startTalking(this.cue.role, time);
-		this.VP.highlight = true;
+		this.VP.highlight(true);
 	}
 }

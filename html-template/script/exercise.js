@@ -1,6 +1,6 @@
 var bpPlayer = null;
 var cueManager = null;
-var server = 'http://html5babelium/rest/rest';
+var server = 'http://babeliumhtml5/rest/rest';
 
 /**
  * Not needed. The video folders are specified internally
@@ -86,6 +86,8 @@ function prepareExercise()
 }
 
 function onLocalesRetrieved(data){
+	var srvClass = 'Exercise';
+	var srvMethod = 'getExerciseLocales';
 	//console.log("Exercise subtitle languages retrieved");
 	$('#localeCombo').empty();
 
@@ -94,7 +96,8 @@ function onLocalesRetrieved(data){
 		localesReady=false;
 	}else{
 		$('#localeCombo').removeAttr('disabled');
-		$.each(data.getExerciseLocales, function(i,item){
+		var info = data[srvClass][srvMethod];
+		$.each(info, function(i,item){
 			if(item != undefined && item != 'success')
 				$('#localeCombo').append('<option value="'+item+'">'+item+'</option>');
 		});
@@ -106,6 +109,8 @@ function onLocalesRetrieved(data){
 }
 
 function onRolesRetrieved(data){
+	var srvClass = 'ExerciseRole';
+	var srvMethod = 'getExerciseRoles';
 	//console.log("Exercise roles retrieved");
 	$('#roleCombo').empty();
 	characterNames = [];
@@ -116,7 +121,8 @@ function onRolesRetrieved(data){
 	} else {
 		$('#roleCombo').removeAttr('disabled');
 		rolesReady=true;
-		$.each(data.getExerciseRoles, function(i,item){
+		var info = data[srvClass][srvMethod];
+		$.each(info, function(i,item){
 			if(item.characterName != undefined && item.characterName != "NPC"){
 				characterNames.push(item.characterName);
 				$('#roleCombo').append('<option value="'+item.characterName+'">'+item.characterName+'</option>');
@@ -195,67 +201,15 @@ function setupRecordingCommands(){
 
 	for (var i in auxList){
 		if (auxList[i].role != selectedRole){
-			auxList[i].setStartCommand(new RecordingOtherRoleCommand(auxList[i], bpPlayer));
-			auxList[i].setEndCommand(new ShowHideSubtitleCommand(null, bpPlayer));
+			auxList[i].setStartCommand(new onRecordingOtherRoleCuePoint(auxList[i], bpPlayer));
+			auxList[i].setEndCommand(new onPlaybackCuePoint(null, bpPlayer));
 		} else {
-			auxList[i].setStartCommand(new StartRecordingSelectedRoleCommand(auxList[i], bpPlayer));
-			auxList[i].setEndCommand(new StopRecordingSelectedRoleCommand(bpPlayer));
+			auxList[i].setStartCommand(new onRecordingSelectedRoleStartCuePoint(auxList[i], bpPlayer));
+			auxList[i].setEndCommand(new onRecordingSelectedRoleStopCuePoint(bpPlayer));
 		}
 	}
 
 	cueManagerReady=true;
-}
-
-$("#localeCombo").change(function() { 
-	resetCueManager();
-	prepareCueManager();
-	
-});
- 
-//Mouse click on record button
-$("#startRecordingBtn").click(function() {
-	//Hide and show the needed panels
-	$('#exerciseInfoPanel').hide();
-	$('#recordingEndOptions').show();
-
-	// Commands with selected role
-	selectedRole=$('#availableRolesCombo option:selected').text();
-	setupRecordingCommands();
-
-	 // Recording mode
-	 if (micOnly.selected)
-		 bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
-	 else
-		 bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
-
-	 // Prepare arrows
-	 showArrows();
-
-	 // Save statistical data
-	 statisticRecAttempt();
-});
-
-function statisticRecAttempt(){
-	var subtitlesAreUsed=bpPlayer.subtitlePanelVisible;
- 	var subtitleId=cueManager.currentSubtitle;
- 	var roleId=0;
- 	for (var i in roles)
- 	{
- 		if (roles[i].characterName == selectedRole){
- 			roleId=roles[i].id;
- 			break;
- 		}
- 	}
- 
- 	//Ajax call to the appointed REST service
- 	var videoData={'id': 0, 'userSessionId': 0, 'exerciseId' : exerciseId, 'responseAttempt': true, 'responseId': 0, 'incidenceDate':'', 'subtitlesAreUsed': subtitlesAreUsed, 'subtitleId': subtitleId, 'exerciseRoleId': roleId};
-	var srvClass = 'UserVideoHistory';
-	var srvMethod = 'exerciseAttemptResponse';
-	var srvParams = videoData;
-	
-	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-	$.getJSON(srvQueryString, statisticRecSave(data)).error(function(){ alert("Couldn't save the statistic data.") });
- 	
 }
 
 /**
@@ -281,8 +235,8 @@ function onRecordingEnd(){
   */
 //RecordingEvent
 function onRecordingAborted(){
-	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
-	 recordingError();
+	alert("Devices not working");
+	recordingError();
 }
 
  /**
@@ -290,8 +244,8 @@ function onRecordingAborted(){
   */
 //RecordingEvent
 function onCamAccessDenied(){
-	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
-	 recordingError();
+	alert("Devices not working");
+	recordingError();
 }
 
 /**
@@ -299,8 +253,8 @@ function onCamAccessDenied(){
  */
 //RecordingEvent
 function onMicAccessDenied(){
-	 CustomAlert.error(resourceManager.getString('myResources', 'DEVICES_NOT_WORKING'));
-	 recordingError();
+	alert("Devices not working");
+	recordingError();
 }
 
 function recordingError(){
@@ -316,95 +270,17 @@ function recordingError(){
 }
 
 function showArrows(){
-	 bpPlayer.arrows=true;
-	 bpPlayer.setArrows(cueManager.cues2rolearray(), selectedRole);
+	
+	bpPlayer.arrows(true);
+	console.log(cueManager.cues2rolearray());
+	bpPlayer.setArrows(cueManager.cues2rolearray(), selectedRole);
  }
 
 
 function hideArrows(){
-	 bpPlayer.arrows=false;
+	 bpPlayer.arrows(false);
 	 bpPlayer.removeArrows();
 }
-
-// Watch both
-$('#watchExerciseAndResponseBtn').click(function(){
-	 showArrows();
-	 setupRecordingCommands();
-
-	 bpPlayer.videoSource=exerciseName;
-	 bpPlayer.state=bpPlayerStates.PLAY_BOTH_STATE;
-	 bpPlayer.secondSource=recordedFilename
-
-	 bpPlayer.seek=false;
-});
-
-$('#watchResponseBtn').click(function(){
-	showArrows();
-	setupReplayCommands();
-
-	bpPlayer.videoSource=recordedFilename;
-	bpPlayer.state=bpPlayerStates.PLAY_STATE;
-
-	bpPlayer.seek=false;
-});
-
- // Record again
-$('#recordAgainBtn').click(function(){
-	 bpPlayer.videoSource=exerciseName;
-	 setupRecordingCommands();
-	 showArrows();
-	 
-	 // Recording mode
-	 var micOnly = $("input[name='micOnly']:checked").val();
-	 
-	 if (!isEmpty(micOnly))
-		 bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
-	 else
-		 bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
-
-	 // Save this new record attempt
-	 statisticRecAttempt();
-});
-
-$('#abortRecordingBtn').click(function(){
-	 recordingError();
-	 prepareExercise();
-	 resetCueManager();
-});
-
-// Save response
-$('#saveResponseBtn').click(function(){
-	
-	//TODO
-	//Centralized data
-	var userCredCount = 30;
-	var credsEvalRequest= 20;
-
- 	if (userCredCount - credsEvalRequest >= 0)
- 	{
- 		// This must be changed by some function that takes a
- 		// snapshot of the Response video
- 		var responseThumbnail="nothumb.png";
- 		var subtitleId=cueManager.currentSubtitle;
- 		
- 		//Prepare an AJAX call to the appointed service
- 		var responseData={'id':0, 'exerciseId':exerciseId, 'fileIdentifier':recordedFilename, 'isPrivate':true, 'thumbnailUri':responseThumbnail, 'source':'Red5', 'duration':bpPlayer.duration, 'addingDate':new Date(), 'ratingAmount':0, 'characterName':selectedRole, 'transcriptionId':0, 'subtitleId':subtitleId};
- 		var srvClass = 'Response';
- 		var srvMethod = 'saveResponse';
- 		var srvParams = responseData;
- 		
- 		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
- 		$.getJSON(srvQueryString, saveResponseCallback(data)).error(function(){ alert("Couldn't save your response.") });
-
- 		//Restore the panels
- 		$('#exerciseInfoPanel').show();
- 		$('#recordingEndOptions').hide();
-
- 		resetComponent();
- 	} else {
- 		$('#insufficientCreditsDialog').dialog('open');
- 	}
-});
 
 function saveResponseCallback(data){
 	
@@ -447,4 +323,153 @@ function onVideoStartedPlaying(){
 		 if (exerciseId > 0 && subtitleId > 0)
 			 $.getJSON(srvQueryString, function(data){ /*Do sth here*/ }).error(function(){ alert("Couldn't save the statistic data.") });
 	 }
- }
+}
+
+function statisticRecAttempt(){
+	var subtitlesAreUsed=bpPlayer.subtitlePanelVisible;
+ 	var subtitleId=cueManager.currentSubtitle;
+ 	var roleId=0;
+ 	for (var i in roles)
+ 	{
+ 		if (roles[i].characterName == selectedRole){
+ 			roleId=roles[i].id;
+ 			break;
+ 		}
+ 	}
+ 
+ 	//Ajax call to the appointed REST service
+ 	var videoData={'id': 0, 'userSessionId': 0, 'exerciseId' : exerciseId, 'responseAttempt': true, 'responseId': 0, 'incidenceDate':'', 'subtitlesAreUsed': subtitlesAreUsed, 'subtitleId': subtitleId, 'exerciseRoleId': roleId};
+	var srvClass = 'UserVideoHistory';
+	var srvMethod = 'exerciseAttemptResponse';
+	var srvParams = base64_encode(JSON.stringify(videoData));
+	
+	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	
+	
+	$.getJSON(srvQueryString, function(data){
+		saveResponseCallback(data);
+	}).error(function(){ 
+		alert("Couldn't save the statistic data.") 
+	});
+}
+
+$(document).ready(function(){
+	
+	$('#recordingEndOptions').hide();
+	
+	$("#localeCombo").change(function() { 
+		resetCueManager();
+		prepareCueManager();
+		
+	});
+
+	//Mouse click on record button
+	$('#startRecordingBtn').click(function() {
+	
+		//Hide and show the needed panels
+		$('#exerciseInfoPanel').hide();
+		$('#recordingEndOptions').show();
+
+		// Commands with selected role
+		selectedRole=$('#roleCombo option:selected').text();
+		setupRecordingCommands();
+
+		// Recording mode
+		if($("input[name=recmethod]:checked").val() == 'micOnly'){
+			console.log("Record method: microphone only");
+			bpPlayer.state(bpPlayerStates.RECORD_MIC_STATE);
+		}else{
+			console.log("Record method: microphone and webcam");
+			bpPlayer.state(bpPlayerStates.RECORD_BOTH_STATE);
+		}
+		// Prepare arrows
+		showArrows();
+
+		// Save statistical data
+		//TODO
+		//statisticRecAttempt();
+	});
+
+
+	// Watch both
+	$('#watchExerciseAndResponseBtn').click(function(){
+		showArrows();
+		setupRecordingCommands();
+
+		bpPlayer.videoSource=exerciseName;
+		bpPlayer.state=bpPlayerStates.PLAY_BOTH_STATE;
+		bpPlayer.secondSource=recordedFilename
+
+		bpPlayer.seek=false;
+	});
+
+	$('#watchResponseBtn').click(function(){
+		showArrows();
+		setupReplayCommands();
+
+		bpPlayer.videoSource=recordedFilename;
+		bpPlayer.state=bpPlayerStates.PLAY_STATE;
+
+		bpPlayer.seek=false;
+	});
+
+	// Record again
+	$('#recordAgainBtn').click(function(){
+		bpPlayer.videoSource=exerciseName;
+		setupRecordingCommands();
+		showArrows();
+	 
+		// Recording mode
+		var micOnly = $("input[name='micOnly']:checked").val();
+	 
+		if (!isEmpty(micOnly))
+			bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
+		else
+			bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
+
+		// Save this new record attempt
+		statisticRecAttempt();
+	});
+
+	$('#abortRecordingBtn').click(function(){
+		recordingError();
+		prepareExercise();
+		resetCueManager();
+	});
+
+	// Save response
+	$('#saveResponseBtn').click(function(){
+	
+		//TODO
+		//Centralized data
+		var userCredCount = 30;
+		var credsEvalRequest= 20;
+
+		if (userCredCount - credsEvalRequest >= 0){
+			// This must be changed by some function that takes a
+			// snapshot of the Response video
+			var responseThumbnail="nothumb.png";
+			var subtitleId=cueManager.currentSubtitle;
+ 		
+			//Prepare an AJAX call to the appointed service
+			var responseData={'id':0, 'exerciseId':exerciseId, 'fileIdentifier':recordedFilename, 'isPrivate':true, 'thumbnailUri':responseThumbnail, 'source':'Red5', 'duration':bpPlayer.duration, 'addingDate':new Date(), 'ratingAmount':0, 'characterName':selectedRole, 'transcriptionId':0, 'subtitleId':subtitleId};
+			var srvClass = 'Response';
+			var srvMethod = 'saveResponse';
+			var srvParams = responseData;
+ 		
+			var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+			$.getJSON(srvQueryString, saveResponseCallback(data)).error(function(){ alert("Couldn't save your response.") });
+
+			//Restore the panels
+			$('#exerciseInfoPanel').show();
+			$('#recordingEndOptions').hide();
+
+			resetComponent();
+		} else {
+			$('#insufficientCreditsDialog').dialog('open');
+		}
+	});
+
+});
+
+

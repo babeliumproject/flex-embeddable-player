@@ -9,6 +9,6 @@ function onRecordingOtherRoleCuePoint(cue, VP)
 			this.VP.setSubtitle(this.cue.text, this.cue.textColor);
 			var time = this.cue.endTime - this.cue.startTime;
 			this.VP.startTalking(this.cue.role, time);
-			this.VP.highlight = false;
+			this.VP.highlight(false);
 	}
 }

@@ -197,10 +197,10 @@ package control
 		
 		private function setArrows(arrows:Array, role:String):void
 		{
-			var aux:ArrayCollection = new ArrayCollection();
+			var aux:ArrayCollection = new ArrayCollection(arrows);
 			
-			for ( var i:int = 0; i < arrows.length; i++ )
-				aux.addItem({time: arrows[i].time, role: arrows[i].role});
+			//for ( var i:int = 0; i < arrows.length; i++ )
+			//	aux.addItem({time: arrows[i].startTime, role: arrows[i].role});
 			
 			VP.setArrows(aux, role);
 		}

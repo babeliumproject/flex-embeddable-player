@@ -10,6 +10,8 @@ package modules.videoPlayer
 	import flash.geom.Matrix;
 	import flash.media.*;
 	import flash.net.*;
+	import flash.system.Security;
+	import flash.system.SecurityPanel;
 	import flash.utils.*;
 	
 	import model.DataModel;
@@ -45,7 +47,7 @@ package modules.videoPlayer
 	
 	import spark.components.Button;
 	import spark.primitives.BitmapImage;
-
+	
 	import view.PrivacyRights;
 
 	public class VideoPlayerBabelia extends VideoPlayer
