@@ -68,8 +68,6 @@
 				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
 				VP.stopVideo();
 				VP.state=VideoPlayerBabelia.PLAY_STATE;
-				
-				Security.showSettings(SecurityPanel.PRIVACY);
 
 				//videoId=FlexGlobals.topLevelApplication.parameters.videoId;
 

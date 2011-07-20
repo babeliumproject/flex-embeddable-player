@@ -87,7 +87,7 @@ var requiredRevision = ${version_revision};
 			"allowScriptAccess","sameDomain",
 			"type", "application/x-shockwave-flash",
 			"pluginspage", "http://www.adobe.com/go/getflashplayer",
-			"wmode", "transparent"
+			"wmode", "window"
 		);
 	} else if (hasRequestedVersion) {
 		// if we've detected an acceptable version
@@ -105,7 +105,7 @@ var requiredRevision = ${version_revision};
 				"allowScriptAccess","sameDomain",
 				"type", "application/x-shockwave-flash",
 				"pluginspage", "http://www.adobe.com/go/getflashplayer",
-				"wmode", "transparent"
+				"wmode", "window"
 		);
 	  } else {  // flash is too old or we can't detect the plugin
 	    var alternateContent = 'Alternate HTML content should be placed here. '

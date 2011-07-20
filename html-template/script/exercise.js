@@ -200,10 +200,13 @@ function setupRecordingCommands(){
 		return;
 
 	for (var i in auxList){
+		
 		if (auxList[i].role != selectedRole){
+			console.log('Not your role: '+auxList[i].role + '/' + selectedRole);
 			auxList[i].setStartCommand(new onRecordingOtherRoleCuePoint(auxList[i], bpPlayer));
 			auxList[i].setEndCommand(new onPlaybackCuePoint(null, bpPlayer));
 		} else {
+			console.log('Your role: '+auxList[i].role + '/' + selectedRole);
 			auxList[i].setStartCommand(new onRecordingSelectedRoleStartCuePoint(auxList[i], bpPlayer));
 			auxList[i].setEndCommand(new onRecordingSelectedRoleStopCuePoint(bpPlayer));
 		}
@@ -272,7 +275,6 @@ function recordingError(){
 function showArrows(){
 	
 	bpPlayer.arrows(true);
-	console.log(cueManager.cues2rolearray());
 	bpPlayer.setArrows(cueManager.cues2rolearray(), selectedRole);
  }
 

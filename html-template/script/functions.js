@@ -1,7 +1,10 @@
 /**
- * This functions are part of the PHP.js library.
- * Visit http://phpjs.org to get the whole library
+ * This functions belong to the PHP.js library.
+ * 
+ * Check out their website for more information: http://phpjs.org/pages/home
+ * 
  */
+
 function base64_encode (data) {
     // http://kevin.vanzonneveld.net
     // +   original by: Tyler Akins (http://rumkin.com)
@@ -110,4 +113,3 @@ function utf8_encode (argString) {
 
     return utftext;
 }
-

@@ -39,6 +39,7 @@ package control
 			addCB("enableControls",VP.enableControls);
 			addCB("endVideo",VP.endVideo);
 			addCB("muteRecording",VP.muteRecording);
+			addCB("muteVideo",VP.muteVideo);
 			addCB("pauseVideo",VP.pauseVideo);
 			addCB("playVideo",VP.playVideo);
 			addCB("removeArrows",VP.removeArrows);
@@ -49,6 +50,8 @@ package control
 			addCB("startTalking",VP.startTalking);
 			addCB("stopVideo",VP.stopVideo);
 			addCB("toggleControls",VP.toggleControls);
+			addCB("unattachUserDevices",VP.unattachUserDevices);
+			
 			
 			// Properties
 			addCB("arrows",arrows);
@@ -64,7 +67,9 @@ package control
 			addCB("subtitles",subtitles);
 			addCB("subtitlingControls",subtitlingControls);
 			addCB("videoSource",videoSource);
+			addCB("highlight",highlight);
 			
+			//Events
 			addCB("addEventListener",addEventListener);
 			addCB("removeEventListener",removeEventListener);
 		}
@@ -193,6 +198,10 @@ package control
 		private function videoSource(video:String):void
 		{
 			VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
+		}
+		
+		private function highlight(flag:Boolean):void{
+			VP.highlight = flag;
 		}
 		
 		private function setArrows(arrows:Array, role:String):void
