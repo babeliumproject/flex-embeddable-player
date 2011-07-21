@@ -29,7 +29,15 @@ var recordedFilename;
 function testInit(videoPlayer, ex){
 	bpPlayer = videoPlayer;
 	cueManager = new cuePointManager();
+	setupVideoPlayer();
 	onExerciseSelected(ex);
+}
+
+function setupVideoPlayer(){
+	//bpPlayer.addEventListener('onVideoPlayerReady','videoPlayerReadyListener');
+	//bpPlayer.addEventListener('onVideoStartedPlaying','videoStartedPlayingListener');
+	bpPlayer.addEventListener('onRecordingAborted', 'recordingAbortedListener');
+	bpPlayer.addEventListener('onRecordingFinished','recordingFinishedListener');
 }
 
 function onExerciseSelected(exercise){
@@ -176,7 +184,7 @@ function setupPlayCommands(){
 
 	cueManagerReady=true;
 	
-	onVideoStartedPlaying(null);
+	videoStartedPlayingListener(null);
 }
 
 function setupReplayCommands(){
@@ -202,11 +210,9 @@ function setupRecordingCommands(){
 	for (var i in auxList){
 		
 		if (auxList[i].role != selectedRole){
-			console.log('Not your role: '+auxList[i].role + '/' + selectedRole);
 			auxList[i].setStartCommand(new onRecordingOtherRoleCuePoint(auxList[i], bpPlayer));
 			auxList[i].setEndCommand(new onPlaybackCuePoint(null, bpPlayer));
 		} else {
-			console.log('Your role: '+auxList[i].role + '/' + selectedRole);
 			auxList[i].setStartCommand(new onRecordingSelectedRoleStartCuePoint(auxList[i], bpPlayer));
 			auxList[i].setEndCommand(new onRecordingSelectedRoleStopCuePoint(bpPlayer));
 		}
@@ -219,43 +225,26 @@ function setupRecordingCommands(){
  * On recording end successfully
  */
 //RecordingEvent
-function onRecordingEnd(){
-	 // Store last recorded response's filename
-	 recordedFilename=e.fileName;
+function recordingFinishedListener(recFilename){
+	// Store last recorded response's filename
+	recordedFilename=recFilename;
+	console.log("Rec file name: "+recFilename);
 
-	 // Set the videoplayer to playback both the exercise and the
-	 // last response.
-	 bpPlayer.videoSource=exerciseName;
-	 bpPlayer.state=VideoPlayerBabelia.PLAY_BOTH_STATE;
-	 bpPlayer.secondSource=recordedFilename;
+	// Set the videoplayer to playback both the exercise and the
+	// last response.
+	bpPlayer.videoSource(exerciseName);
+	bpPlayer.state(bpPlayerStates.PLAY_BOTH_STATE);
+	bpPlayer.secondSource(recordedFilename);
 
-	 bpPlayer.seek=false;
-	 bpPlayer.stopVideo();
+	bpPlayer.seek(false);
+	bpPlayer.stopVideo();
 }
 
  /**
   * On recording aborted
   */
 //RecordingEvent
-function onRecordingAborted(){
-	alert("Devices not working");
-	recordingError();
-}
-
- /**
-  * On cam access denied
-  */
-//RecordingEvent
-function onCamAccessDenied(){
-	alert("Devices not working");
-	recordingError();
-}
-
-/**
- * On mic access denied
- */
-//RecordingEvent
-function onMicAccessDenied(){
+function recordingAbortedListener(){
 	alert("Devices not working");
 	recordingError();
 }
@@ -263,7 +252,7 @@ function onMicAccessDenied(){
 function recordingError(){
 	hideArrows();
 	bpPlayer.unattachUserDevices();
-	bpPlayer.state=bpPlayerStates.PLAY_STATE;
+	bpPlayer.state(bpPlayerStates.PLAY_STATE);
 
 	bpPlayer.removeEventListener('onEnterFrame','onEnterFrameListener');
 
@@ -309,7 +298,7 @@ function saveResponseCallback(data){
  }
 
 //Videplyarevent
-function onVideoStartedPlaying(){
+function videoStartedPlayingListener(){
 	 exerciseStartedPlaying=true;
 	 if (/*DataModel.getInstance().isLoggedIn &&*/ cueManagerReady && rolesReady && localesReady && exerciseStartedPlaying)
 	 {
@@ -378,10 +367,8 @@ $(document).ready(function(){
 
 		// Recording mode
 		if($("input[name=recmethod]:checked").val() == 'micOnly'){
-			console.log("Record method: microphone only");
 			bpPlayer.state(bpPlayerStates.RECORD_MIC_STATE);
 		}else{
-			console.log("Record method: microphone and webcam");
 			bpPlayer.state(bpPlayerStates.RECORD_BOTH_STATE);
 		}
 		// Prepare arrows
@@ -398,36 +385,35 @@ $(document).ready(function(){
 		showArrows();
 		setupRecordingCommands();
 
-		bpPlayer.videoSource=exerciseName;
-		bpPlayer.state=bpPlayerStates.PLAY_BOTH_STATE;
-		bpPlayer.secondSource=recordedFilename
+		bpPlayer.videoSource(exerciseName);
+		bpPlayer.state(bpPlayerStates.PLAY_BOTH_STATE);
+		bpPlayer.secondSource(recordedFilename);
 
-		bpPlayer.seek=false;
+		bpPlayer.seek(false);
 	});
 
 	$('#watchResponseBtn').click(function(){
 		showArrows();
 		setupReplayCommands();
 
-		bpPlayer.videoSource=recordedFilename;
-		bpPlayer.state=bpPlayerStates.PLAY_STATE;
+		bpPlayer.videoSource(recordedFilename);
+		bpPlayer.state(bpPlayerStates.PLAY_STATE);
 
-		bpPlayer.seek=false;
+		bpPlayer.seek(false);
 	});
 
 	// Record again
 	$('#recordAgainBtn').click(function(){
-		bpPlayer.videoSource=exerciseName;
+		bpPlayer.videoSource(exerciseName);
 		setupRecordingCommands();
 		showArrows();
 	 
 		// Recording mode
-		var micOnly = $("input[name='micOnly']:checked").val();
-	 
-		if (!isEmpty(micOnly))
-			bpPlayer.state=bpPlayerStates.RECORD_MIC_STATE;
-		else
-			bpPlayer.state=bpPlayerStates.RECORD_BOTH_STATE;
+		if($("input[name=recmethod]:checked").val() == 'micOnly'){
+			bpPlayer.state(bpPlayerStates.RECORD_MIC_STATE);
+		}else{
+			bpPlayer.state(bpPlayerStates.RECORD_BOTH_STATE);
+		}
 
 		// Save this new record attempt
 		statisticRecAttempt();

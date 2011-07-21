@@ -28,7 +28,7 @@ function cueObject(subtitleId, startTime, endTime, text, roleId, role, startComm
 	}
 		
 	this.setEndCommand = function(command){
-		this.endCommand=command;
+		this.endCommand = command;
 	}
 
 }

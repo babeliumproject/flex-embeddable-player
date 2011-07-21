@@ -6,6 +6,8 @@ package control
 	import model.DataModel;
 	
 	import modules.videoPlayer.VideoPlayerBabelia;
+	import modules.videoPlayer.events.VideoPlayerEvent;
+	import modules.videoPlayer.events.babelia.RecordingEvent;
 	import modules.videoPlayer.events.babelia.StreamEvent;
 	
 	import mx.collections.ArrayCollection;
@@ -101,9 +103,6 @@ package control
 			ExternalInterface.call("onBabeliaPlayerReady", ExternalInterface.objectID);
 		}
 		
-		public function onEnterFrame(e:StreamEvent):void{
-			ExternalInterface.call(jsListeners['onEnterFrame'], e.time);
-		}
 		
 		/**
 		 * Resize dimensions
@@ -125,7 +124,25 @@ package control
 				height 
 			);
 		}
-
+		
+		/**
+		 * Event handlers
+		 */
+		public function onEnterFrame(e:StreamEvent):void{
+			ExternalInterface.call(jsListeners['onEnterFrame'], e.time);
+		}
+		
+		public function onRecordingAborted(e:RecordingEvent):void{
+			ExternalInterface.call(jsListeners['onRecordingAborted']);
+		}
+		
+		public function onRecordingFinished(e:RecordingEvent):void{
+			ExternalInterface.call(jsListeners['onRecordingFinished'], e.fileName);
+		}
+		
+		public function onVideoStartedPlaying(e:VideoPlayerEvent):void{
+			ExternalInterface.call(jsListeners['onVideoStartedPlaying']);
+		}
 		
 		/*************************
 		 * Tunneling VP Properties
@@ -214,14 +231,32 @@ package control
 			VP.setArrows(aux, role);
 		}
 		
+		
 		private function addEventListener(event:String, listener:String):void{
+			
+			if(!listener)
+				return;
 			
 			switch(event){
 				case 'onEnterFrame':
-					if(listener){
-						jsListeners['onEnterFrame'] = listener;
-						VP.addEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
-					}
+					jsListeners['onEnterFrame'] = listener;
+					VP.addEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
+					break;
+				case 'onRecordingAborted':
+					jsListeners['onRecordingAborted'] = listener;
+					VP.addEventListener(RecordingEvent.ABORTED, onRecordingAborted);
+					break;
+				case 'onRecordingFinished':
+					jsListeners['onRecordingFinished'] = listener;
+					VP.addEventListener(RecordingEvent.END, onRecordingFinished);
+					break;
+				case 'onVideoStartedPlaying':
+					jsListeners['onVideoStartedPlaying'] = listener;
+					VP.addEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, onVideoStartedPlaying);
+					break;
+				case 'onVideoPlayerReady':
+					//jsListeners['onVideoPlayerReady'] = listener;
+					//VP.addEventListener(VideoPlayerEvent.CONNECTED, onVideoPlayerReady);
 					break;
 				default:
 					break;
@@ -229,12 +264,31 @@ package control
 		}
 		
 		private function removeEventListener(event:String, listener:String):void{
+			
+			if(!listener)
+				return;		
+			
 			switch(event){
 				case 'onEnterFrame':
 					if(jsListeners['onEnterFrame'])
 						delete jsListeners['onEnterFrame'];
 					VP.removeEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
 					break;
+				case 'onRecordingAborted':
+					if(jsListeners['onRecordingAborted'])
+						delete jsListeners['onRecordingAborted'];
+					VP.removeEventListener(RecordingEvent.ABORTED, onRecordingAborted);
+					break;
+				case 'onRecordingFinished':
+					if(jsListeners['onRecordingFinished'])
+						delete jsListeners['onRecordingFinished'];
+					VP.removeEventListener(RecordingEvent.END, onRecordingFinished);
+					break;
+				case 'onVideoStartedPlaying':
+					if(jsListeners['onVideoStartedPlaying'])
+						delete jsListeners['onVideoStartedPlaying'];
+					VP.removeEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, onVideoStartedPlaying);
+					break;	
 				default:
 					break;
 			}

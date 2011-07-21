@@ -6,9 +6,10 @@ function onRecordingOtherRoleCuePoint(cue, VP)
 
 	this.execute = function()
 	{
-			this.VP.setSubtitle(this.cue.text, this.cue.textColor);
-			var time = this.cue.endTime - this.cue.startTime;
-			this.VP.startTalking(this.cue.role, time);
-			this.VP.highlight(false);
+		var time = this.cue.endTime - this.cue.startTime;
+		this.VP.setSubtitle(this.cue.text, this.cue.textColor);
+		this.VP.startTalking(this.cue.role, time);
+		this.VP.highlight(false);
+		//console.log("Start Other Role");
 	}
 }

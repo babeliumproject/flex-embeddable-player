@@ -32,6 +32,7 @@ package modules.videoPlayer
 	import modules.videoPlayer.events.babelia.VideoPlayerBabeliaEvent;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.controls.Image;
 	import mx.controls.Text;
 	import mx.core.Application;
