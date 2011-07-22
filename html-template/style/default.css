@@ -113,3 +113,43 @@ input.btext2
 	height: 20px;
 	padding-left: 10px;
 }
+
+.playbackControls{
+	display: block;
+	list-style-type: none;
+}
+
+.playbackControls li{
+	float: left;
+	background: -webkit-gradient(linear, left top, left bottom, from(rgba(255,255,255,1.0)), to(rgba(216,216,216,1.0)));
+	background: -moz-linear-gradient(top, rgba(255,255,255,1.0), rgba(216,216,216,1.0));
+}
+
+.recordingControls{
+	display: block;
+	list-style-type: none;
+}
+
+.controlBtn{
+	height: 18px;
+	width: 18px;
+	text-align: center;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgba(167,167,167,1.0);
+}
+
+.controlBtn:hover{
+	background: -webkit-gradient(linear, left top, left bottom, from(rgba(158,58,255,1.0)), to(rgba(68,58,216,1.0)));
+	background: -moz-linear-gradient(top, rgba(158,58,255,1.0), rgba(68,58,216,1.0));
+}
+
+.playPauseBtn{
+	border-color:transparent transparent transparent #000000;
+	border-style:solid;
+	border-width:6px 0 6px 10px;
+	float:left;
+	height:0;
+	text-indent:-9999px;
+	width:0;
+}

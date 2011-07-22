@@ -48,8 +48,6 @@
 			import mx.controls.Alert;
 			import mx.core.FlexGlobals;
 			import mx.utils.ObjectUtil;
-			
-			import view.CustomAlert;
 
 			private var videoId:String=null;
 			

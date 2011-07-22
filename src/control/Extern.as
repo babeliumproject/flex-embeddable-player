@@ -11,10 +11,8 @@ package control
 	import modules.videoPlayer.events.babelia.StreamEvent;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
-	
-	import view.CustomAlert;
+
 	
 	public class Extern
 	{

@@ -32,10 +32,8 @@ package modules.videoPlayer
 	import modules.videoPlayer.events.babelia.VideoPlayerBabeliaEvent;
 	
 	import mx.collections.ArrayCollection;
-	import mx.controls.Alert;
 	import mx.controls.Image;
 	import mx.controls.Text;
-	import mx.core.Application;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
 	import mx.effects.AnimateProperty;
@@ -43,6 +41,7 @@ package modules.videoPlayer
 	import mx.events.EffectEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
+	import mx.validators.EmailValidator;
 	
 	import skins.OverlayPlayButtonSkin;
 	
@@ -184,7 +183,10 @@ package modules.videoPlayer
 
 			_micImage = new Image();
 			
-			_micImage.source = DataModel.getInstance().uploadDomain+"resources/images/vp_micWatermark.png";
+			[Embed(source="../../resources/images/vp_micWatermark.png")]
+			var micWatermark:Class;
+			
+			_micImage.source = micWatermark;
 			_micImage.height = 128;
 			_micImage.width = 128;
 			_micImage.alpha = 0.7;
