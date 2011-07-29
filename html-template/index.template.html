@@ -21,15 +21,16 @@ Learn more about Flex at http://flex.org
 <title>${title}</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js" language="javascript"></script>
 <script src="script/AC_OETags.js" language="javascript"></script>
-<script src="script/jsFlashBridge.js" language="javascript"></script>
 <script src="script/functions.js" language="javascript"></script>
 <script src="script/exercise.js" language="javascript"></script>
+<script src="script/services.js" language="javascript"></script>
 <script src="script/cuePointManager.js" language="javascript"></script>
 <script src="script/cueObject.js" language="javascript"></script>
 <script src="script/onPlaybackCuePoint.js" language="javascript"></script>
 <script src="script/onRecordingOtherRoleCuePoint.js" language="javascript"></script>
 <script src="script/onRecordingSelectedRoleStartCuePoint.js" language="javascript"></script>
 <script src="script/onRecordingSelectedRoleStopCuePoint.js" language="javascript"></script>
+<script src="script/bootstrap.js" language="javascript"></script>
 <link rel="stylesheet" type="text/css" href="style/default.css" />
 
 <!--  BEGIN Browser History required section -->
@@ -56,43 +57,71 @@ var requiredRevision = ${version_revision};
 	<div id="title">
 		<img src="resources/images/logo.png" alt="Logo Babelium Project"/>
 	</div>
-	<div id="bplayer-div">Título del vídeo:<br/>
+	<div id="bplayer-div">
+	Título del vídeo:<br/>
 	<script language="JavaScript" type="text/javascript">
-	<!--
-	// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
-	var hasProductInstall = DetectFlashVer(6, 0, 65);
 	
-	// Version check based upon the values defined in globals
-	var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
+		bpConfig = {};
 	
-	if ( hasProductInstall && !hasRequestedVersion ) {
-		// DO NOT MODIFY THE FOLLOWING FOUR LINES
-		// Location visited after installation is complete if installation is required
-		var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
-		var MMredirectURL = window.location;
-	    document.title = document.title.slice(0, 47) + " - Flash Player Installation";
-	    var MMdoctitle = document.title;
+		function makeUUID() {
+			// http://www.ietf.org/rfc/rfc4122.txt
+			// section 4.4 (Algorithms for Creating a UUID from Truly Random or Pseudo-Random Number)
+			// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				return v.toString(16);
+			}).toUpperCase();
+		}
+		
+		function getSessionID () {
+			//http://www.elated.com/articles/javascript-and-cookies/
+		  	var results = document.cookie.match ( '(^|;) ?' + 'PHPSESSID' + '=([^;]*)(;|$)' );
+
+		  	if ( results )
+		    	return ( unescape ( results[2] ) );
+		  	else
+		    	return null;
+		}
+		
+		bpConfig.uuid = makeUUID();
+		bpConfig.endpoint = 'rest.php';
+		bpConfig.sessionID = getSessionID();
 	
-		AC_FL_RunContent(
-			"src", "playerProductInstall",
-			"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
-			"width", "${width}",
-			"height", "${height}",
-			"align", "middle",
-			"id", "${application}",
-			"quality", "high",
-			"bgcolor", "${bgcolor}",
-			"name", "${application}",
-			"FlashVars", "",
-			"allowScriptAccess","sameDomain",
-			"type", "application/x-shockwave-flash",
-			"pluginspage", "http://www.adobe.com/go/getflashplayer",
-			"wmode", "window"
-		);
-	} else if (hasRequestedVersion) {
-		// if we've detected an acceptable version
-		// embed the Flash Content SWF when all tests are passed
-		AC_FL_RunContent(
+		<!--
+		// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
+		var hasProductInstall = DetectFlashVer(6, 0, 65);
+	
+		// Version check based upon the values defined in globals
+		var hasRequestedVersion = DetectFlashVer(requiredMajorVersion, requiredMinorVersion, requiredRevision);
+	
+		if ( hasProductInstall && !hasRequestedVersion ) {
+			// DO NOT MODIFY THE FOLLOWING FOUR LINES
+			// Location visited after installation is complete if installation is required
+			var MMPlayerType = (isIE == true) ? "ActiveX" : "PlugIn";
+			var MMredirectURL = window.location;
+	    	document.title = document.title.slice(0, 47) + " - Flash Player Installation";
+	    	var MMdoctitle = document.title;
+	
+			AC_FL_RunContent(
+				"src", "playerProductInstall",
+				"FlashVars", "MMredirectURL="+MMredirectURL+'&MMplayerType='+MMPlayerType+'&MMdoctitle='+MMdoctitle+"",
+				"width", "${width}",
+				"height", "${height}",
+				"align", "middle",
+				"id", "${application}",
+				"quality", "high",
+				"bgcolor", "${bgcolor}",
+				"name", "${application}",
+				"FlashVars", "",
+				"allowScriptAccess","sameDomain",
+				"type", "application/x-shockwave-flash",
+				"pluginspage", "http://www.adobe.com/go/getflashplayer",
+				"wmode", "window"
+			);
+		} else if (hasRequestedVersion) {
+			// if we've detected an acceptable version
+			// embed the Flash Content SWF when all tests are passed
+			AC_FL_RunContent(
 				"src", "${swf}",
 				"width", "${width}",
 				"height", "${height}",
@@ -106,13 +135,13 @@ var requiredRevision = ${version_revision};
 				"type", "application/x-shockwave-flash",
 				"pluginspage", "http://www.adobe.com/go/getflashplayer",
 				"wmode", "window"
-		);
-	  } else {  // flash is too old or we can't detect the plugin
-	    var alternateContent = 'Alternate HTML content should be placed here. '
-	  	+ 'This content requires the Adobe Flash Player. '
-	   	+ '<a href=http://www.adobe.com/go/getflash/>Get Flash</a>';
-	    document.write(alternateContent);  // insert non-flash content
-	  }
+			);
+	  	} else {  // flash is too old or we can't detect the plugin
+	    	var alternateContent = 'Alternate HTML content should be placed here. '
+	  							 + 'This content requires the Adobe Flash Player. '
+	   							 + '<a href=http://www.adobe.com/go/getflash/>Get Flash</a>';
+	    	document.write(alternateContent);  // insert non-flash content
+	  	}
 	// -->
 	</script>
 	<noscript>
@@ -136,59 +165,8 @@ var requiredRevision = ${version_revision};
 		</object>
 	</noscript>
 	</div>
-
-	<!--
-	<div id="right-column">
-		<span class="title">Controles del reproductor:</span>
-		<div class="form-c">
-			<input type="button" name="btnPlay" value="Play" class="bbutton"/>
-			<input type="button" name="btnPause" value="Pause" class="bbutton"/>
-			<input type="button" name="btnStop" value="Stop" class="bbutton"/>
-			<input type="text" name="txtSeek" value="0" class="btext"/>
-		</div>
-		<span class="title">Opciones del reproductor:</span>
-		<div class="form-c">
-			<table cellpadding="0" cellspacing="0" border="0">
-				<tr><td><strong>Subtítulos:</strong></td>
-					<td><input type="radio" name="raSubs" value="1" checked>Enable</input></td>
-					<td><input type="radio" name="raSubs" value="0">Disable</input></td>
-				</tr>
-				<tr><td><strong>Roles:</strong></td>
-					<td><input type="radio" name="raRoles" value="1">Enable</input></td>
-					<td><input type="radio" name="raRoles" value="0" checked>Disable</input></td>
-				</tr>
-				<tr><td><strong>Controles de subtitulación:</strong></td>
-					<td><input type="radio" name="raCtrlSubs" value="1">Enable</input></td>
-					<td><input type="radio" name="raCtrlSubs" value="0" checked>Disable</input></td>
-				</tr>
-			</table>
-		</div>
-		<span class="title">Vídeos en reproducción:</span>
-		<div class="form-c">
-			<table cellpadding="0" cellspacing="0" border="0">
-				<tr><td><strong>Selecciona número de vídeos:</strong></td>
-					<td><input type="radio" name="raNumVid" value="1" checked>1</input></td>
-					<td><input type="radio" name="raNumVid" value="0">2</input></td>
-				</tr>
-			</table>
-			<table width="80%" cellpadding="0" cellspacing="5" border="0">
-			<tr><td><strong>Video1:</strong></td><td><input type="text" name="txtVid1" class="btext2"/></td></tr>
-			<tr><td><strong>Video2:</strong></td><td><input type="text" name="txtVid2" class="btext2"/></td></tr>
-			</table>
-		</div>
-		<span class="title">Control de Roles:</span>
-		<div class="form-c">
-			<table cellpadding="0" cellspacing="0" border="0">
-				<tr><td><strong>Mostrar flechas:</strong></td>
-					<td><input type="radio" name="raFlechas" value="1">Si</input></td>
-					<td><input type="radio" name="raFlechas" value="0" checked>No</input></td>
-				</tr>
-			</table>
-		</div>
-	</div>
-	-->
 	
-	
+	<!-- //Not needed for now
 	<div id="videoHolder">
 		<ul class="playbackControls">
 			<li class="controlBtn"><span class="playPauseBtn"></span></li>
@@ -204,6 +182,7 @@ var requiredRevision = ${version_revision};
 			<li class="rolePanel"></li>
 		</ul>
 	</div>
+	-->
 	
 	
 	

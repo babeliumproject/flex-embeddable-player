@@ -11,17 +11,15 @@ body, td
 	font-size: 13px;
 }
 
-div, input /** Layers will be rounded **/
+/*
+div, input
 {
 	border: 0px;
-	/* For Mozilla */
 	-moz-border-radius:10px;
-	/* For Konqueror and Safari */
 	-khtml-border-radius:10px;
 	-webkit-border-radius:10px;
-	/* Normal form */
 	border-radius:10px; 	
-}
+}*/
 
 #main {
 	width: 1000;
@@ -42,6 +40,7 @@ div, input /** Layers will be rounded **/
 	border: 1px solid black;
 }
 
+/*
 #bplayer-div {
 	width: 505px;
 	margin-left: 20px;
@@ -49,6 +48,12 @@ div, input /** Layers will be rounded **/
 	padding: 10px;
 	float: left;
 	border: 1px solid black;
+}
+*/
+
+#bplayer-div{
+	padding: 16px;
+	float: left;
 }
 
 span.title, #bplayer-div, input.bbutton
