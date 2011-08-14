@@ -28,7 +28,7 @@ package model
 		[Bindable] public var netConnectOngoingAttempt:Boolean;
 		
 		//Exercise uploading related data
-		[Bindable] public var server: String = "babelia";
+		[Bindable] public var server: String = "localhost";
 		[Bindable] public var red5Port: String = "1935";
 		[Bindable] public var uploadDomain:String = "http://"+server+"/";
 		[Bindable] public var streamingResourcesPath:String = "rtmp://" + server + "/oflaDemo";

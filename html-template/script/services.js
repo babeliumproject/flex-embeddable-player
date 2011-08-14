@@ -12,7 +12,7 @@ function services(){
 	 * The way callback should be passed is uncertain maybe we should pass it as a String and then use eval() to fetch the actual function. Also since this function
 	 * is to be nested inside a class we must prepend the class instance name, in this case should be something like "services.theFunction"
 	 */
-	this.send() = function(secured,method,parameters,callback){
+	this.send = function(secured,method,parameters,callback){
 		this.protocol = secured ? 'https://' : 'http://';
 		var qs = this.protocol + this.host + '?method=' + method + '&arg=' + p;
 		$.getJSON(qs, function(data){

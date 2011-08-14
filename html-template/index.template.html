@@ -20,6 +20,42 @@ Learn more about Flex at http://flex.org
 
 <title>${title}</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js" language="javascript"></script>
+
+
+<script language="JavaScript" type="text/javascript">
+		<!--
+	
+		bpConfig = {};
+	
+		function makeUUID() {
+			// http://www.ietf.org/rfc/rfc4122.txt
+			// section 4.4 (Algorithms for Creating a UUID from Truly Random or Pseudo-Random Number)
+			// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
+			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+				return v.toString(16);
+			}).toUpperCase();
+		}
+		
+		function getSessionID () {
+			//http://www.elated.com/articles/javascript-and-cookies/
+		  	var results = document.cookie.match ( '(^|;) ?' + 'PHPSESSID' + '=([^;]*)(;|$)' );
+
+		  	if ( results )
+		    	return ( unescape ( results[2] ) );
+		  	else
+		    	return null;
+		}
+		
+		bpConfig.uuid = makeUUID();
+		bpConfig.endpoint = 'rest.php';
+		bpConfig.sessionID = getSessionID();
+	
+// -->
+</script>
+
+<script src="https://raw.github.com/kvz/phpjs/master/functions/strings/echo.js" language="javascript"></script>
+<script src="https://raw.github.com/kvz/phpjs/master/functions/var/print_r.js" language="javascript"></script>
 <script src="script/AC_OETags.js" language="javascript"></script>
 <script src="script/functions.js" language="javascript"></script>
 <script src="script/exercise.js" language="javascript"></script>
@@ -54,39 +90,9 @@ var requiredRevision = ${version_revision};
 
 <body>
 <div id ="main">
-	<div id="title">
-		<img src="resources/images/logo.png" alt="Logo Babelium Project"/>
-	</div>
 	<div id="bplayer-div">
-	Título del vídeo:<br/>
+	<div id="bplayer-title"></div>
 	<script language="JavaScript" type="text/javascript">
-	
-		bpConfig = {};
-	
-		function makeUUID() {
-			// http://www.ietf.org/rfc/rfc4122.txt
-			// section 4.4 (Algorithms for Creating a UUID from Truly Random or Pseudo-Random Number)
-			// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
-			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-				var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-				return v.toString(16);
-			}).toUpperCase();
-		}
-		
-		function getSessionID () {
-			//http://www.elated.com/articles/javascript-and-cookies/
-		  	var results = document.cookie.match ( '(^|;) ?' + 'PHPSESSID' + '=([^;]*)(;|$)' );
-
-		  	if ( results )
-		    	return ( unescape ( results[2] ) );
-		  	else
-		    	return null;
-		}
-		
-		bpConfig.uuid = makeUUID();
-		bpConfig.endpoint = 'rest.php';
-		bpConfig.sessionID = getSessionID();
-	
 		<!--
 		// Version check for the Flash Player that has the ability to start Player Product Install (6.0r65)
 		var hasProductInstall = DetectFlashVer(6, 0, 65);

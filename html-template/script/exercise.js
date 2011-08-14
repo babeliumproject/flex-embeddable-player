@@ -1,6 +1,6 @@
 var bpPlayer = null;
 var cueManager = null;
-var server = 'http://babeliumhtml5/rest/rest';
+var server = 'http://html5/api/rest';
 
 /**
  * Not needed. The video folders are specified internally
@@ -31,6 +31,7 @@ function testInit(videoPlayer, ex){
 	cueManager = new cuePointManager();
 	setupVideoPlayer();
 	onExerciseSelected(ex);
+        $('#bplayer-title').html(ex.title);
 }
 
 function setupVideoPlayer(){
@@ -68,7 +69,7 @@ function prepareExercise()
 
 	//Ajax call to the appointed REST service
 	var auxExRol = exerciseId;
-	var srvClass = 'ExerciseRole';
+	var srvClass = 'Subtitle';
 	var srvMethod = 'getExerciseRoles';
 	var srvParams = auxExRol;
 	
@@ -117,7 +118,7 @@ function onLocalesRetrieved(data){
 }
 
 function onRolesRetrieved(data){
-	var srvClass = 'ExerciseRole';
+	var srvClass = 'Subtitle';
 	var srvMethod = 'getExerciseRoles';
 	//console.log("Exercise roles retrieved");
 	$('#roleCombo').empty();
@@ -459,5 +460,3 @@ $(document).ready(function(){
 	});
 
 });
-
-
