@@ -1,6 +1,6 @@
 var bpPlayer = null;
 var cueManager = null;
-var server = 'http://html5/api/rest';
+var server = 'http://babeliumhtml5/rest/rest';
 
 /**
  * Not needed. The video folders are specified internally
@@ -69,16 +69,25 @@ function prepareExercise()
 
 	//Ajax call to the appointed REST service
 	var auxExRol = exerciseId;
-	var srvClass = 'Subtitle';
+	var srvClass = 'ExerciseRoles';
 	var srvMethod = 'getExerciseRoles';
 	var srvParams = auxExRol;
 	
-	var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-	$.getJSON(srvQueryString, null, function(data){
-		onRolesRetrieved(data);
-	}).error(function(){
-		console.log("Couldn't retrieve the roles for this exercise.");
+	//var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
+	srvQueryString = server + '?getExerciseRoles';
+	
+	data = {"method":"getExerciseRoles","parameters":{"exerciseId":exerciseId},"header":{"token":"sdfsdssf","session":bpConfig.sessionID,"uuid":bpConfig.uuid}};
+	
+	$.post(srvQueryString, data, onRolesRetrieved, "json")
+	.error(function(){
+			console.log("Couldn't retrieve the roles for this exercise.");
 	});
+	
+	//$.getJSON(srvQueryString, {"method":"getExerciseRoles","parameters":{"exerciseId":exerciseId},"header":{"token":"sdfsdssf","session":"sdgfghjhs","uuid":"CAF80680-013D-4293-8611-B6DEFC427AD9"}}, function(data){
+	//	onRolesRetrieved(data);
+	//}).error(function(){
+	//	console.log("Couldn't retrieve the roles for this exercise.");
+	//});
 	
 	//Ajax call to the appointed REST service
 	var auxEx = exerciseId;
@@ -118,7 +127,7 @@ function onLocalesRetrieved(data){
 }
 
 function onRolesRetrieved(data){
-	var srvClass = 'Subtitle';
+	var srvClass = 'ExerciseRole';
 	var srvMethod = 'getExerciseRoles';
 	//console.log("Exercise roles retrieved");
 	$('#roleCombo').empty();

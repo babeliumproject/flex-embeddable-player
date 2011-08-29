@@ -25,7 +25,7 @@ Learn more about Flex at http://flex.org
 <script language="JavaScript" type="text/javascript">
 		<!--
 	
-		bpConfig = {};
+		var bpConfig = {};
 	
 		function makeUUID() {
 			// http://www.ietf.org/rfc/rfc4122.txt
@@ -48,8 +48,10 @@ Learn more about Flex at http://flex.org
 		}
 		
 		bpConfig.uuid = makeUUID();
+		console.log(bpConfig.uuid);
 		bpConfig.endpoint = 'rest.php';
 		bpConfig.sessionID = getSessionID();
+		console.log(bpConfig.sessionID);
 	
 // -->
 </script>

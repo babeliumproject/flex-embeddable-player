@@ -52,6 +52,35 @@ class Auth{
 	}
 
 	/**
+	 *
+	 */
+	public function getCommunicationToken($secretKey){
+		//Check if the request if made via HTTPS or not
+		//TODO
+
+		$length = 13;		
+
+		if(session_id() != "" && md5(session_id()) == $secretKey){
+			$commToken = $this->_generateRandomCommunicationToken($length);
+			$_SESSION['commToken'] = $commToken;
+			return $commToken;
+		} else {
+			return FALSE;
+		}
+	}
+
+	 private function _generateRandomCommunicationToken($length){
+                $token = '';
+                $i = 0;
+                while ($i < $length){
+                        $token = $token . dechex(floor((rand(0,1000000) * 16)/1000000));
+                        $i++;
+                }
+                return $token;
+        }
+
+
+	/**
 	 * Checks the provided authentication data and logs the user in the system if everything is ok
 	 * 
 	 * @param stdClass $user
