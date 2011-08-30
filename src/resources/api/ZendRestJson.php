@@ -47,10 +47,10 @@ class ZendRestJson extends Zend_Rest_Server
 			$_SESSION['initiated'] = true;
 		}
 		//Avoid session fixation
-		//if (!isset($_SESSION['initiated'])){
-                //       session_regenerate_id();
-                //        $_SESSION['initiated'] = true;
-                //}
+		if (!isset($_SESSION['initiated'])){
+                       session_regenerate_id();
+                        $_SESSION['initiated'] = true;
+                }
     	}
 
 	
@@ -100,7 +100,7 @@ class ZendRestJson extends Zend_Rest_Server
 		      if($this->_functions[$this->_method] instanceof Zend_Server_Reflection_Function || $this->_functions[$this->_method] instanceof Zend_Server_Reflection_Method && $this->_functions[$this->_method]->isPublic()){
 		      	 
 			 //Check if the request is valid
-			if( $this->_validateRequest($p) ){
+			 if( $this->_validateRequest($p) ){
 
 			 //Retrieve the request parameters, if any
 			 $request_params = array();
@@ -287,16 +287,16 @@ class ZendRestJson extends Zend_Rest_Server
 			$response = $this->_handleScalar($result);
 		}
 		
-		if($this->_responseMode == 'json'){
-			
-			$response = Zend_Json::fromXml($response, false);	
+		//if($this->_responseMode == 'json'){
+		$response = Zend_Json::encode($response,false);	
+			//$response = Zend_Json::fromXml($response, false);	
 
 			$response = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', 
 							  create_function(
 							  	'$match',
     								'return mb_convert_encoding(pack("H*", $match[1]), "UTF-8", "UCS-2BE");'
 							  ), $response);
-		}
+		//}
 
 		if (!$this->returnResponse()) {
 			if (!headers_sent()) {
@@ -321,36 +321,43 @@ class ZendRestJson extends Zend_Rest_Server
     	protected function _handleStruct($struct)
     	{
         	$function = $this->_functions[$this->_method];
-        	//if ($function instanceof Zend_Server_Reflection_Method) {
-            	//	$class = $function->getDeclaringClass()->getName();
-        	//} else {
-            	//	$class = false;
-        	//}
-
         	$method = $function->getName();
+        	
+ 		$json = array();
+                $json['header']['method'] = $method;
+                $json['header']['session'] = session_id();
 
-        	$dom = new DOMDocument('1.0', $this->getEncoding());
-        	//if ($class) {
-            	//	$root   = $dom->createElement($class);
-            	//	$method = $dom->createElement($method);
-            	//	$root->appendChild($method);
-        	//} else {
-            		$root   = $dom->createElement($method);
-            		$method = $root;
-        	//}
-        	//$root->setAttribute('generator', 'zend');
-        	//$root->setAttribute('version', '1.0');
-        	$dom->appendChild($root);
+		$json['response'] = (array) $struct;
+		$json['status'] = 'success';
 
-        	$this->_structValue($struct, $dom, $method);
+		return $json;
+    	}
 
-        	$struct = (array) $struct;
-        	if (!isset($struct['status'])) {
-            		$status = $dom->createElement('status', 'success');
-            		$method->appendChild($status);
+	protected function _handleScalar($value)
+    	{
+        	$function = $this->_functions[$this->_method];
+        	$method = $function->getName();
+        	
+		$json = array();
+		$json['header']['method'] = $method;
+		$json['header']['session'] = session_id();
+		
+            	
+        	if ($value === false) {
+            		$value = 0;
+        	} elseif ($value === true) {
+            		$value = 1;
         	}
 
-        	return $dom->saveXML();
+        	if (isset($value)) {
+			$json['response'] = $value;
+        	} else {
+            		$json['response'] = null;
+        	}
+	
+		$json['status'] = 'success';
+
+        	return $json;
     	}
 
 
@@ -388,20 +395,21 @@ class ZendRestJson extends Zend_Rest_Server
 		//Check if minimum required fields are present in the request
                 if( array_key_exists('method',$request) && array_key_exists('header',$request) ){
 			$request_method = $request['method'];
-			$request_header = $request['header'];		
+			$request_header = $request['header'];
 			if( array_key_exists('uuid',$request_header) && array_key_exists('session',$request_header) ) {
 				$uuid = $request_header['uuid'];
 				$session = $request_header['session'];
-				error_log("Class sessid: ".session_id() . " req sessid: ".$session."\n",3,"/tmp/test.log");
 				if( $this->_method == $request_method && session_id() != "" && $session == session_id() ){
-					error_log("Session id is set mtfcka\n",3,"/tmp/test.log");
 					if( $this->_method == 'getCommunicationToken' ){
+						$_SESSION['uuid'] = $uuid;
 						$result = TRUE;
 					} else {
 						if( array_key_exists('token',$request_header) && isset($_SESSION['uuid']) && $uuid == $_SESSION['uuid'] ){
+							error_log("Request Header has TOKEN field set and the UUID is present on the SERVER_SESSION\n",3,"/tmp/test.log");
 							$request_token = $request_header['token'];
 							$request_salt = substr($request_token,0,6);
 							$commToken = isset($_SESSION['commToken']) ? $_SESSION['commToken'] : "";
+							error_log("RT: ".$request_token." / SCT: ".$commToken." /RM: ".$request_method ." / ST: ".$this->_checkToken($request_method, $commToken, $request_salt)."\n",3,"/tmp/test.log");
 							if($this->_checkToken($request_method, $commToken, $request_salt) == $request_token){
 								$result = TRUE;
 							}					
@@ -418,7 +426,7 @@ class ZendRestJson extends Zend_Rest_Server
 		$statToken = 'myMusicFightsAgainstTheSystemThatTeachesToLiveAndDie';
 		$token = $commToken;
 		$c = sha1($method.":".$token.":".$statToken.":".$salt);
-		return $salt + $c;
+		return $salt . $c;
 	}
 	
 

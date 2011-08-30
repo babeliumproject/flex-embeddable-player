@@ -1,6 +1,6 @@
 var bpPlayer = null;
 var cueManager = null;
-var server = 'http://babeliumhtml5/rest/rest';
+var server = 'http://babeliumhtml5/api/rest';
 
 /**
  * Not needed. The video folders are specified internally
@@ -74,14 +74,18 @@ function prepareExercise()
 	var srvParams = auxExRol;
 	
 	//var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-	srvQueryString = server + '?getExerciseRoles';
+	var srvQueryString = server + '?getExerciseRoles';
 	
-	data = {"method":"getExerciseRoles","parameters":{"exerciseId":exerciseId},"header":{"token":"sdfsdssf","session":bpConfig.sessionID,"uuid":bpConfig.uuid}};
+	//data = {"method":"getExerciseRoles","parameters":{"exerciseId":exerciseId},"header":{"token":"sdfsdssf","session":bpConfig.sessionID,"uuid":bpConfig.uuid}};
+
+	var parameters = {"exerciseId":exerciseId};
+	bpServices.send(false,'getExerciseRoles',parameters,onRolesRetrieved);
+
 	
-	$.post(srvQueryString, data, onRolesRetrieved, "json")
-	.error(function(){
-			console.log("Couldn't retrieve the roles for this exercise.");
-	});
+	//$.post(srvQueryString, data, onRolesRetrieved, "json")
+	//.error(function(){
+	//		console.log("Couldn't retrieve the roles for this exercise.");
+	//});
 	
 	//$.getJSON(srvQueryString, {"method":"getExerciseRoles","parameters":{"exerciseId":exerciseId},"header":{"token":"sdfsdssf","session":"sdgfghjhs","uuid":"CAF80680-013D-4293-8611-B6DEFC427AD9"}}, function(data){
 	//	onRolesRetrieved(data);
@@ -127,25 +131,23 @@ function onLocalesRetrieved(data){
 }
 
 function onRolesRetrieved(data){
-	var srvClass = 'ExerciseRole';
-	var srvMethod = 'getExerciseRoles';
-	//console.log("Exercise roles retrieved");
+
 	$('#roleCombo').empty();
 	characterNames = [];
 
 	if (data == null){
 		$('#roleCombo').attr('disabled','disabled');
-		rolesReady=false;
+		rolesReady = false;
 	} else {
 		$('#roleCombo').removeAttr('disabled');
-		rolesReady=true;
-		var info = data[srvClass][srvMethod];
-		$.each(info, function(i,item){
-			if(item.characterName != undefined && item.characterName != "NPC"){
-				characterNames.push(item.characterName);
-				$('#roleCombo').append('<option value="'+item.characterName+'">'+item.characterName+'</option>');
-			}
-		});
+		rolesReady = true;
+		var info = data['response'];
+		for(var i in info){
+			if(info[i].characterName != undefined && info[i].characterName != "NPC"){
+                                characterNames.push(info[i].characterName);
+                                $('#roleCombo').append('<option value="'+info[i].characterName+'">'+info[i].characterName+'</option>');
+                        }
+		}
 	}
 }
 

@@ -1,3 +1,16 @@
+<?php 
+
+if ( session_id() == '' ){
+        session_start(); 
+        $_SESSION['initiated'] = true;
+}
+if ( !isset($_SESSION['initiated']) ){
+        session_regenerate_id();
+        $_SESSION['initiated'] = true;
+}       
+
+?>
+
 <!-- saved from url=(0014)about:internet -->
 <html lang="en">
 
@@ -40,7 +53,6 @@ Learn more about Flex at http://flex.org
 		function getSessionID () {
 			//http://www.elated.com/articles/javascript-and-cookies/
 		  	var results = document.cookie.match ( '(^|;) ?' + 'PHPSESSID' + '=([^;]*)(;|$)' );
-
 		  	if ( results )
 		    	return ( unescape ( results[2] ) );
 		  	else
@@ -48,10 +60,13 @@ Learn more about Flex at http://flex.org
 		}
 		
 		bpConfig.uuid = makeUUID();
-		console.log(bpConfig.uuid);
-		bpConfig.endpoint = 'rest.php';
 		bpConfig.sessionID = getSessionID();
-		console.log(bpConfig.sessionID);
+		
+		bpConfig.endpoint = 'rest.php';
+		
+		var bpServices = new services();
+        bpServices.getCommunicationToken();
+		
 	
 // -->
 </script>

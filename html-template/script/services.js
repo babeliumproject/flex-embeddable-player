@@ -1,6 +1,6 @@
 function services(){
 	this.protocol = 'http://'
-	this.host = 'babeliumhtml5/rest/';
+	this.host = 'babeliumhtml5/api/';
 	this.endpoint = bpConfig.endpoint;
 	this.lastRandomizer = '';
 	this.statToken = 'myMusicFightsAgainstTheSystemThatTeachesToLiveAndDie'; //Bob Marley's Quote
@@ -14,32 +14,35 @@ function services(){
 	 */
 	this.send = function(secured,method,parameters,callback){
 		this.protocol = secured ? 'https://' : 'http://';
-		var qs = this.protocol + this.host + '?method=' + method + '&arg=' + p;
-		$.getJSON(qs, function(data){
-			eval(callback);
-		}).error(function(error){
-			services.onServiceError(error);
+		var qs = this.protocol + this.host + this.endpoint + '?' + method;
+		var data = {};
+		data.method = method;
+		if(parameters != null)
+			data.parameters = parameters;
+		this.token = this.generateToken(method);
+		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
+		
+		$.post(qs, data, callback, "json")
+		.error(function(error){
+				services.onServiceError(error);
 		});
-		
-		
-		$.getJSON(srvQueryString, function(data){
-			//Make the call using the global scope object cueManager because this subclass has no access to the methods as is
-			cueManager.subtitlesRetrievedCallback(data);
-		}).error(function(){ 
-			alert("Error while retrieving subtitle lines"); 
-		});
-		
 	}
 	
 	this.getCommunicationToken = function(){
-		var method = 'getCommunicationToken';
-		var t = hex_md5(bpConfig.sessionID);
-		var p = {};
-		p.method = method;
-		p.parameters = {"secretKey": t};
-		p.header = {"session": bpConfig.sessionID, "uuid": bpConfig.uuid};
+		method = 'getCommunicationToken';
+		this.protocol = 'http://';
+		var qs = this.protocol + this.host + this.endpoint + '?' + method;
 		
-		this.send(true,method,p,onCommunicationTokenSuccess);
+		var data = {};
+		data.method = method;
+		data.parameters = {'secretKey': hex_md5(bpConfig.sessionID)};
+		data.header = {"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
+		
+		$.post(qs, data, bpServices.onCommunicationTokenSuccess, "json")
+		.error(function(error){
+			bpServices.onServiceError(error);
+		});
+		
 	}
 	
 	this.authenticateUser = function(username, pass, rememberUser){
@@ -54,10 +57,10 @@ function services(){
 	}
 	
 	this.onCommunicationTokenSuccess = function(data){
-		//The request to the server was successful, now we should check if the response if right or not
-		
+		//The request to the server was successful, now we should check if the response is right or not
+
 		//Retrieve the communicationToken and store it for future use
-		this.commToken = '';
+		this.commToken = data.response;
 	}
 	
 	this.onAuthenticateUserSuccess = function(data){
@@ -68,6 +71,7 @@ function services(){
 	
 	this.onServiceError = function(error){
 		//Display an error message noticing the user that the request to the server was not successful.
+		console.log('Request error: ' + error);
 	}
 	
 	this.createRandomSalt = function(){
@@ -81,9 +85,10 @@ function services(){
 	}
 
 	this.generateToken = function (method){
-		var salt = createRandomSalt();
+		var salt = this.createRandomSalt();
 		var t = hex_sha1(method + ":" + this.commToken + ":" + this.statToken + ":" + salt);
 		var s = salt + t;
+		console.log('Method:' + method + ', CommToken: ' + this.commToken + ', StatToken: ' + this.statToken + ', Salt: '+salt);
 		return s;
 	}
 	
