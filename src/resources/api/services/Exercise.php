@@ -373,8 +373,11 @@ class Exercise {
 		$searchResults = array ();
 		$result = $this->conn->_execute ( $sql, $exerciseId );
 
-		while ( $row = $this->conn->_nextRow ( $result ) )
-		array_push($searchResults, $row[0]);
+		while ( $row = $this->conn->_nextRow ( $result ) ){
+			$t = new stdClass();
+			$t->locale = $row[0];
+			array_push($searchResults, $t);
+		}
 
 		return $searchResults; // return languages
 	}

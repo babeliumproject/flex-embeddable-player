@@ -107,41 +107,17 @@ function cuePointManager(){
 	 * Get cuepoints from subtitle
 	 **/
 	this.setCuesFromSubtitleUsingLocale = function(language){
-		var subtitle = {'id': 0, 'exerciseId' : this.cpm_exerciseId, 'language': language};
-		
-		var srvClass = 'Subtitle';
-		var srvMethod = 'getSubtitleLines';
-		var srvParams = base64_encode(JSON.stringify(subtitle));
-		
-		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, function(data){
-			//Make the call using the global scope object cueManager because this subclass has no access to the methods as is
-			cueManager.subtitlesRetrievedCallback(data);
-		}).error(function(){ 
-			alert("Error while retrieving subtitle lines"); 
-		});
+		var parameters = {'id': 0, 'exerciseId' : this.cpm_exerciseId, 'language': language};
+                bpServices.send(false, 'getSubtitleLines', parameters, 'bpExercises.cueManager.subtitlesRetrievedCallback');
 	}
 
 	this.setCuesFromSubtitleUsingId = function(subtitleId){
-		
-		var srvClass = 'Subtitle';
-		var srvMethod = 'getSubtitleLinesUsingId';
-		var srvParams = subtitleId;
-		
-		var srvQueryString = server + '?class=' + srvClass + '&method=' + srvMethod + '&arg=' + srvParams;
-		$.getJSON(srvQueryString, function(data){
-			//Make the call using the global scope object cueManager because this subclass has no access to the methods as is
-			cueManager.subtitlesRetrievedCallback(data);
-		}).error(function(){ 
-			alert("Error while retrieving subtitle lines"); 
-		});
-		
+		var parameters = {'subtitleId':subtitleId};
+		bpServices.send(false, 'getSubtitleLinesUsingId', parameters, 'bpExercises.cueManager.subtitlesRetrievedCallback');	
 	}
 	
 	this.subtitlesRetrievedCallback = function(data){
-		var srvClass = 'Subtitle';
-		var srvMethod = 'getSubtitleLines';
-		var result=data[srvClass][srvMethod];
+		var result=data.result;
 		this.colorDictionary = [];
 		
 		for (var key in result){

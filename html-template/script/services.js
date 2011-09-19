@@ -1,6 +1,6 @@
 function services(){
 	this.protocol = 'http://'
-	this.host = 'babeliumhtml5/api/';
+	this.host = 'html5babelium/api/';
 	this.endpoint = bpConfig.endpoint;
 	this.lastRandomizer = '';
 	this.statToken = 'myMusicFightsAgainstTheSystemThatTeachesToLiveAndDie'; //Bob Marley's Quote
@@ -21,10 +21,9 @@ function services(){
 			data.parameters = parameters;
 		this.token = this.generateToken(method);
 		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-		
-		$.post(qs, data, callback, "json")
+		$.post(qs, data, eval(callback), "json")
 		.error(function(error){
-				services.onServiceError(error);
+				bpServices.onServiceError(error);
 		});
 	}
 	
@@ -58,9 +57,8 @@ function services(){
 	
 	this.onCommunicationTokenSuccess = function(data){
 		//The request to the server was successful, now we should check if the response is right or not
-
 		//Retrieve the communicationToken and store it for future use
-		this.commToken = data.response;
+		bpServices.commToken = data.response;
 	}
 	
 	this.onAuthenticateUserSuccess = function(data){
@@ -71,7 +69,8 @@ function services(){
 	
 	this.onServiceError = function(error){
 		//Display an error message noticing the user that the request to the server was not successful.
-		console.log('Request error: ' + error);
+		console.log("Request error: \n");
+		console.log(error);
 	}
 	
 	this.createRandomSalt = function(){

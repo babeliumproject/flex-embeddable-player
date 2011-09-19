@@ -34,11 +34,23 @@ Learn more about Flex at http://flex.org
 <title>${title}</title>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js" language="javascript"></script>
 
-
+<script src="script/AC_OETags.js" language="javascript"></script>
+<script src="script/functions.js" language="javascript"></script>
+<script src="script/exercise.js" language="javascript"></script>
+<script src="script/services.js" language="javascript"></script>
+<script src="script/cuePointManager.js" language="javascript"></script>
+<script src="script/cueObject.js" language="javascript"></script>
+<script src="script/onPlaybackCuePoint.js" language="javascript"></script>
+<script src="script/onRecordingOtherRoleCuePoint.js" language="javascript"></script>
+<script src="script/onRecordingSelectedRoleStartCuePoint.js" language="javascript"></script>
+<script src="script/onRecordingSelectedRoleStopCuePoint.js" language="javascript"></script>
 <script language="JavaScript" type="text/javascript">
 		<!--
 	
 		var bpConfig = {};
+		var bpPlayer = null;
+		var bpServices = null;
+		var bpExercises = null;
 	
 		function makeUUID() {
 			// http://www.ietf.org/rfc/rfc4122.txt
@@ -59,31 +71,40 @@ Learn more about Flex at http://flex.org
 		    	return null;
 		}
 		
+		//Set configuration values
 		bpConfig.uuid = makeUUID();
 		bpConfig.sessionID = getSessionID();
-		
 		bpConfig.endpoint = 'rest.php';
 		
-		var bpServices = new services();
+		console.log(bpConfig.uuid+"/"+bpConfig.sessionID);
+		
+		//Initialize services
+		bpServices = new services();
         bpServices.getCommunicationToken();
+        
+        //Initialize modules
+        bpExercises = new exercise();
+     
+        //Bootstrap
+        
+        function onBabeliaPlayerReady(playerid)
+        {
+        	bpPlayer = document.getElementById(playerid);
+        	
+        	if (!bpPlayer) {
+        		Alert('There was a problem while loading the video player.');
+        		return;
+        	}
+        	
+        	//Load the exercises module using the "Sintel" sample video
+        	var ex = {'id':73,'name':'U1MbBtkIGZQ.flv', 'title':'Sintel'};
+        	console.log("Loading exercise...");
+        	loadExercise(bpPlayer, ex);
+        }
 		
 	
 // -->
 </script>
-
-<script src="https://raw.github.com/kvz/phpjs/master/functions/strings/echo.js" language="javascript"></script>
-<script src="https://raw.github.com/kvz/phpjs/master/functions/var/print_r.js" language="javascript"></script>
-<script src="script/AC_OETags.js" language="javascript"></script>
-<script src="script/functions.js" language="javascript"></script>
-<script src="script/exercise.js" language="javascript"></script>
-<script src="script/services.js" language="javascript"></script>
-<script src="script/cuePointManager.js" language="javascript"></script>
-<script src="script/cueObject.js" language="javascript"></script>
-<script src="script/onPlaybackCuePoint.js" language="javascript"></script>
-<script src="script/onRecordingOtherRoleCuePoint.js" language="javascript"></script>
-<script src="script/onRecordingSelectedRoleStartCuePoint.js" language="javascript"></script>
-<script src="script/onRecordingSelectedRoleStopCuePoint.js" language="javascript"></script>
-<script src="script/bootstrap.js" language="javascript"></script>
 <link rel="stylesheet" type="text/css" href="style/default.css" />
 
 <!--  BEGIN Browser History required section -->
