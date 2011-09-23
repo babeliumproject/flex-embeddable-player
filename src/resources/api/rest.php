@@ -25,12 +25,6 @@ require_once 'ZendRestJson.php';
 
 //Instantiate custom Zend Rest Server
 $server = new ZendRestJson();
-
-//Set the data representation for the response received from the server. Default representation mode is JSON
-if ( isset($_REQUEST['mode']) )
-	$server->setResponseMode($_REQUEST['mode']);
-else
-	$server->setResponseMode('json');
 	
 //Set the path to reach the services
 define ('SERVICE_PATH', '/services/');
@@ -39,7 +33,6 @@ require_once dirname(__FILE__) . SERVICE_PATH . 'Auth.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Credit.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Evaluation.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Exercise.php';
-require_once dirname(__FILE__) . SERVICE_PATH . 'ExerciseRole.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Home.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Preference.php';
 require_once dirname(__FILE__) . SERVICE_PATH . 'Register.php';
@@ -55,7 +48,6 @@ $server->setClass('Auth');
 $server->setClass('Credit');
 $server->setClass('Evaluation');
 $server->setClass('Exercise');
-$server->setClass('ExerciseRole');
 $server->setClass('Home');
 $server->setClass('Preference');
 $server->setClass('Register');

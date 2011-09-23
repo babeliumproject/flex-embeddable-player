@@ -9,6 +9,8 @@ function cuePointManager(){
 	
 	this.subtitlesRetrievedListener;
 
+	// http://stackoverflow.com/questions/4818615/using-getjson-with-callback-within-a-javascript-object
+	var instance = this;
 	
 	this.reset = function(){
 		cpm_exerciseId=-1;
@@ -108,28 +110,27 @@ function cuePointManager(){
 	 **/
 	this.setCuesFromSubtitleUsingLocale = function(language){
 		var parameters = {'id': 0, 'exerciseId' : this.cpm_exerciseId, 'language': language};
-                bpServices.send(false, 'getSubtitleLines', parameters, 'bpExercises.cueManager.subtitlesRetrievedCallback');
+                bpServices.send(false, 'getSubtitleLines', parameters, instance.subtitlesRetrievedCallback);
 	}
 
 	this.setCuesFromSubtitleUsingId = function(subtitleId){
 		var parameters = {'subtitleId':subtitleId};
-		bpServices.send(false, 'getSubtitleLinesUsingId', parameters, 'bpExercises.cueManager.subtitlesRetrievedCallback');	
+		bpServices.send(false, 'getSubtitleLinesUsingId', parameters, instance.subtitlesRetrievedCallback);	
 	}
 	
 	this.subtitlesRetrievedCallback = function(data){
-		var result=data.result;
-		this.colorDictionary = [];
-		
+		var result=data.response;
+		instance.colorDictionary = [];
 		for (var key in result){
 			if(typeof result[key] == 'object'){
-			    this.addCueFromSubtitleLine(result[key]);
+			    instance.addCueFromSubtitleLine(result[key]);
 			}
 		}
 		for (var key in result){
-			this.cpm_subtitleId=result[key].subtitleId;
+			instance.cpm_subtitleId=result[key].subtitleId;
 			break;
 		}
-		this.subtitlesRetrievedListener();
+		instance.subtitlesRetrievedListener();
 	}
 
 	this.addCueFromSubtitleLine = function(subline){

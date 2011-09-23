@@ -258,8 +258,8 @@ class Auth{
 	 */
 	private function _setSessionData($userData){
 		//We are changing the privilege level, so we generate a new session id
-		if(!headers_sent())
-			session_regenerate_id();
+		//if(!headers_sent())
+		//	session_regenerate_id();
 		$_SESSION['logged'] = true;
 		$_SESSION['uid'] = $userData->id;
 		$_SESSION['user-agent-hash'] = sha1($_SERVER['HTTP_USER_AGENT']);
@@ -273,8 +273,8 @@ class Auth{
 	 */
 	private function _resetSessionData(){
 		//We are changing the privilege level, so first we generate a new session id
-		if(!headers_sent())
-			session_regenerate_id();
+		//if(!headers_sent())
+		//	session_regenerate_id();
 		$_SESSION['logged'] = false;
 		$_SESSION['uid'] = 0;
 		$_SESSION['user-agent-hash'] = '';

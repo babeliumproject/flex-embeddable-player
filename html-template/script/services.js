@@ -1,12 +1,15 @@
 function services(){
 	this.protocol = 'http://'
-	this.host = 'html5babelium/api/';
+	this.host = 'embedbabelium/api/';
 	this.endpoint = bpConfig.endpoint;
 	this.lastRandomizer = '';
 	this.statToken = 'myMusicFightsAgainstTheSystemThatTeachesToLiveAndDie'; //Bob Marley's Quote
 	this.commToken = '';
 	this.authToken = '';
 	this.token = '';
+
+	//This variable will be accesible in the callback and points to the right scope
+	var instance = this;
 	
 	/**
 	 * The way callback should be passed is uncertain maybe we should pass it as a String and then use eval() to fetch the actual function. Also since this function
@@ -21,9 +24,9 @@ function services(){
 			data.parameters = parameters;
 		this.token = this.generateToken(method);
 		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-		$.post(qs, data, eval(callback), "json")
+		$.post(qs, data, callback, "json")
 		.error(function(error){
-				bpServices.onServiceError(error);
+			instance.onServiceError(error);
 		});
 	}
 	
@@ -39,33 +42,36 @@ function services(){
 		
 		$.post(qs, data, bpServices.onCommunicationTokenSuccess, "json")
 		.error(function(error){
-			bpServices.onServiceError(error);
+			instance.onServiceError(error);
 		});
 		
 	}
-	
-	this.authenticateUser = function(username, pass, rememberUser){
-		var method = 'authenticateUser';
-		var t = this.generateToken(method);
-		var p = {};
-		p.method = method;
-		p.parameters = {"password": pass, "savePassword": rememberUser, "username": user};
-		p.header = {"token": t, "session": bpConfig.sessionID, "uuid": bpConfig.uuid};
+
 		
-		this.send(true,method,p,onAuthenticateUserSuccess);
-	}
+	//this.authenticateUser = function(username, pass, rememberUser){
+	//	var method = 'authenticateUser';
+	//	var t = this.generateToken(method);
+	//	var p = {};
+	//	p.method = method;
+	//	p.parameters = {"password": pass, "savePassword": rememberUser, "username": user};
+	//	p.header = {"token": t, "session": bpConfig.sessionID, "uuid": bpConfig.uuid};
+	//	
+	//	this.send(true,method,p,onAuthenticateUserSuccess);
+	//}
 	
 	this.onCommunicationTokenSuccess = function(data){
 		//The request to the server was successful, now we should check if the response is right or not
 		//Retrieve the communicationToken and store it for future use
-		bpServices.commToken = data.response;
+		instance.commToken = data.response;
+		onCommunicationReady();
 	}
 	
-	this.onAuthenticateUserSuccess = function(data){
-		//The request to the server was successful, now we should check if the response if right or not
-		
-		//Retrieve the userID and the authToken
-	}
+	
+	//this.onAuthenticateUserSuccess = function(data){
+	//	//The request to the server was successful, now we should check if the response if right or not
+	//	
+	//	//Retrieve the userID and the authToken
+	//}
 	
 	this.onServiceError = function(error){
 		//Display an error message noticing the user that the request to the server was not successful.
@@ -87,7 +93,7 @@ function services(){
 		var salt = this.createRandomSalt();
 		var t = hex_sha1(method + ":" + this.commToken + ":" + this.statToken + ":" + salt);
 		var s = salt + t;
-		console.log('Method:' + method + ', CommToken: ' + this.commToken + ', StatToken: ' + this.statToken + ', Salt: '+salt);
+		//console.log('Method:' + method + ', CommToken: ' + this.commToken + ', StatToken: ' + this.statToken + ', Salt: '+salt);
 		return s;
 	}
 	
