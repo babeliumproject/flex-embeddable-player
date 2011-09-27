@@ -64,6 +64,9 @@ function exercise() {
 		// widget below the videoplayer
 		// in that case set the exercise data on this widget aswell
 		// TODO
+		if(bpConfig.user != undefined && bpConfig.user.name != undefined){
+			//Load the rating, tags, and report
+		}
 
 		this.prepareExercise();
 		this.resetCueManager();
@@ -126,6 +129,7 @@ function exercise() {
 			$('#roleCombo').removeAttr('disabled');
 			instance.rolesReady = true;
 			var info = data['response'];
+			instance.roles = info;
 			for ( var i in info) {
 				if (info[i].characterName != undefined && info[i].characterName != "NPC") {
 					instance.characterNames.push(info[i].characterName);
@@ -137,7 +141,7 @@ function exercise() {
 
 	this.resetCueManager = function() {
 		this.cueManager.reset();
-		this.bpPlayer.removeEventListener('onEnterFrame', 'enterFrameListener');
+		this.bpPlayer.removeEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
 	}
 
 	this.prepareCueManager = function() {
@@ -155,7 +159,9 @@ function exercise() {
 		this.cueManager.monitorCuePoints(event);
 	}
 
-	// cuemanagerevent
+	/**
+	 * Callback from another scope, use the 'instance' variable to access local properties/methods
+	 */
 	this.onSubtitlesRetrieved = function() {
 		instance.setupPlayCommands();
 	}
@@ -215,13 +221,13 @@ function exercise() {
 	this.recordingFinishedListener = function(recFilename) {
 		// Store last recorded response's filename
 		this.recordedFilename = recFilename;
-		console.log("Rec file name: " + recFilename);
+		console.log("Response recording ended");
 
 		// Set the videoplayer to playback both the exercise and the
 		// last response.
 		this.bpPlayer.videoSource(this.exerciseName);
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_BOTH_STATE);
-		this.bpPlayer.secondSource(recordedFilename);
+		this.bpPlayer.secondSource(this.recordedFilename);
 
 		this.bpPlayer.seek(false);
 		this.bpPlayer.stopVideo();
@@ -259,24 +265,47 @@ function exercise() {
 		this.bpPlayer.removeArrows();
 	}
 
+	 /**
+         * Service callback, use the 'instance' variable to access local scope
+         */
 	this.saveResponseCallback = function(data) {
 
-		var subtitlesAreUsed = this.bpPlayer.subtitlePanelVisible;
-		var subtitleId = this.cueManager.currentSubtitle;
+		if(data['response'] == undefined)
+			return;
+
+		//Reset component
+		instance.bpPlayer.endVideo(); // Stop video
+                instance.hideArrows();
+		instance.bpPlayer.unattachUserDevices();
+		instance.bpPlayer.state(instance.bpPlayerStates.PLAY_STATE);
+                //instance.bpPlayer.removeEventListener('onEnterFrame','bpExercises.onEnterFrameListener'); 
+		instance.setupPlayCommands();		
+
+		var result = data['response'];
+
+		var subtitlesAreUsed = instance.bpPlayer.subtitlePanelVisible;
+		var subtitleId = instance.cueManager.currentSubtitle();
 		var roleId = 0;
-		var responseId = data.responseId;
-		for ( var i in roles) {
-			if (roles[i].characterName == this.selectedRole) {
+		var responseId = result.responseId;
+		var roles = instance.roles;
+		for (var i in roles) {
+			if (roles[i].characterName == instance.selectedRole) {
 				roleId = roles[i].id;
 				break;
 			}
 		}
 
+		var parameters = {
+			'responseId': responseId
+		};
+		bpServices.send(false, 'makePublic', parameters, instance.onResponsePublished);
+	
+
 		// Ajax call to the appointed REST service
 		var parameters = {
 			'id' : 0,
 			'userSessionId' : 0,
-			'exerciseId' : this.exerciseId,
+			'exerciseId' : instance.exerciseId,
 			'responseAttempt' : false,
 			'responseId' : responseId,
 			'incidenceDate' : '',
@@ -285,14 +314,26 @@ function exercise() {
 			'exerciseRoleId' : roleId
 		};
 
-		bpServices.send(false, 'exerciseSaveResponse', parameters, instance.statisticRecSave);
+		bpServices.send(false, 'exerciseSaveResponse', parameters, null);
 
+	}
+
+	/**
+         * Service callback, use the 'instance' variable to access local scope
+         */
+	this.onResponsePublished = function(data){
+		if(data['response'] == undefined)
+			return;
+		var result = data['response'];
+		bpConfig.user.creditCount = result.creditCount;
+		//TODO notify the view elements of the change to reflect the new value
+		alert("Your response has been published. Thanks for your collaboration."); 
 	}
 
 	// Videplyarevent
 	this.videoStartedPlayingListener = function() {
 		this.exerciseStartedPlaying = true;
-		if (/* DataModel.getInstance().isLoggedIn && */this.cueManagerReady && this.rolesReady && this.localesReady && this.exerciseStartedPlaying) {
+		if (bpConfig.user.name != undefined && this.cueManagerReady && this.rolesReady && this.localesReady && this.exerciseStartedPlaying) {
 			this.exerciseStartedPlaying = false;
 			var subtitlesAreUsed = this.bpPlayer.subtitlePanelVisible;
 			var subtitleId = this.cueManager.currentSubtitle;
@@ -308,14 +349,15 @@ function exercise() {
 				'exerciseRoleId' : 0
 			};
 			if (this.exerciseId > 0 && subtitleId > 0)
-				bpServices.send(false, 'watchExercise', parameters, function(data){});
+				bpServices.send(false, 'watchExercise', parameters, null);
 		}
 	}
 
 	this.statisticRecAttempt = function() {
-		var subtitlesAreUsed = this.bpPlayer.subtitlePanelVisible;
-		var subtitleId = this.cueManager.currentSubtitle;
+		var subtitlesAreUsed = this.bpPlayer.subtitlePanelVisible();
+		var subtitleId = this.cueManager.currentSubtitle();
 		var roleId = 0;
+		var roles = this.roles;
 		for ( var i in roles) {
 			if (roles[i].characterName == this.selectedRole) {
 				roleId = roles[i].id;
@@ -336,7 +378,30 @@ function exercise() {
 			'exerciseRoleId' : roleId
 		};
 
-		bpServices.send(false,'exerciseAttemptResponse', parameters, instance.saveResponseCallback);
+		bpServices.send(false,'exerciseAttemptResponse', parameters, function(data){});
+	}
+		
+	this.resetComp = function(){
+		this.bpPlayer.endVideo(); // Stop video
+		this.bpPlayer.setSubtitle(""); // Clear subtitles if any
+		this.bpPlayer.videoSource(""); // Reset video source
+		this.bpPlayer.state(this.bpPlayerStates.PLAY_STATE); //Reset the player window to display only the exercise
+
+		this.bpPlayer.arrows(false); // Hide arrows
+
+		
+		//exerciseTitle=resourceManager.getString('myResources', 'LABEL_EXERCISE_TITLE');
+		//_currentExercise=null; // Reset current exercise
+
+		//hideSelectedExercise(); // Information of selected exercise
+				
+		//exerciseList.exerciseListDataGroup.selectedIndex = -1;
+
+		// Remove cueManager's Listeners
+		//this.cueManager.removeEventListener(CueManagerEvent.SUBTITLES_RETRIEVED, onSubtitlesRetrieved);
+
+		//Remove the current exercise's info
+		//ratingShareReport.exerciseData=null;
 	}
 
 	$(document).ready(function() {
@@ -366,8 +431,7 @@ function exercise() {
 				instance.showArrows();
 					
 				// Save statistical data
-				// TODO
-				// statisticRecAttempt();
+				instance.statisticRecAttempt();
 			});
 
 			// Watch both
@@ -428,7 +492,9 @@ function exercise() {
 				if (userCredCount - bpConfig.evaluationRequestCredits >= 0) {
 					// This must be changed by some function that takes a snapshot of the Response video
 					var responseThumbnail = "nothumb.png";
-					var subtitleId = instance.cueManager.currentSubtitle;
+					var subtitleId = instance.cueManager.currentSubtitle();
+
+					var duration = instance.bpPlayer.duration();
 
 					// Prepare an AJAX call to the appointed service
 					var parameters = {
@@ -438,7 +504,7 @@ function exercise() {
 						'isPrivate' : true,
 						'thumbnailUri' : responseThumbnail,
 						'source' : 'Red5',
-						'duration' : instance.bpPlayer.duration,
+						'duration' : duration,
 						'addingDate' : null,
 						'ratingAmount' : 0,
 						'characterName' : instance.selectedRole,
@@ -451,8 +517,6 @@ function exercise() {
 					// Restore the panels
 					$('#exerciseInfoPanel').show();
 					$('#recordingEndOptions').hide();
-
-					instance.resetComponent();
 				} else {
 					$('#insufficientCreditsDialog').dialog('open');
 				}

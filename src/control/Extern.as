@@ -66,6 +66,7 @@ package control
 			addCB("streamTime",streamTime);
 			addCB("subtitles",subtitles);
 			addCB("subtitlingControls",subtitlingControls);
+			addCB("subtitlePanelVisible",subtitlePanelVisible);
 			addCB("videoSource",videoSource);
 			addCB("highlight",highlight);
 			
@@ -171,6 +172,10 @@ package control
 			return VP.duration;
 		}
 		
+		private function subtitlePanelVisible():Boolean{
+			return VP.subtitlePanelVisible;
+		}
+		
 		private function setSubtitle(text:String, color:uint):void{
 			VP.setSubtitle(text,color);
 		}
@@ -209,6 +214,8 @@ package control
 		{
 			VP.subtitlingControls = flag;
 		}
+		
+		
 		
 		private function videoSource(video:String):void
 		{

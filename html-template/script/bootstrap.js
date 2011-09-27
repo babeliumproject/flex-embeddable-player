@@ -39,7 +39,7 @@ function onCommunicationReady() {
 	// Prototype only. Login user
 	var parameters = {
 		'name' : 'insert_your_login_here',
-		'pass' : hex_sha1("insert_your_pass_here")
+		'pass' : hex_sha1("inser_your_pass_here")
 	};
 	bpServices.send(false, 'processLogin', parameters, onLoginRetrieved);
 

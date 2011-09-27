@@ -25,7 +25,7 @@ function cuePointManager(){
 	
 
 	this.currentSubtitle = function(){
-		return cpm_subtitleId;
+		return this.cpm_subtitleId;
 	}
 	
 	this.addCue = function(cueobj){

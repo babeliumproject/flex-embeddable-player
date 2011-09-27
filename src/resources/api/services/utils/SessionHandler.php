@@ -41,8 +41,10 @@ class SessionHandler{
 	//logging out the users for security purposes.
 	
 	public function SessionHandler($restrictedArea = false){
-		if(session_id() == '')
+		if(session_id() == ''){
 			session_start();
+			$_SESSION['initiated'] = true;	
+		}
 		$this->avoidSessionFixation();
 		
 		if($restrictedArea)

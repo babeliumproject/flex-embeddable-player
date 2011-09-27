@@ -19,12 +19,16 @@ function services(){
 		this.protocol = secured ? 'https://' : 'http://';
 		var qs = this.protocol + this.host + this.endpoint + '?' + method;
 		var data = {};
+		var cb = callback;
 		data.method = method;
 		if(parameters != null)
 			data.parameters = parameters;
+		if(cb == null){
+			cb = instance.onServiceSuccess; 		
+		}
 		this.token = this.generateToken(method);
 		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-		$.post(qs, data, callback, "json")
+		$.post(qs, data, cb, "json")
 		.error(function(error){
 			instance.onServiceError(error);
 		});
@@ -73,10 +77,14 @@ function services(){
 	//	//Retrieve the userID and the authToken
 	//}
 	
+	this.onServiceSuccess = function(success){
+		//Do sth with this data;
+	}
+
 	this.onServiceError = function(error){
 		//Display an error message noticing the user that the request to the server was not successful.
 		console.log("Request error: \n");
-		console.log(error);
+		console.log(error['response']);
 	}
 	
 	this.createRandomSalt = function(){
