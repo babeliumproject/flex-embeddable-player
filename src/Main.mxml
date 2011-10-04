@@ -81,7 +81,7 @@
 
 			private function onConnect(e:Event):void
 			{
-
+				Extern.getInstance().onConnectionReady();
 			}
 
 			private function set onUpdateVPHeight(height:int):void

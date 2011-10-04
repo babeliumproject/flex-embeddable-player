@@ -48,7 +48,7 @@ package modules.videoPlayer
 		/**
 		 * Skin related variables
 		 */
-		private const SKIN_PATH:String="resources/skin/";
+		private const SKIN_PATH:String=DataModel.getInstance().uploadDomain+"resources/skin/";
 		private var _skinableComponents:Dictionary;
 		private var _skinLoader:URLLoader;
 		private var _loadingSkin:Boolean=false;

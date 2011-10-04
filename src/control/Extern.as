@@ -99,7 +99,14 @@ package control
 		 */
 		public function onVideoPlayerReady():void
 		{
-			ExternalInterface.call("onBabeliaPlayerReady", ExternalInterface.objectID);
+			ExternalInterface.call("onPlayerReady", ExternalInterface.objectID);
+		}
+		
+		/**
+		 * Tell JS that the connection is being successfully established
+		 */
+		public function onConnectionReady():void{
+			ExternalInterface.call("onConnectionReady", ExternalInterface.objectID);
 		}
 		
 		

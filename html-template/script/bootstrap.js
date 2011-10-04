@@ -63,13 +63,27 @@ function onLoginRetrieved(data) {
 	bpConfig.user = info;
 }
 
-function onBabeliaPlayerReady(playerid) {
+function onPlayerReady(playerid) {
 	bpPlayer = document.getElementById(playerid);
 	if (!bpPlayer) {
 		Alert('There was a problem while loading the video player.');
 		return;
 	}
 
+	
+}
+
+function onConnectionReady(playerId){
+	
+	if(bpPlayer == undefined){
+		bpPlayer = document.getElementById(playerid);
+		if (!bpPlayer) {
+			Alert('There was a problem while loading the video player.');
+			return;
+		}
+	}
+	
+	
 	// Load the exercises module using the "Sintel" sample video
 	var ex = {
 		'id' : 73,
@@ -77,4 +91,5 @@ function onBabeliaPlayerReady(playerid) {
 		'title' : 'Sintel'
 	};
 	bpExercises.loadExercise(bpPlayer, ex);
+	
 }
