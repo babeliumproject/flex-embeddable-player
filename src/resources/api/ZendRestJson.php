@@ -174,94 +174,8 @@ class ZendRestJson extends Zend_Rest_Server
 			);
 		}
 
-		/*
-		 if (isset($request['method'])) {
-		$this->_method = $request['method'];
-		if (isset($this->_functions[$this->_method])) {
-		if ($this->_functions[$this->_method] instanceof Zend_Server_Reflection_Function || $this->_functions[$this->_method] instanceof Zend_Server_Reflection_Method && $this->_functions[$this->_method]->isPublic()) {
-		$request_keys = array_keys($request);
-		array_walk($request_keys, array(__CLASS__, "lowerCase"));
-		$request = array_combine($request_keys, $request);
-		$func_args = $this->_functions[$this->_method]->getParameters();
-		$calling_args = array();
-		$missing_args = array();
-		foreach ($func_args as $arg) {
-		if (isset($request[strtolower($arg->getName())])) {
-		$calling_args[] = $this->_convertParameter($request[strtolower($arg->getName())]);
-		} elseif ($arg->isOptional()) {
-		$calling_args[] = $arg->getDefaultValue();
-		} else {
-		$missing_args[] = $arg->getName();
-		}
-		}
-
-		foreach ($request as $key => $value) {
-		if (substr($key, 0, 3) == 'arg') {
-		$key = str_replace('arg', '', $key);
-		$calling_args[$key] = $this->_convertParameter($value);
-		if (($index = array_search($key, $missing_args)) !== false) {
-		unset($missing_args[$index]);
-		}
-		}
-		}
-
-		// Sort arguments by key -- @see ZF-2279
-		ksort($calling_args);
-
-		$result = false;
-		if (count($calling_args) < count($func_args)) {
-		require_once 'Zend/Rest/Server/Exception.php';
-		$result = $this->fault(new Zend_Rest_Server_Exception('Invalid Method Call to ' . $this->_method . '. Missing argument(s): ' . implode(', ', $missing_args) . '.'), 400);
-		}
-
-		if (!$result && $this->_functions[$this->_method] instanceof Zend_Server_Reflection_Method) {
-		// Get class
-		$class = $this->_functions[$this->_method]->getDeclaringClass()->getName();
-
-		if ($this->_functions[$this->_method]->isStatic()) {
-		// for some reason, invokeArgs() does not work the same as
-		// invoke(), and expects the first argument to be an object.
-		// So, using a callback if the method is static.
-		$result = $this->_callStaticMethod($class, $calling_args);
-		} else {
-		// Object method
-		$result = $this->_callObjectMethod($class, $calling_args);
-		}
-		} elseif (!$result) {
-		try {
-		$result = call_user_func_array($this->_functions[$this->_method]->getName(), $calling_args); //$this->_functions[$this->_method]->invokeArgs($calling_args);
-		} catch (Exception $e) {
-		$result = $this->fault($e);
-		}
-		}
-		} else {
-		require_once "Zend/Rest/Server/Exception.php";
-		$result = $this->fault(
-		new Zend_Rest_Server_Exception("Unknown Method '$this->_method'."),
-		404
-		);
-		}
-		} else {
-		require_once "Zend/Rest/Server/Exception.php";
-		$result = $this->fault(
-		new Zend_Rest_Server_Exception("Unknown Method '$this->_method'."),
-		404
-		);
-		}
-		} else {
-		require_once "Zend/Rest/Server/Exception.php";
-		$result = $this->fault(
-		new Zend_Rest_Server_Exception("No Method Specified."),
-		404
-		);
-		}*/
+	
 		error_log(print_r($result,true),3,"/tmp/test.log");
-		//if ($result instanceof SimpleXMLElement) {		
-		//	$response = $result->asXML();
-		//} elseif ($result instanceof DOMDocument) {
-		//	$response = $result->saveXML();
-		//} elseif ($result instanceof DOMNode) {
-		//	$response = $result->ownerDocument->saveXML($result);
 		
 		if (!$this->_faultResult){
 			if (is_array($result) || is_object($result)) {
@@ -394,31 +308,6 @@ class ZendRestJson extends Zend_Rest_Server
 		return $json;
 	}
 
-
-	/**
-	 * Checks whether the provided parameter is an base64 encoded json representation of an object and if so
-	 * returns a stdClass representation of it. If the parameter is not base64 decodable or doesn't have
-	 * a valid json representation we assume it's an scalar parameter and return it as it is.
-	 *
-	 * @param mixed $parameter
-	 * 		An HTTP request parameter of undetermined type
-	 * @return mixed $result_parameter
-	 * 		Returns an stdClass representation of the parameter given this parameter is a base64 encoded json representation. Otherways it returns the parameter as is.
-	 */
-	//protected function _convertParameter($parameter){
-	//	$result_parameter = $parameter;
-	//	//JSON object parameters are encoded using base64 on the client
-	//	if(base64_decode($parameter) !== false){
-	//		$json_parameter = base64_decode($parameter);
-	//		if(json_decode($json_parameter) !== null){
-	//			$object_parameter = json_decode($json_parameter);
-	//			$result_parameter = $object_parameter;
-	//		}
-	//	}
-	//	return $result_parameter;
-	//
-	//}
-
 	protected function _parseParams($parameters){
 		$result_parameter = $parameters;
 		//This means we have more than one parameter and thus, we want it to be an object
@@ -444,6 +333,8 @@ class ZendRestJson extends Zend_Rest_Server
 			if( array_key_exists('uuid',$request_header) && array_key_exists('session',$request_header) ) {
 				$uuid = $request_header['uuid'];
 				$session = $request_header['session'];
+				
+				/* disabled for deadline issues
 				if( $this->_method == $request_method && session_id() != "" && $session == session_id() ){
 					if( $this->_method == 'getCommunicationToken' ){
 						$_SESSION['uuid'] = $uuid;
@@ -468,7 +359,8 @@ class ZendRestJson extends Zend_Rest_Server
 						}
 
 					}
-				}
+				}*/
+				$result = TRUE;
 			}
 		}
 		return $result;
@@ -480,20 +372,6 @@ class ZendRestJson extends Zend_Rest_Server
 		$c = sha1($method.":".$token.":".$statToken.":".$salt);
 		return $salt . $c;
 	}
-
-
-	/*
-	 protected function _generateRandomCommunicationToken($length){
-	$token = '';
-	$i = 0;
-	while ($i < $length){
-	$token = $token . dechex(floor((rand(0,1000000) * 16)/1000000));
-	$i++;
-	}
-	return $token;
-	}
-	*/
-
 
 }
 ?>

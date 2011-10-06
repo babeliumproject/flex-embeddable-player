@@ -56,6 +56,8 @@
 
 			private function init():void
 			{
+				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
+				Security.allowDomain("*");
 				// Setups video player's connection with Red5 Server 
 				new SetupConnectionEvent().dispatch();
 				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
