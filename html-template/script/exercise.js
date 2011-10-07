@@ -486,10 +486,10 @@ function exercise() {
 					return;
 				}
 
-				var userCredCount = 0;
-				if(bpConfig.user.creditCount !== undefined)
-					userCredCount = bpConfig.user.creditCount;
-				if (userCredCount - bpConfig.evaluationRequestCredits >= 0) {
+				//var userCredCount = 0;
+				//if(bpConfig.user.creditCount !== undefined)
+				//	userCredCount = bpConfig.user.creditCount;
+				//if (userCredCount - bpConfig.evaluationRequestCredits >= 0) {
 					// This must be changed by some function that takes a snapshot of the Response video
 					var responseThumbnail = "nothumb.png";
 					var subtitleId = instance.cueManager.currentSubtitle();
@@ -517,9 +517,9 @@ function exercise() {
 					// Restore the panels
 					$('#exerciseInfoPanel').show();
 					$('#recordingEndOptions').hide();
-				} else {
-					$('#insufficientCreditsDialog').dialog('open');
-				}
+				//} else {
+				//	$('#insufficientCreditsDialog').dialog('open');
+				//}
 			});
 	});
 }
