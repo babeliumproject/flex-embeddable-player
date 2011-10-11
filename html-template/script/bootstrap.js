@@ -60,27 +60,17 @@ function onPreferencesRetrieved(data) {
 
 function onLoginRetrieved(data) {
 	var info = data['response'];
-	bpConfig.user = info;
+	if(info.name != undefined)
+		bpConfig.user = info;
+	else
+		alert("Wrong auth credentials provided. Can't record a response");
 }
 
-function onPlayerReady(playerid) {
+function onConnectionReady(playerId){
 	bpPlayer = document.getElementById(playerid);
 	if (!bpPlayer) {
 		Alert('There was a problem while loading the video player.');
 		return;
-	}
-
-	
-}
-
-function onConnectionReady(playerId){
-	
-	if(bpPlayer == undefined){
-		bpPlayer = document.getElementById(playerid);
-		if (!bpPlayer) {
-			Alert('There was a problem while loading the video player.');
-			return;
-		}
 	}
 	
 	
@@ -93,3 +83,6 @@ function onConnectionReady(playerId){
 	bpExercises.loadExercise(bpPlayer, ex);
 	
 }
+
+
+

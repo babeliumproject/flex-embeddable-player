@@ -50,18 +50,6 @@ function services(){
 		});
 		
 	}
-
-		
-	//this.authenticateUser = function(username, pass, rememberUser){
-	//	var method = 'authenticateUser';
-	//	var t = this.generateToken(method);
-	//	var p = {};
-	//	p.method = method;
-	//	p.parameters = {"password": pass, "savePassword": rememberUser, "username": user};
-	//	p.header = {"token": t, "session": bpConfig.sessionID, "uuid": bpConfig.uuid};
-	//	
-	//	this.send(true,method,p,onAuthenticateUserSuccess);
-	//}
 	
 	this.onCommunicationTokenSuccess = function(data){
 		//The request to the server was successful, now we should check if the response is right or not
@@ -70,21 +58,14 @@ function services(){
 		onCommunicationReady();
 	}
 	
-	
-	//this.onAuthenticateUserSuccess = function(data){
-	//	//The request to the server was successful, now we should check if the response if right or not
-	//	
-	//	//Retrieve the userID and the authToken
-	//}
-	
 	this.onServiceSuccess = function(success){
 		//Do sth with this data;
 	}
 
 	this.onServiceError = function(error){
 		//Display an error message noticing the user that the request to the server was not successful.
-		console.log("Request error: \n");
-		console.log(error['response']);
+		var errorObj = jQuery.parseJSON(error.responseText);
+		console.log("Request error: ".errorObj.response.message);
 	}
 	
 	this.createRandomSalt = function(){
