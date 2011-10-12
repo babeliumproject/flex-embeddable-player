@@ -67,7 +67,7 @@ function onLoginRetrieved(data) {
 }
 
 function onConnectionReady(playerId){
-	bpPlayer = document.getElementById(playerid);
+	bpPlayer = document.getElementById(playerId);
 	if (!bpPlayer) {
 		Alert('There was a problem while loading the video player.');
 		return;
