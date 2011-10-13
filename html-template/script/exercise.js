@@ -223,6 +223,9 @@ function exercise() {
 		this.recordedFilename = recFilename;
 		console.log("Response recording ended");
 
+		var s = document.getElementById("id_submitbutton");
+                s.disabled = false;
+
 		// Set the videoplayer to playback both the exercise and the
 		// last response.
 		this.bpPlayer.videoSource(this.exerciseName);
@@ -265,6 +268,40 @@ function exercise() {
 		this.bpPlayer.removeArrows();
 	}
 
+	this.saveResponse = function(){
+		if(bpConfig.user == undefined){
+			alert("You must be logged in in order to save your response");
+			return;
+		}
+
+		var s = document.getElementById("id_submitbutton");
+		s.disabled = true;
+
+		var subtitleId = instance.cueManager.currentSubtitle();
+		var duration = instance.bpPlayer.duration();
+
+		// Prepare an AJAX call to the appointed service
+		var parameters = {
+			'userId' : bpConfig.user.id,
+			'exerciseId' : instance.exerciseId,
+			'fileIdentifier' : instance.recordedFilename,
+			'isPrivate' : true,
+			'source' : 'Red5',
+			'duration' : duration,
+			'addingDate' : null,
+			'ratingAmount' : 0,
+			'characterName' : instance.selectedRole,
+			'transcriptionId' : 0,
+			'subtitleId' : subtitleId
+		};
+
+		bpServices.send(false,'admSaveResponse',parameters,instance.saveResponseCallback);
+
+		// Restore the panels
+		$('#exerciseInfoPanel').show();
+		$('#recordingEndOptions').hide();
+	}
+
 	 /**
          * Service callback, use the 'instance' variable to access local scope
          */
@@ -287,10 +324,17 @@ function exercise() {
 		var subtitleId = instance.cueManager.currentSubtitle();
 		var roleId = 0;
 		var responseId = result.responseId;
+		var responseThumbnail = result.responseThumbnail;
 		console.log("ResponseID: "+responseId);
 
-		//TODO
-		//document.getElementById() moodle hidden form element data1 and data2 where we're gonna store the results and then do the same as the submit button
+		
+		var mform = document.forms['mform1'];
+		mform.elements["data1"].value = responseId;
+		mform.elements["data2"].value = responseThumbnail;
+		console.log(document.getElementById("mform1"));
+		var s = document.getElementById("id_submitbutton");
+                s.disabled = false;
+		mform.submit();
 
 		/* Leave statistics aside for now 
 		var roles = instance.roles;
@@ -472,13 +516,15 @@ function exercise() {
 				instance.statisticRecAttempt();
 			});
 
+			/*
 			$('#abortRecordingBtn').click(function() {
 				instance.recordingError();
 				instance.prepareExercise();
 				instance.resetCueManager();
-			});
+			});*/
 
 			// Save response
+			/*
 			$('#saveResponseBtn').click(function() {
 				// TODO
 
@@ -521,6 +567,6 @@ function exercise() {
 				//} else {
 				//	$('#insufficientCreditsDialog').dialog('open');
 				//}
-			});
+			});*/
 	});
 }
