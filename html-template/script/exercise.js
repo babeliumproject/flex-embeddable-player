@@ -287,6 +287,12 @@ function exercise() {
 		var subtitleId = instance.cueManager.currentSubtitle();
 		var roleId = 0;
 		var responseId = result.responseId;
+		console.log("ResponseID: "+responseId);
+
+		//TODO
+		//document.getElementById() moodle hidden form element data1 and data2 where we're gonna store the results and then do the same as the submit button
+
+		/* Leave statistics aside for now 
 		var roles = instance.roles;
 		for (var i in roles) {
 			if (roles[i].characterName == instance.selectedRole) {
@@ -295,11 +301,6 @@ function exercise() {
 			}
 		}
 
-		var parameters = {
-			'responseId': responseId
-		};
-		bpServices.send(false, 'makePublic', parameters, instance.onResponsePublished);
-	
 
 		// Ajax call to the appointed REST service
 		var parameters = {
@@ -315,7 +316,7 @@ function exercise() {
 		};
 
 		bpServices.send(false, 'exerciseSaveResponse', parameters, null);
-
+		*/
 	}
 
 	/**
@@ -498,7 +499,7 @@ function exercise() {
 
 					// Prepare an AJAX call to the appointed service
 					var parameters = {
-						'id' : 0,
+						'userId' : bpConfig.user.id,
 						'exerciseId' : instance.exerciseId,
 						'fileIdentifier' : instance.recordedFilename,
 						'isPrivate' : true,
@@ -512,7 +513,7 @@ function exercise() {
 						'subtitleId' : subtitleId
 					};
 
-					bpServices.send(false,'saveResponse',parameters,instance.saveResponseCallback);
+					bpServices.send(false,'admSaveResponse',parameters,instance.saveResponseCallback);
 
 					// Restore the panels
 					$('#exerciseInfoPanel').show();
