@@ -28,22 +28,6 @@ function services(){
 		}
 		this.token = this.generateToken(method);
 		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-		$.post(qs, data, cb, "json")
-		.error(function(error){
-			instance.onServiceError(error);
-		});
-	}
-	
-	this.getCommunicationToken = function(){
-		method = 'getCommunicationToken';
-		this.protocol = 'http://';
-		var qs = this.protocol + this.host + this.endpoint + '?' + method;
-		
-		var data = {};
-		data.method = method;
-		data.parameters = {'secretKey': hex_md5(bpConfig.sessionID)};
-		data.header = {"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-		
 
 		$.ajax({
 			type: "POST",
@@ -60,6 +44,23 @@ function services(){
 			
 			});	
 
+	}
+	
+	this.getCommunicationToken = function(){
+		method = 'getCommunicationToken';
+		this.protocol = 'http://';
+		var qs = this.protocol + this.host + this.endpoint + '?' + method;
+		
+		var data = {};
+		data.method = method;
+		data.parameters = {'secretKey': hex_md5(bpConfig.sessionID)};
+		data.header = {"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
+		
+	    $.post(qs, data, bpServices.onCommunicationTokenSuccess, "json")
+        .error(function(error){
+                instance.onServiceError(error);
+        });
+	    
 		
 	}
 	
