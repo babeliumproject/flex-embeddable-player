@@ -44,10 +44,22 @@ function services(){
 		data.parameters = {'secretKey': hex_md5(bpConfig.sessionID)};
 		data.header = {"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
 		
-		$.post(qs, data, bpServices.onCommunicationTokenSuccess, "json")
-		.error(function(error){
-			instance.onServiceError(error);
-		});
+
+		$.ajax({
+			type: "POST",
+			url: qs,
+			data: data,
+			success: cb,
+			error: function(error){
+				instance.onServiceError(error);
+			},
+			xhrFields: {
+				withCredentials: true
+			},
+			crossDomain: true
+			
+			});	
+
 		
 	}
 	
