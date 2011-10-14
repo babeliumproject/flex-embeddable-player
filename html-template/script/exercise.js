@@ -324,13 +324,13 @@ function exercise() {
 		var subtitleId = instance.cueManager.currentSubtitle();
 		var roleId = 0;
 		var responseId = result.responseId;
-		var responseThumbnail = result.responseThumbnail;
+		var responseFileIdentifier = result.responseFileIdentifier;
 		console.log("ResponseID: "+responseId);
 
 		
 		var mform = document.forms['mform1'];
 		mform.elements["data1"].value = responseId;
-		mform.elements["data2"].value = responseThumbnail;
+		mform.elements["data2"].value = responseFileIdentifier;
 		console.log(document.getElementById("mform1"));
 		var s = document.getElementById("id_submitbutton");
                 s.disabled = false;
@@ -449,6 +449,33 @@ function exercise() {
 		//ratingShareReport.exerciseData=null;
 	}
 
+	this.initBoth = function(videoPlayer, ex, response){
+ 		this.bpPlayer = videoPlayer;
+        	this.cueManager = new cuePointManager();
+        	this.setupVideoPlayer();
+		this.exerciseName = exercise.name;
+		this.exerciseTitle = exercise.title;
+		this.exerciseId = exercise.id;
+		this.currentExercise = exercise;
+		this.rolesReady = false;
+		this.localesReady = false;
+		this.cueManagerReady = false;
+
+		this.showBoth(response);
+        	$('#bplayer-title').html(ex.title);
+	}
+
+
+	this.showBoth = function(response){
+		instance.showArrows();
+		instance.setupRecordingCommands();
+		instance.bpPlayer.videoSource(instance.exerciseName);
+		instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
+		instance.bpPlayer.secondSource(response);
+		instance.bpPlayer.seek(false);
+	}
+
+
 	$(document).ready(function() {
 		
 			$('#recordingEndOptions').hide();
@@ -481,12 +508,7 @@ function exercise() {
 
 			// Watch both
 			$('#watchExerciseAndResponseBtn').click(function() {
-				instance.showArrows();
-				instance.setupRecordingCommands();
-				instance.bpPlayer.videoSource(instance.exerciseName);
-				instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
-				instance.bpPlayer.secondSource(instance.recordedFilename);
-				instance.bpPlayer.seek(false);
+				this.showBoth(instance.recordedFilename);
 			});
 
 			$('#watchResponseBtn').click(function() {
