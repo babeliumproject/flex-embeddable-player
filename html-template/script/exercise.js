@@ -19,6 +19,7 @@ function exercise() {
 	};
 
 	this.currentExercise = null;
+	this.currentResponse = null;
 	this.exerciseName;
 	this.exerciseTitle;
 	this.exerciseId;
@@ -42,6 +43,13 @@ function exercise() {
 		this.onExerciseSelected(ex);
 		$('#bplayer-title').html(ex.title);
 	}
+
+	this.loadResponse = function(videoPlayer, resp){
+		this.bpPlayer = videoPlayer;
+		this.cueManager = new cuePointManager();
+		this.onResponseSelected(resp);
+		document.getElementById("bplayer-title").innerHTML = resp.title;
+	}	
 
 	this.setupVideoPlayer = function() {
 		// bpPlayer.addEventListener('onVideoPlayerReady','videoPlayerReadyListener');
@@ -72,6 +80,13 @@ function exercise() {
 		this.resetCueManager();
 	}
 
+	this.onResponseSelected = function(response) {
+		this.currentResponse = response;
+		this.cueManagerReady = false;
+		this.resetCueManager();
+		this.prepareResponse();
+	}
+
 	this.prepareExercise = function() {
 		// Prepare new video in VideoPlayer
 		this.bpPlayer.stopVideo();
@@ -89,6 +104,11 @@ function exercise() {
 			"exerciseId" : this.exerciseId
 		};
 		bpServices.send(false, 'getExerciseLocales', parameters, instance.onLocalesRetrieved);
+	}
+
+	this.prepareResponse = function() {
+		
+		prepareCueManagerEvaluation();
 	}
 
 	/**
@@ -155,6 +175,14 @@ function exercise() {
 		this.bpPlayer.addEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
 	}
 
+	this.prepareCueManagerEvaluation = function(){
+		this.cueManager.addEventListener('onSubtitlesRetrieved', this.onSubtitlesRetrieved);
+		this.cueManager.setCuesFromSubtitleUsingId(this.currentResponse.fk_subtitle_id);
+
+		this.bpPlayer.removeEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
+		this.bpPlayer.addEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
+	}
+
 	this.enterFrameListener = function(event) {
 		this.cueManager.monitorCuePoints(event);
 	}
@@ -163,7 +191,19 @@ function exercise() {
 	 * Callback from another scope, use the 'instance' variable to access local properties/methods
 	 */
 	this.onSubtitlesRetrieved = function() {
-		instance.setupPlayCommands();
+		if(instance.currentResponse == undefined)
+			instance.setupPlayCommands();
+		else{
+			instance.setupReplayCommands();
+			instance.bpPlayer.state=intance.bpPlayerStates.PLAY_BOTH_STATE;
+			instance.bpPlayer.videoSource=instance.currentResponse.name;
+			instance.bpPlayer.secondSource=instance.currentResponse.file_identifier;
+			instance.bpPlayer.addEventListener('onMetadataRetrieved', 'bpExercises.onMetadataRetrieved');
+		}
+	}
+
+	this.onMetadataRetrieved = function(event) {
+		this.showArrows();
 	}
 
 	this.setupPlayCommands = function() {
@@ -432,7 +472,7 @@ function exercise() {
 		this.bpPlayer.videoSource(""); // Reset video source
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_STATE); //Reset the player window to display only the exercise
 
-		this.bpPlayer.arrows(false); // Hide arrows
+		this.hideArrows(); // Hide arrows
 
 		
 		//exerciseTitle=resourceManager.getString('myResources', 'LABEL_EXERCISE_TITLE');
@@ -449,6 +489,7 @@ function exercise() {
 		//ratingShareReport.exerciseData=null;
 	}
 
+/*
 	this.initBoth = function(videoPlayer, ex, response){
  		this.bpPlayer = videoPlayer;
         	this.cueManager = new cuePointManager();
@@ -473,7 +514,7 @@ function exercise() {
 		instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
 		instance.bpPlayer.secondSource(response);
 		instance.bpPlayer.seek(false);
-	}
+	}*/
 
 
 	$(document).ready(function() {

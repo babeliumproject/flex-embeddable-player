@@ -1,5 +1,6 @@
 package control
 {
+	import flash.events.Event;
 	import flash.external.ExternalInterface;
 	import flash.utils.Dictionary;
 	
@@ -150,6 +151,10 @@ package control
 			ExternalInterface.call(jsListeners['onVideoStartedPlaying']);
 		}
 		
+		public function onMetadataRetrieved(e:Event):void{
+			ExternalInterface.call(jsListeners['onMetadataRetrieved'],e);
+		}
+		
 		/*************************
 		 * Tunneling VP Properties
 		 ************************/
@@ -266,6 +271,9 @@ package control
 					jsListeners['onVideoStartedPlaying'] = listener;
 					VP.addEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, onVideoStartedPlaying);
 					break;
+				case 'onMetadataRetrieved':
+					jsListeners['onMetadataRetrieved'] = listener;
+					VP.addEventListener(VideoPlayerEvent.METADATA_RETRIEVED, onMetadataRetrieved);
 				case 'onVideoPlayerReady':
 					//jsListeners['onVideoPlayerReady'] = listener;
 					//VP.addEventListener(VideoPlayerEvent.CONNECTED, onVideoPlayerReady);
@@ -301,6 +309,10 @@ package control
 						delete jsListeners['onVideoStartedPlaying'];
 					VP.removeEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, onVideoStartedPlaying);
 					break;	
+				case 'onMetadataRetrieved':
+					if(jsListeners['onMetadataRetrieved'])
+						delete jsListeners['onMetadataRetrieved'];
+					VP.removeEventListener(VideoPlayerEvent.METADATA_RETRIEVED, onMetadataRetrieved);
 				default:
 					break;
 			}
