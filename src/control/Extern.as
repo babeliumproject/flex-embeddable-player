@@ -152,7 +152,7 @@ package control
 		}
 		
 		public function onMetadataRetrieved(e:Event):void{
-			ExternalInterface.call(jsListeners['onMetadataRetrieved'],e);
+			ExternalInterface.call(jsListeners['onMetadataRetrieved']);
 		}
 		
 		/*************************

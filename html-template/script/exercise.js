@@ -82,6 +82,7 @@ function exercise() {
 
 	this.onResponseSelected = function(response) {
 		this.currentResponse = response;
+		console.log(this.currentResponse);
 		this.cueManagerReady = false;
 		this.resetCueManager();
 		this.prepareResponse();
@@ -108,7 +109,7 @@ function exercise() {
 
 	this.prepareResponse = function() {
 		
-		prepareCueManagerEvaluation();
+		this.prepareCueManagerEvaluation();
 	}
 
 	/**
@@ -194,10 +195,12 @@ function exercise() {
 		if(instance.currentResponse == undefined)
 			instance.setupPlayCommands();
 		else{
-			instance.setupReplayCommands();
-			instance.bpPlayer.state=intance.bpPlayerStates.PLAY_BOTH_STATE;
-			instance.bpPlayer.videoSource=instance.currentResponse.name;
-			instance.bpPlayer.secondSource=instance.currentResponse.file_identifier;
+			instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
+			instance.bpPlayer.videoSource(instance.currentResponse.name);
+			instance.bpPlayer.secondSource(instance.currentResponse.file_identifier);
+			instance.selectedRole = instance.currentResponse.character_name;
+			instance.setupRecordingCommands();
+			//instance.showArrows();
 			instance.bpPlayer.addEventListener('onMetadataRetrieved', 'bpExercises.onMetadataRetrieved');
 		}
 	}
@@ -250,7 +253,7 @@ function exercise() {
 				auxList[i].setEndCommand(new onRecordingSelectedRoleStopCuePoint(this.bpPlayer));
 			}
 		}
-
+		this.bpPlayer.seek(false);
 		this.cueManagerReady = true;
 	}
 
