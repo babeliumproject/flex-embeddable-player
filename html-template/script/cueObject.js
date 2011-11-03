@@ -17,18 +17,18 @@ function cueObject(subtitleId, startTime, endTime, text, roleId, role, startComm
 		
 	this.executeStartCommand = function(){
 		this.startCommand.execute();
-	}
+	};
 		
 	this.executeEndCommand = function(){
 		this.endCommand.execute();
-	}
+	};
 		
 	this.setStartCommand = function(command){
 		this.startCommand = command;
-	}
+	};
 		
 	this.setEndCommand = function(command){
 		this.endCommand = command;
-	}
+	};
 
 }

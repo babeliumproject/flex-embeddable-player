@@ -11,5 +11,5 @@ function onRecordingOtherRoleCuePoint(cue, VP)
 		this.VP.startTalking(this.cue.role, time);
 		this.VP.highlight(false);
 		//console.log("Start Other Role");
-	}
+	};
 }

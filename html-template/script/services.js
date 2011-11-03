@@ -28,14 +28,20 @@ function services(){
 		}
 		this.token = this.generateToken(method);
 		data.header = {"token":this.token,"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
-
+		// Fix for Internet Explorer 'No Transport' error. This error is apparently caused by an cross-domain request attempt.
+		// With the following statetement we force jQuery to support cross-origin resource sharing by default. Solution found at:
+		// http://blueonionsoftware.com/blog.aspx?p=03aff202-4198-4606-b9d6-686fd13697ee
+		$.support.cors = true;
 		$.ajax({
 			type: "POST",
 			url: qs,
 			data: data,
 			success: cb,
-			error: function(error){
-				instance.onServiceError(error);
+			//error: function(error){
+			//	instance.onServiceError(error);
+			//},
+			error: function (xhr, status, errorThrown){
+				instance.onServiceError(xhr,status,errorThrown);
 			},
 			xhrFields: {
 				withCredentials: true
@@ -75,9 +81,9 @@ function services(){
 		//Do sth with this data;
 	}
 
-	this.onServiceError = function(error){
+	this.onServiceError = function(xhr, status, errorThrown){
 		//Display an error message noticing the user that the request to the server was not successful.
-		var errorObj = jQuery.parseJSON(error.responseText);
+		var errorObj = jQuery.parseJSON(xhr.responseText);
 		console.log("Request error: ".errorObj.response.message);
 	}
 	

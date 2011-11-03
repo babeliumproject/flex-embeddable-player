@@ -30,7 +30,7 @@
 									streamSource="{DataModel.getInstance().streamingResourcesPath}"
 									controlsEnabled="true"/>
 	
-	<fx:Style source="Main.css"/>
+	<fx:Style source="babeliumPlayer.css"/>
 	
 	<fx:Declarations>
 		<control:Controller/>

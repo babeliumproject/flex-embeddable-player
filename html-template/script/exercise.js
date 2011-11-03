@@ -20,9 +20,6 @@ function exercise() {
 
 	this.currentExercise = null;
 	this.currentResponse = null;
-	this.exerciseName;
-	this.exerciseTitle;
-	this.exerciseId;
 
 	this.rolesReady = false;
 	this.localesReady = false;
@@ -42,21 +39,21 @@ function exercise() {
 		this.setupVideoPlayer();
 		this.onExerciseSelected(ex);
 		$('#bplayer-title').html(ex.title);
-	}
+	};
 
 	this.loadResponse = function(videoPlayer, resp){
 		this.bpPlayer = videoPlayer;
 		this.cueManager = new cuePointManager();
 		this.onResponseSelected(resp);
 		document.getElementById("bplayer-title").innerHTML = resp.title;
-	}	
+	};	
 
 	this.setupVideoPlayer = function() {
 		// bpPlayer.addEventListener('onVideoPlayerReady','videoPlayerReadyListener');
 		// bpPlayer.addEventListener('onVideoStartedPlaying','videoStartedPlayingListener');
 		this.bpPlayer.addEventListener('onRecordingAborted','bpExercises.recordingAbortedListener');
 		this.bpPlayer.addEventListener('onRecordingFinished','bpExercises.recordingFinishedListener');
-	}
+	};
 
 	this.onExerciseSelected = function(exercise) {
 		// Store selected exercise's information
@@ -72,13 +69,13 @@ function exercise() {
 		// widget below the videoplayer
 		// in that case set the exercise data on this widget aswell
 		// TODO
-		if(bpConfig.user != undefined && bpConfig.user.name != undefined){
+		//if(bpConfig.user != undefined && bpConfig.user.name != undefined){
 			//Load the rating, tags, and report
-		}
+		//}
 
 		this.prepareExercise();
 		this.resetCueManager();
-	}
+	};
 
 	this.onResponseSelected = function(response) {
 		this.currentResponse = response;
@@ -86,7 +83,7 @@ function exercise() {
 		this.cueManagerReady = false;
 		this.resetCueManager();
 		this.prepareResponse();
-	}
+	};
 
 	this.prepareExercise = function() {
 		// Prepare new video in VideoPlayer
@@ -105,12 +102,12 @@ function exercise() {
 			"exerciseId" : this.exerciseId
 		};
 		bpServices.send(false, 'getExerciseLocales', parameters, instance.onLocalesRetrieved);
-	}
+	};
 
 	this.prepareResponse = function() {
 		
 		this.prepareCueManagerEvaluation();
-	}
+	};
 
 	/**
 	 * Service callback, use the 'instance' variable to access local scope
@@ -133,7 +130,7 @@ function exercise() {
 			// Preparing subtitles
 			instance.prepareCueManager();
 		}
-	}
+	};
 
 	/**
 	 * Service callback, use the 'instance' variable to access local scope
@@ -158,12 +155,12 @@ function exercise() {
 				}
 			}
 		}
-	}
+	};
 
 	this.resetCueManager = function() {
 		this.cueManager.reset();
 		this.bpPlayer.removeEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
-	}
+	};
 
 	this.prepareCueManager = function() {
 		this.cueManager.setVideo(this.exerciseId);
@@ -174,7 +171,7 @@ function exercise() {
 		this.cueManager.setCuesFromSubtitleUsingLocale(this.selectedLocale);
 		this.bpPlayer.removeEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
 		this.bpPlayer.addEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
-	}
+	};
 
 	this.prepareCueManagerEvaluation = function(){
 		this.cueManager.addEventListener('onSubtitlesRetrieved', this.onSubtitlesRetrieved);
@@ -182,11 +179,11 @@ function exercise() {
 
 		this.bpPlayer.removeEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
 		this.bpPlayer.addEventListener('onEnterFrame', 'bpExercises.enterFrameListener');
-	}
+	};
 
 	this.enterFrameListener = function(event) {
 		this.cueManager.monitorCuePoints(event);
-	}
+	};
 
 	/**
 	 * Callback from another scope, use the 'instance' variable to access local properties/methods
@@ -203,11 +200,11 @@ function exercise() {
 			//instance.showArrows();
 			instance.bpPlayer.addEventListener('onMetadataRetrieved', 'bpExercises.onMetadataRetrieved');
 		}
-	}
+	};
 
 	this.onMetadataRetrieved = function(event) {
 		this.showArrows();
-	}
+	};
 
 	this.setupPlayCommands = function() {
 		var auxList = this.cueManager.getCuelist();
@@ -221,7 +218,7 @@ function exercise() {
 		this.cueManagerReady = true;
 
 		this.videoStartedPlayingListener(null);
-	}
+	};
 
 	this.setupReplayCommands = function() {
 		var auxList = this.cueManager.getCuelist();
@@ -235,7 +232,7 @@ function exercise() {
 		}
 
 		this.cueManagerReady = true;
-	}
+	};
 
 	this.setupRecordingCommands = function() {
 		var auxList = this.cueManager.getCuelist();
@@ -255,7 +252,7 @@ function exercise() {
 		}
 		this.bpPlayer.seek(false);
 		this.cueManagerReady = true;
-	}
+	};
 
 	/**
 	 * On recording end successfully
@@ -277,7 +274,7 @@ function exercise() {
 
 		this.bpPlayer.seek(false);
 		this.bpPlayer.stopVideo();
-	}
+	};
 
 	/**
 	 * On recording aborted
@@ -286,7 +283,7 @@ function exercise() {
 	this.recordingAbortedListener = function() {
 		alert("Devices not working");
 		this.recordingError();
-	}
+	};
 
 	this.recordingError = function() {
 		this.hideArrows();
@@ -298,18 +295,18 @@ function exercise() {
 		// Restore the panels
 		$('#exerciseInfoPanel').show();
 		$('#recordingEndOptions').hide();
-	}
+	};
 
 	this.showArrows = function() {
 
 		this.bpPlayer.arrows(true);
 		this.bpPlayer.setArrows(this.cueManager.cues2rolearray(), this.selectedRole);
-	}
+	};
 
 	this.hideArrows = function() {
 		this.bpPlayer.arrows(false);
 		this.bpPlayer.removeArrows();
-	}
+	};
 
 	this.saveResponse = function(){
 		if(bpConfig.user == undefined){
@@ -343,7 +340,7 @@ function exercise() {
 		// Restore the panels
 		$('#exerciseInfoPanel').show();
 		$('#recordingEndOptions').hide();
-	}
+	};
 
 	 /**
          * Service callback, use the 'instance' variable to access local scope
@@ -404,7 +401,7 @@ function exercise() {
 
 		bpServices.send(false, 'exerciseSaveResponse', parameters, null);
 		*/
-	}
+	};
 
 	/**
          * Service callback, use the 'instance' variable to access local scope
@@ -416,7 +413,7 @@ function exercise() {
 		bpConfig.user.creditCount = result.creditCount;
 		//TODO notify the view elements of the change to reflect the new value
 		alert("Your response has been published. Thanks for your collaboration."); 
-	}
+	};
 
 	// Videplyarevent
 	this.videoStartedPlayingListener = function() {
@@ -439,7 +436,7 @@ function exercise() {
 			if (this.exerciseId > 0 && subtitleId > 0)
 				bpServices.send(false, 'watchExercise', parameters, null);
 		}
-	}
+	};
 
 	this.statisticRecAttempt = function() {
 		var subtitlesAreUsed = this.bpPlayer.subtitlePanelVisible();
@@ -467,7 +464,7 @@ function exercise() {
 		};
 
 		bpServices.send(false,'exerciseAttemptResponse', parameters, function(data){});
-	}
+	};
 		
 	this.resetComp = function(){
 		this.bpPlayer.endVideo(); // Stop video
@@ -490,7 +487,7 @@ function exercise() {
 
 		//Remove the current exercise's info
 		//ratingShareReport.exerciseData=null;
-	}
+	};
 
 /*
 	this.initBoth = function(videoPlayer, ex, response){

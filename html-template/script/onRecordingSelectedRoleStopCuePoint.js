@@ -7,5 +7,5 @@ function onRecordingSelectedRoleStopCuePoint(VP){
 		this.VP.setSubtitle('',0x000000);
 		this.VP.highlight(false);
 		//console.log("Stop Recording your role");
-	}
+	};
 }

@@ -17,5 +17,5 @@ function onPlaybackCuePoint(cue, videoPlayer, dg)
 			this.VP.setSubtitle('',0x000000);
 			//console.log("Stop Other Role/Hide subtitle");
 		}
-	}
+	};
 }

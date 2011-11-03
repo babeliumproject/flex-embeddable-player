@@ -6,8 +6,6 @@ function cuePointManager(){
 	
 	this.roleColors = [0xffffff, 0xfffd22, 0x69fc00, 0xfd7200, 0x056cf9, 0xff0f0b, 0xc314c9, 0xff6be5];
 	this.colorDictionary = [];
-	
-	this.subtitlesRetrievedListener;
 
 	// http://stackoverflow.com/questions/4818615/using-getjson-with-callback-within-a-javascript-object
 	var instance = this;
@@ -16,74 +14,74 @@ function cuePointManager(){
 		cpm_exerciseId=-1;
 		cpm_subtitleId=-1;
 		cpm_cuelist = [];
-	}
+	};
 	
 
 	this.setVideo = function(videoId){
 		this.cpm_exerciseId=videoId;
-	}
+	};
 	
 
 	this.currentSubtitle = function(){
 		return this.cpm_subtitleId;
-	}
+	};
 	
 	this.addCue = function(cueobj){
 		this.cpm_cuelist.push(cueobj);
 		this.cpm_cuelist.sort(this.sortByStartTime);
-	}
+	};
 
 	this.setCueAt = function(cueobj, pos){
 		this.cpm_cuelist.setItemAt(cueobj, pos);
-	}
+	};
 
 	this.getCueAt = function(pos){
 		return this.cpm_cuelist[pos];
-	}
+	};
 
 	this.removeCueAt = function(pos){
 		return this.cpm_cuelist.removeItemAt(pos);
-	}
+	};
 
 	this.getCueIndex = function(cueobj){
 		return this.cpm_cuelist.getItemIndex(cueobj);
-	}
+	};
 
 	this.removeAllCue = function(){
 		this.cpm_cuelist = [];
-	}
+	};
 
 	this.setCueList = function (cuelist){
 		this.cpm_cuelist=cuelist;
-	}
+	};
 	
 	this.getCuelist = function(){
 		return this.cpm_cuelist;
-	}
+	};
 	
 	this.sortByStartTime = function(a,b){
 		if (a.startTime > b.startTime) return 1;
 		if (a.startTime < b.startTime) return -1;
 		return 0;
-	}
+	};
 	
 	this.sortByEndTime = function(a,b){
 		if (a.endTime > b.endTime) return 1;
 		if (a.endTime < b.endTime) return -1;
 		return 0;
-	}
+	};
 
 	this.setCueListStartCommand = function(command){
 		for (var i in this.cpm_cuelist){
 			this.cpm_cuelist[i].setStartCommand(command);
 		}
-	}
+	};
 
 	this.setCueListEndCommand = function(command){	
 		for (var i in this.cpm_cuelist){
 			this.cpm_cuelist[i].setEndCommand(command);
 		}
-	}
+	};
 
 	/**
 	 * Callback function - OnEnterFrame
@@ -93,16 +91,16 @@ function cuePointManager(){
 	this.monitorCuePoints = function(time){
 		var curTime=time;
 		for (var i in this.cpm_cuelist){
-			if (((curTime - 0.04) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.04))){
+			if (((curTime - 0.08) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.08))){
 				this.cpm_cuelist[i].executeStartCommand();
 				break;
 			}
-			if (((curTime - 0.04) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.04))){
+			if (((curTime - 0.08) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.08))){
 				this.cpm_cuelist[i].executeEndCommand();
 				break;
 			}
 		}
-	}
+	};
 
 
 	/**
@@ -111,12 +109,12 @@ function cuePointManager(){
 	this.setCuesFromSubtitleUsingLocale = function(language){
 		var parameters = {'id': 0, 'exerciseId' : this.cpm_exerciseId, 'language': language};
                 bpServices.send(false, 'getSubtitleLines', parameters, instance.subtitlesRetrievedCallback);
-	}
+	};
 
 	this.setCuesFromSubtitleUsingId = function(subtitleId){
 		var parameters = {'subtitleId':subtitleId};
 		bpServices.send(false, 'getSubtitleLinesUsingId', parameters, instance.subtitlesRetrievedCallback);	
-	}
+	};
 	
 	this.subtitlesRetrievedCallback = function(data){
 		var result=data.response;
@@ -131,7 +129,7 @@ function cuePointManager(){
 			break;
 		}
 		instance.subtitlesRetrievedListener();
-	}
+	};
 
 	this.addCueFromSubtitleLine = function(subline){
 		var found = false;
@@ -150,7 +148,7 @@ function cuePointManager(){
 		
 		var cueObj=new cueObject(subline.subtitleId, subline.showTime, subline.hideTime, subline.text, subline.exerciseRoleId, subline.exerciseRoleName,null,null,color);
 		this.addCue(cueObj);
-	}
+	};
 
 	/**
 	 * Return cuepoint list in array mode with startTime and role
@@ -162,7 +160,7 @@ function cuePointManager(){
 			arrows.push({'startTime': cuelist[i].startTime, 'endTime': cuelist[i].endTime, 'role': cuelist[i].role});
 
 		return arrows;
-	}
+	};
 
 	this.addEventListener = function(event,listener){
 		switch(event){
@@ -174,7 +172,7 @@ function cuePointManager(){
 			default:
 				break;
 		}
-	}
+	};
 	
 	
 	

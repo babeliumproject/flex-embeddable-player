@@ -10,5 +10,5 @@ function onReplayRecordingCuePoint(cue, subHolder)
 			this.VP.startTalking(this.cue.role, time);
 		} else
 			this.VP.setSubtitle('',0x000000);
-	}	
+	};	
 }

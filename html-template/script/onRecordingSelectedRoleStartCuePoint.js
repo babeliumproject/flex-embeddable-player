@@ -11,5 +11,5 @@ function onRecordingSelectedRoleStartCuePoint(cue, VP){
 		this.VP.startTalking(this.cue.role, time);
 		this.VP.highlight(true);
 		//console.log("Start Recording your role");
-	}
+	};
 }

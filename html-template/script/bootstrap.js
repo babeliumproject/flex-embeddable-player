@@ -38,8 +38,8 @@ function onCommunicationReady() {
 
 	// Prototype only. Login user
 	var parameters = {
-		'name' : 'insert_your_login_here',
-		'pass' : hex_sha1("inser_your_pass_here")
+		'name' : 'insert_user_name_here',
+		'pass' : hex_sha1("insert_user_pass_here")
 	};
 	bpServices.send(false, 'processLogin', parameters, onLoginRetrieved);
 
@@ -67,7 +67,11 @@ function onLoginRetrieved(data) {
 }
 
 function onConnectionReady(playerId){
-	bpPlayer = document.getElementById(playerId);
+	if (navigator.appName.indexOf("Microsoft") != -1){
+		bpPlayer = window[playerId];
+	} else { 
+		bpPlayer = document[playerId];
+	}
 	if (!bpPlayer) {
 		Alert('There was a problem while loading the video player.');
 		return;
