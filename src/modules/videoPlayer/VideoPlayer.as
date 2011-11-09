@@ -6,8 +6,6 @@
 
 package modules.videoPlayer
 {
-	import events.CloseConnectionEvent;
-	import events.StartConnectionEvent;
 	
 	import flash.display.Sprite;
 	import flash.events.AsyncErrorEvent;
@@ -40,6 +38,7 @@ package modules.videoPlayer
 	import modules.videoPlayer.events.VolumeEvent;
 	
 	import mx.binding.utils.BindingUtils;
+	import mx.controls.Alert;
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
 
@@ -509,7 +508,7 @@ package modules.videoPlayer
 		public function connectToStreamingServer(streamSource:String):void
 		{
 			if (!DataModel.getInstance().netConnection.connected)
-				new StartConnectionEvent(streamSource).dispatch();
+				DataModel.getInstance().connect(streamSource);
 			else
 				onStreamNetConnect(true);
 		}
@@ -517,7 +516,7 @@ package modules.videoPlayer
 		public function disconnectFromStreamingService():void
 		{
 			if (DataModel.getInstance().netConnection.connected)
-				new CloseConnectionEvent().dispatch();
+				DataModel.getInstance().close();
 		}
 
 		private function netStatus(e:NetStatusEvent):void

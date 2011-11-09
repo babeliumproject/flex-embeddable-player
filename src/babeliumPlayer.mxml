@@ -16,6 +16,73 @@
 	<fx:Metadata>
 		[ResourceBundle("myResources")]
 	</fx:Metadata> 
+	
+	<fx:Style source="babeliumPlayer.css"/>
+	
+	<fx:Declarations>
+		<control:Extern/>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import model.DataModel;
+			
+			import modules.videoPlayer.events.VideoPlayerEvent;
+			
+			import mx.core.FlexGlobals;
+			
+			private var videoId:String=null;
+			
+			[Bindable]
+			private var app:Object = FlexGlobals.topLevelApplication;
+			
+			private function init():void
+			{
+				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
+				Security.allowDomain("*");	
+				
+				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+			}
+			
+			private function complete():void
+			{
+				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
+				VP.stopVideo();
+				VP.state=VideoPlayerBabelia.PLAY_STATE;
+				
+				//videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+				
+				if (videoId != null)
+					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
+				
+				// Setups javascripts external controls
+				Extern.getInstance().setup(VP);
+				
+			}
+			
+			private function onConnect(e:Event):void
+			{
+				Extern.getInstance().onConnectionReady();
+			}
+			
+			private function set onUpdateVPHeight(height:int):void
+			{
+				trace("VP Height: "+VP.height);
+				Extern.getInstance().resizeHeight(height);
+			}
+			
+			private function set onUpdateVPWidth(width:int):void
+			{
+				trace("VP Width: "+VP.width);
+				Extern.getInstance().resizeWidth(width);
+			}
+		]]>
+	</fx:Script>
+	<fx:Binding source="{VP.height}"
+				destination="this.onUpdateVPHeight"/>
+	<fx:Binding source="{VP.width}"
+				destination="this.onUpdateVPWidth"/>
 
 	<videoPlayer:VideoPlayerBabelia id="VP"
 									autoPlay="true"
@@ -30,77 +97,7 @@
 									streamSource="{DataModel.getInstance().streamingResourcesPath}"
 									controlsEnabled="true"/>
 	
-	<fx:Style source="babeliumPlayer.css"/>
 	
-	<fx:Declarations>
-		<control:Controller/>
-		<control:Extern/>
-	</fx:Declarations>
 
-	<fx:Script>
-		<![CDATA[
-			import events.SetupConnectionEvent;
-			
-			import model.DataModel;
-			
-			import modules.videoPlayer.events.VideoPlayerEvent;
-			
-			import mx.controls.Alert;
-			import mx.core.FlexGlobals;
-			import mx.utils.ObjectUtil;
-
-			private var videoId:String=null;
-			
-			[Bindable]
-			private var app:Object = FlexGlobals.topLevelApplication;
-
-			private function init():void
-			{
-				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
-				Security.allowDomain("*");
-				// Setups video player's connection with Red5 Server 
-				new SetupConnectionEvent().dispatch();
-				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
-			}
-
-			private function complete():void
-			{
-				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
-				VP.stopVideo();
-				VP.state=VideoPlayerBabelia.PLAY_STATE;
-
-				//videoId=FlexGlobals.topLevelApplication.parameters.videoId;
-
-				if (videoId != null)
-					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
-
-				// Setups javascripts external controls
-				Extern.getInstance().setup(VP);
-
-				// Launching videoplayer ready external function
-				Extern.getInstance().onVideoPlayerReady();
-			}
-
-			private function onConnect(e:Event):void
-			{
-				Extern.getInstance().onConnectionReady();
-			}
-
-			private function set onUpdateVPHeight(height:int):void
-			{
-				trace("VP Height: "+VP.height);
-				Extern.getInstance().resizeHeight(height);
-			}
-
-			private function set onUpdateVPWidth(width:int):void
-			{
-				trace("VP Width: "+VP.width);
-				Extern.getInstance().resizeWidth(width);
-			}
-		]]>
-	</fx:Script>
-	<fx:Binding source="{VP.height}"
-				destination="this.onUpdateVPHeight"/>
-	<fx:Binding source="{VP.width}"
-				destination="this.onUpdateVPWidth"/>
+	
 </s:Application>

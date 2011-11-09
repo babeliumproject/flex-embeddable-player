@@ -893,6 +893,7 @@ package modules.videoPlayer
 			startCountdown();
 		}
 
+		/*
 		public function micActivityHandler(event:ActivityEvent):void
 		{
 			//The mic has received an input louder than the 0% volume, so there's a mic working correctly.
@@ -902,7 +903,7 @@ package modules.videoPlayer
 				DataModel.getInstance().soundDetected=true;
 				DataModel.getInstance().microphone.removeEventListener(ActivityEvent.ACTIVITY, micActivityHandler);
 			}
-		}
+		}*/
 
 		private function privacyBoxClosed(event:Event):void
 		{
