@@ -141,6 +141,9 @@ package modules.videoPlayer
 		private var _micImage:Image;
 		private var _overlayButton:Button;
 
+		private var _onTop:UIComponent;
+		
+		private var noConnectionSprite:ErrorOverlay; 
 
 		/**
 		 * CONSTRUCTOR
@@ -231,6 +234,12 @@ package modules.videoPlayer
 			addChild(_subtitlePanel);
 			
 			addChild(_overlayButton);
+			
+			
+			noConnectionSprite = new ErrorOverlay();
+			
+			_onTop = new UIComponent();
+			addChild(_onTop);
 
 
 			/**
@@ -522,6 +531,8 @@ package modules.videoPlayer
 			_overlayButton.width = _videoWidth;
 			_overlayButton.height = _videoHeight;
 			
+			//Error message overlay
+			noConnectionSprite.updateChildren(this.width,this.height);
 			
 			if(_subtitleStartEnd.visible){
 				_ppBtn.x=0;
@@ -571,8 +582,7 @@ package modules.videoPlayer
 				_audioSlider.x=_eTime.x + _eTime.width;
 				
 			}
-
-			drawBG();
+	
 		}
 
 		override protected function drawBG():void
@@ -810,6 +820,16 @@ package modules.videoPlayer
 					seek=true;
 
 					break;
+			}
+		}
+		
+		override protected function onStreamNetConnect(value:Boolean):void{
+			super.onStreamNetConnect(value);
+			if(value){
+				if(_onTop.contains(noConnectionSprite))
+					_onTop.removeChild(noConnectionSprite);
+			} else {
+				_onTop.addChild(noConnectionSprite);
 			}
 		}
 

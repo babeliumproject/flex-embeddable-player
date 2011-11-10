@@ -86,6 +86,8 @@ package modules.videoPlayer
 		protected var _videoWidth:Number=320;
 
 		private var _timer:Timer;
+		private var _reconnectionTimer:Timer;
+		private var _reconnectionDelay:uint = 5000; //5 seconds
 
 		public static const PLAYBACK_READY_STATE:int=0;
 		public static const PLAYBACK_STARTED_STATE:int=1;
@@ -475,10 +477,13 @@ package modules.videoPlayer
 		/**
 		 * On stream connect
 		 */
-		private function onStreamNetConnect(value:Boolean):void
+		protected function onStreamNetConnect(value:Boolean):void
 		{
+			trace("netConnectedValueChanged. Current value: "+value);
 			if (DataModel.getInstance().netConnected == true)
 			{
+				if(_reconnectionTimer != null)
+					stopReconnectionTimer();
 				//Get the netConnection reference
 				_nc=DataModel.getInstance().netConnection;
 
@@ -500,15 +505,31 @@ package modules.videoPlayer
 			else{
 				disableControls();
 				if (_streamSource){
-					connectToStreamingServer(_streamSource);
+					if(_reconnectionTimer == null || !_reconnectionTimer.running)
+						startReconnectionTimer();//connectToStreamingServer();
 				}
 			}
 		}
+		
+		public function startReconnectionTimer():void{
+			_reconnectionTimer = new Timer(_reconnectionDelay,0);
+			_reconnectionTimer.start();
+			_reconnectionTimer.addEventListener(TimerEvent.TIMER, onReconnectionTimerTick);
+		}
+		
+		public function stopReconnectionTimer():void{
+			_reconnectionTimer.stop();
+			_reconnectionTimer.removeEventListener(TimerEvent.TIMER, onReconnectionTimerTick);
+		}
+		
+		public function onReconnectionTimerTick(event:TimerEvent):void{
+			connectToStreamingServer();
+		}
 
-		public function connectToStreamingServer(streamSource:String):void
+		public function connectToStreamingServer():void
 		{
 			if (!DataModel.getInstance().netConnection.connected)
-				DataModel.getInstance().connect(streamSource);
+				DataModel.getInstance().connect(_streamSource);
 			else
 				onStreamNetConnect(true);
 		}

@@ -91,6 +91,7 @@ package model
 							netConnected=false;
 							break;
 						default:
+							trace("Undetermined problem while connecting with: "+uri);
 							netConnectOngoingAttempt = false;
 							netConnected=false;
 							break;
@@ -98,11 +99,13 @@ package model
 				}
 				catch (e:IOError)
 				{
+					trace("IO error while connecting to: "+uri);
 					netConnectOngoingAttempt = false;
 					netConnected=false;
 				}
 				catch (e:SecurityError)
 				{
+					trace("Security error while connecting to: "+uri);
 					netConnectOngoingAttempt = false;
 					netConnected=false;
 				}
@@ -146,28 +149,28 @@ package model
 					break;
 				
 				case "NetConnection.Connect.Failed":
-					netConnected = false;
 					trace("Connection to server failed");
+					netConnected = false;
 					break;
 				
 				case "NetConnection.Connect.Closed":
-					netConnected = false;
 					trace("Connection to server closed");
+					netConnected = false;
 					break;
 				
 				case "NetConnection.Connect.InvalidApp":
-					netConnected = false;
 					trace("Application not found on server");
+					netConnected = false;
 					break;
 				
 				case "NetConnection.Connect.AppShutDown":
-					netConnected = false;
 					trace("Application has been shutdown");
+					netConnected = false;
 					break;
 				
 				case "NetConnection.Connect.Rejected":
-					netConnected = false;
 					trace("No permissions to connect to the application");
+					netConnected = false;
 					break;
 				
 				default:
