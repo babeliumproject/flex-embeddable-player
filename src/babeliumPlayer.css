@@ -27,15 +27,10 @@ s|Button{
 	cornerRadius: 8;
 }
 
-.privacyRightsPopup{
-	skinClass: ClassReference('skins.CustomTitleWindowSkin');
-	backgroundImage: Embed('/resources/images/popup_bgr_unlock.png');
-	cornerRadius: 8;
-	borderColor: #FFFFFF;
-}
-
-.genericPopup{
-	skinClass: ClassReference('skins.CustomTitleWindowSkin');
-	cornerRadius: 8;
-	borderColor: #FFFFFF;
+.bigBlueButton{
+	cornerRadius: 10;
+	fontSize: 14;
+	fontWeight: bold;
+	color: #ffffff;
+	skinClass: ClassReference('skins.ActionButtonSkin');
 }

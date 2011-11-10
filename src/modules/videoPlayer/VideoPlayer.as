@@ -173,6 +173,8 @@ package modules.videoPlayer
 		 */
 		public function set videoSource(location:String):void
 		{
+			if(!DataModel.getInstance().netConnected)
+				return;
 			_videoSource=location;
 			_video.visible=true;
 
@@ -512,9 +514,11 @@ package modules.videoPlayer
 		}
 		
 		public function startReconnectionTimer():void{
+			connectToStreamingServer();
 			_reconnectionTimer = new Timer(_reconnectionDelay,0);
 			_reconnectionTimer.start();
 			_reconnectionTimer.addEventListener(TimerEvent.TIMER, onReconnectionTimerTick);
+			
 		}
 		
 		public function stopReconnectionTimer():void{
@@ -651,6 +655,9 @@ package modules.videoPlayer
 
 		public function stopVideo():void
 		{
+			if(!DataModel.getInstance().netConnected)
+				return;
+			
 			if (_ns)
 			{
 				//_ns.pause();

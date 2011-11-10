@@ -263,17 +263,17 @@ function exercise() {
 		this.recordedFilename = recFilename;
 		console.log("Response recording ended");
 
-		var s = document.getElementById("id_submitbutton");
-                s.disabled = false;
-
 		// Set the videoplayer to playback both the exercise and the
 		// last response.
+		this.setupRecordingCommands();
 		this.bpPlayer.videoSource(this.exerciseName);
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_BOTH_STATE);
 		this.bpPlayer.secondSource(this.recordedFilename);
 
 		this.bpPlayer.seek(false);
 		this.bpPlayer.stopVideo();
+		
+		
 	};
 
 	/**
@@ -283,6 +283,8 @@ function exercise() {
 	this.recordingAbortedListener = function() {
 		alert("Devices not working");
 		this.recordingError();
+		this.prepareExercise();
+		this.resetCueManager();
 	};
 
 	this.recordingError = function() {
@@ -351,11 +353,11 @@ function exercise() {
 			return;
 
 		//Reset component
-		instance.bpPlayer.endVideo(); // Stop video
-                instance.hideArrows();
+		instance.bpPlayer.endVideo();
+        instance.hideArrows();
 		instance.bpPlayer.unattachUserDevices();
 		instance.bpPlayer.state(instance.bpPlayerStates.PLAY_STATE);
-                //instance.bpPlayer.removeEventListener('onEnterFrame','bpExercises.onEnterFrameListener'); 
+        //instance.bpPlayer.removeEventListener('onEnterFrame','bpExercises.onEnterFrameListener'); 
 		instance.setupPlayCommands();		
 
 		var result = data['response'];
@@ -365,16 +367,6 @@ function exercise() {
 		var roleId = 0;
 		var responseId = result.responseId;
 		var responseFileIdentifier = result.responseFileIdentifier;
-		console.log("ResponseID: "+responseId);
-
-		
-		var mform = document.forms['mform1'];
-		mform.elements["data1"].value = responseId;
-		mform.elements["data2"].value = responseFileIdentifier;
-		console.log(document.getElementById("mform1"));
-		var s = document.getElementById("id_submitbutton");
-                s.disabled = false;
-		mform.submit();
 
 		/* Leave statistics aside for now 
 		var roles = instance.roles;
@@ -384,7 +376,6 @@ function exercise() {
 				break;
 			}
 		}
-
 
 		// Ajax call to the appointed REST service
 		var parameters = {
@@ -489,33 +480,6 @@ function exercise() {
 		//ratingShareReport.exerciseData=null;
 	};
 
-/*
-	this.initBoth = function(videoPlayer, ex, response){
- 		this.bpPlayer = videoPlayer;
-        	this.cueManager = new cuePointManager();
-        	this.setupVideoPlayer();
-		this.exerciseName = exercise.name;
-		this.exerciseTitle = exercise.title;
-		this.exerciseId = exercise.id;
-		this.currentExercise = exercise;
-		this.rolesReady = false;
-		this.localesReady = false;
-		this.cueManagerReady = false;
-
-		this.showBoth(response);
-        	$('#bplayer-title').html(ex.title);
-	}
-
-
-	this.showBoth = function(response){
-		instance.showArrows();
-		instance.setupRecordingCommands();
-		instance.bpPlayer.videoSource(instance.exerciseName);
-		instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
-		instance.bpPlayer.secondSource(response);
-		instance.bpPlayer.seek(false);
-	}*/
-
 
 	$(document).ready(function() {
 		
@@ -549,7 +513,12 @@ function exercise() {
 
 			// Watch both
 			$('#watchExerciseAndResponseBtn').click(function() {
-				this.showBoth(instance.recordedFilename);
+				instance.showArrows();
+				instance.setupRecordingCommands();
+				instance.bpPlayer.videoSource(instance.exerciseName);
+				instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
+				instance.bpPlayer.secondSource(instance.recordedFilename);
+				instance.bpPlayer.seek(false);
 			});
 
 			$('#watchResponseBtn').click(function() {
@@ -579,15 +548,13 @@ function exercise() {
 				instance.statisticRecAttempt();
 			});
 
-			/*
 			$('#abortRecordingBtn').click(function() {
 				instance.recordingError();
 				instance.prepareExercise();
 				instance.resetCueManager();
-			});*/
+			});
 
 			// Save response
-			/*
 			$('#saveResponseBtn').click(function() {
 				// TODO
 
@@ -622,7 +589,7 @@ function exercise() {
 						'subtitleId' : subtitleId
 					};
 
-					bpServices.send(false,'admSaveResponse',parameters,instance.saveResponseCallback);
+					bpServices.send(false,'saveResponse',parameters,instance.saveResponseCallback);
 
 					// Restore the panels
 					$('#exerciseInfoPanel').show();
@@ -630,6 +597,6 @@ function exercise() {
 				//} else {
 				//	$('#insufficientCreditsDialog').dialog('open');
 				//}
-			});*/
+			});
 	});
 }

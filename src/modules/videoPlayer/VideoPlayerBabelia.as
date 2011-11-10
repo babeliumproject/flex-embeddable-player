@@ -135,15 +135,15 @@ package modules.videoPlayer
 		public var secondStreamState:int;
 
 		private var _cuePointTimer:Timer;
-		
-		public static const SUBTILE_INSERT_DELAY:Number = 0.5;
+
+		public static const SUBTILE_INSERT_DELAY:Number=0.5;
 
 		private var _micImage:Image;
 		private var _overlayButton:Button;
 
 		private var _onTop:UIComponent;
-		
-		private var noConnectionSprite:ErrorOverlay; 
+
+		private var noConnectionSprite:ErrorOverlay;
 
 		/**
 		 * CONSTRUCTOR
@@ -184,17 +184,17 @@ package modules.videoPlayer
 			_camVideo=new Video();
 			_camVideo.visible=false;
 
-			_micImage = new Image();
-			
+			_micImage=new Image();
+
 			[Embed(source="../../resources/images/vp_micWatermark.png")]
 			var micWatermark:Class;
-			
-			_micImage.source = micWatermark;
-			_micImage.height = 128;
-			_micImage.width = 128;
-			_micImage.alpha = 0.7;
-			_micImage.autoLoad = true;
-			_micImage.visible = false;
+
+			_micImage.source=micWatermark;
+			_micImage.height=128;
+			_micImage.width=128;
+			_micImage.alpha=0.7;
+			_micImage.autoLoad=true;
+			_micImage.visible=false;
 
 			_subtitleStartEnd=new SubtitleStartEndButton();
 			_subtitleStartEnd.visible=false;
@@ -204,12 +204,12 @@ package modules.videoPlayer
 			_micActivityBar=new MicActivityBar();
 			_micActivityBar.visible=false;
 
-			_overlayButton = new Button();
-			_overlayButton.setStyle("skinClass",OverlayPlayButtonSkin);
-			_overlayButton.width = 128;
-			_overlayButton.height = 128;
-			_overlayButton.buttonMode = true;
-			_overlayButton.visible = false;
+			_overlayButton=new Button();
+			_overlayButton.setStyle("skinClass", OverlayPlayButtonSkin);
+			_overlayButton.width=128;
+			_overlayButton.height=128;
+			_overlayButton.buttonMode=true;
+			_overlayButton.visible=false;
 			_overlayButton.addEventListener(MouseEvent.CLICK, overlayClicked);
 
 			/**
@@ -226,19 +226,20 @@ package modules.videoPlayer
 			addChild(_micActivityBar);
 			addChild(_arrowContainer);
 			addChild(_videoBarPanel);
-		
+
 			addChild(_micImage);
 			addChild(_camVideo);
-	
+
 			addChild(_countdownTxt);
 			addChild(_subtitlePanel);
-			
+
 			addChild(_overlayButton);
-			
-			
-			noConnectionSprite = new ErrorOverlay();
-			
-			_onTop = new UIComponent();
+
+
+			noConnectionSprite=new ErrorOverlay();
+			privacyRights=new PrivacyRights();
+
+			_onTop=new UIComponent();
 			addChild(_onTop);
 
 
@@ -286,15 +287,15 @@ package modules.videoPlayer
 		 */
 		public function setArrows(arrows:ArrayCollection, selectedRole:String):void
 		{
-			_arrowPanel.setArrows(arrows, _duration, selectedRole);
+				_arrowPanel.setArrows(arrows, _duration, selectedRole);
 
-			// Extract only selected roles
-			var tmp:ArrayCollection=new ArrayCollection();
-			for (var i:Number=0; i < arrows.length; i++)
-				if (arrows.getItemAt(i).role == selectedRole)
-					tmp.addItem(arrows.getItemAt(i));
+				// Extract only selected roles
+				var tmp:ArrayCollection=new ArrayCollection();
+				for (var i:Number=0; i < arrows.length; i++)
+					if (arrows.getItemAt(i).role == selectedRole)
+						tmp.addItem(arrows.getItemAt(i));
 
-			_sBar.setMarks(tmp, _duration);
+				_sBar.setMarks(tmp, _duration);
 		}
 
 		// remove arrows from panel
@@ -307,8 +308,14 @@ package modules.videoPlayer
 		// show/hide arrow panel
 		public function set arrows(flag:Boolean):void
 		{
-			_arrowContainer.visible=flag;
-			this.updateDisplayList(0, 0);
+			if (_state != PLAY_STATE)
+			{
+				_arrowContainer.visible=flag;
+				this.updateDisplayList(0, 0);
+			} else {
+				_arrowContainer.visible=false;
+				this.updateDisplayList(0, 0);
+			}
 		}
 
 		/**
@@ -327,7 +334,7 @@ package modules.videoPlayer
 		public function set subtitlingControls(flag:Boolean):void
 		{
 			_subtitleStartEnd.visible=flag;
-			this.updateDisplayList(0,0); //repaint component
+			this.updateDisplayList(0, 0); //repaint component
 		}
 
 		public function get subtitlingControls():Boolean
@@ -340,8 +347,8 @@ package modules.videoPlayer
 		 */
 		override public function set autoPlay(tf:Boolean):void
 		{
-			super.autoPlay = tf;
-			tf ? _overlayButton.visible = false : _overlayButton.visible = true;
+			super.autoPlay=tf;
+			tf ? _overlayButton.visible=false : _overlayButton.visible=true;
 		}
 
 		/**
@@ -354,6 +361,10 @@ package modules.videoPlayer
 
 		public function set state(state:int):void
 		{
+			//Do nothing if there's not an active connection
+			if (!DataModel.getInstance().netConnected)
+				return;
+
 			stopVideo();
 
 			if (state == PLAY_BOTH_STATE || state == PLAY_STATE)
@@ -362,15 +373,17 @@ package modules.videoPlayer
 			_state=state;
 			switchPerspective();
 		}
-		
-		public function overlayClicked(event:MouseEvent):void{
+
+		public function overlayClicked(event:MouseEvent):void
+		{
 			_ppBtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
 		}
-		
-		override protected function onPPBtnChanged(e:PlayPauseEvent):void{
+
+		override protected function onPPBtnChanged(e:PlayPauseEvent):void
+		{
 			super.onPPBtnChanged(e);
-			if(_overlayButton.visible)
-				_overlayButton.visible = false;
+			if (_overlayButton.visible)
+				_overlayButton.visible=false;
 		}
 
 		/**
@@ -403,10 +416,11 @@ package modules.videoPlayer
 		 **/
 		public function set secondSource(source:String):void
 		{
-			trace("Second video added to player stage");
+			
 			if (state != PLAY_BOTH_STATE)
 				return;
 
+			trace("Second video added to player stage");
 			_secondStreamSource=source;
 
 			if (_nc == null)
@@ -454,9 +468,9 @@ package modules.videoPlayer
 
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
 		{
-			
+
 			super.updateDisplayList(unscaledWidth, unscaledHeight);
-			
+
 			_micActivityBar.width=_videoWidth;
 			_micActivityBar.height=22;
 			_micActivityBar.x=_defaultMargin;
@@ -465,18 +479,18 @@ package modules.videoPlayer
 			_arrowContainer.width=_videoBarPanel.width;
 			_arrowContainer.height=50;
 			_arrowContainer.x=_defaultMargin;
-			
-			var matr:Matrix = new Matrix();
-			matr.createGradientBox( _arrowContainer.height,  _arrowContainer.height, 270*Math.PI/180, 0, 0);
-			
-			var colors:Array = [0xffffff, 0xd8d8d8];
-			var alphas:Array = [1, 1];
-			var ratios:Array = [0, 255];
-			
+
+			var matr:Matrix=new Matrix();
+			matr.createGradientBox(_arrowContainer.height, _arrowContainer.height, 270 * Math.PI / 180, 0, 0);
+
+			var colors:Array=[0xffffff, 0xd8d8d8];
+			var alphas:Array=[1, 1];
+			var ratios:Array=[0, 255];
+
 			_bgArrow.graphics.clear();
 			_bgArrow.graphics.beginGradientFill(GradientType.LINEAR, colors, alphas, ratios, matr);
-			_bgArrow.graphics.lineStyle(1,0xa7a7a7);
-			_bgArrow.graphics.drawRect( 0, 0, _arrowContainer.width,  _arrowContainer.height );
+			_bgArrow.graphics.lineStyle(1, 0xa7a7a7);
+			_bgArrow.graphics.drawRect(0, 0, _arrowContainer.width, _arrowContainer.height);
 			_bgArrow.graphics.endFill();
 
 			_subtitleButton.resize(45, 20);
@@ -491,24 +505,24 @@ package modules.videoPlayer
 
 			// Put subtitle box at top
 			_subtitlePanel.width=_videoBarPanel.width;
-			_subtitlePanel.height=_videoHeight*0.75;
+			_subtitlePanel.height=_videoHeight * 0.75;
 			_subtitlePanel.x=_defaultMargin;
 			/*
 			 * Subtitle panel
 			 */
 			var y2:Number=_arrowContainer.visible ? _arrowContainer.height : 0;
-			var y3:Number=_micActivityBar.visible ? _micActivityBar.height: 0;
+			var y3:Number=_micActivityBar.visible ? _micActivityBar.height : 0;
 
-			_videoBarPanel.y+= y3 + y2;
+			_videoBarPanel.y+=y3 + y2;
 
 			_arrowContainer.y=_videoBarPanel.y - _arrowContainer.height;
 			_subtitlePanel.y=_videoHeight - _subtitlePanel.height;
 
 			_micActivityBar.y=_videoBarPanel.y - y2 - _micActivityBar.height;
-		
-			
+
+
 			_subtitleBox.y=0;
-			_subtitleBox.resize(_videoWidth, _videoHeight*0.75);
+			_subtitleBox.resize(_videoWidth, _videoHeight * 0.75);
 
 			// Resize arrowPanel
 			_arrowPanel.resize(_sBar.width, _arrowContainer.height - 8);
@@ -526,78 +540,85 @@ package modules.videoPlayer
 			_countdownTxt.width=_videoWidth;
 			_countdownTxt.height=_videoHeight;
 			_countdownTxt.setStyle("color", getSkinColor(COUNTDOWN_COLOR));
-			
+
 			//Play overlay
-			_overlayButton.width = _videoWidth;
-			_overlayButton.height = _videoHeight;
-			
+			_overlayButton.width=_videoWidth;
+			_overlayButton.height=_videoHeight;
+
 			//Error message overlay
-			noConnectionSprite.updateChildren(this.width,this.height);
-			
-			if(_subtitleStartEnd.visible){
+			noConnectionSprite.updateChildren(this.width, this.height);
+
+			//Privacy rights overlay
+			privacyRights.width=this.width;
+			privacyRights.height=this.height;
+
+			if (_subtitleStartEnd.visible)
+			{
 				_ppBtn.x=0;
 				_ppBtn.refresh();
-				
+
 				_stopBtn.x=_ppBtn.x + _ppBtn.width;
 				_stopBtn.refresh();
-				
-				_subtitleStartEnd.x = _stopBtn.x + _stopBtn.width;
+
+				_subtitleStartEnd.x=_stopBtn.x + _stopBtn.width;
 				_subtitleStartEnd.refresh();
-				
+
 				_sBar.x=_subtitleStartEnd.x + _subtitleStartEnd.width;
 				_sBar.refresh();
-				
+
 				_eTime.refresh();
-				
+
 				_audioSlider.refresh();
-				
-				_subtitleButton.includeInLayout = false;
-				_subtitleButton.visible = false;
-				
+
+				_subtitleButton.includeInLayout=false;
+				_subtitleButton.visible=false;
+
 				_sBar.width=_videoWidth - _ppBtn.width - _stopBtn.width - _subtitleStartEnd.width - _eTime.width - _audioSlider.width;
-				
+
 				_eTime.x=_sBar.x + _sBar.width;
 				_audioSlider.x=_eTime.x + _eTime.width;
-				
-			} else {
+
+			}
+			else
+			{
 				_ppBtn.x=0;
 				_ppBtn.refresh();
-				
+
 				_stopBtn.x=_ppBtn.x + _ppBtn.width;
 				_stopBtn.refresh();
-				
+
 				_sBar.x=_stopBtn.x + _stopBtn.width;
 				_sBar.refresh();
-				
+
 				_eTime.refresh();
-				
+
 				_audioSlider.refresh();
-				
-				_subtitleButton.includeInLayout = true;
-				_subtitleButton.visible = true;
-				
+
+				_subtitleButton.includeInLayout=true;
+				_subtitleButton.visible=true;
+
 				_sBar.width=_videoWidth - _ppBtn.width - _stopBtn.width - _eTime.width - _audioSlider.width - _subtitleButton.width;
-				
+
 				_eTime.x=_sBar.x + _sBar.width;
 				_audioSlider.x=_eTime.x + _eTime.width;
-				
+
 			}
-	
+
 		}
 
 		override protected function drawBG():void
 		{
-			
+
 			/**
 			 * Recalculate total height
 			 */
-			
-			_micActivityBar.height = 22;
-			
-			var h2:Number=_arrowContainer.visible ? _arrowContainer.height : 0;
-			var h4:Number=_micActivityBar.visible ? _micActivityBar.height: 0;
 
-			totalHeight= _videoHeight + h2 + h4 + _videoBarPanel.height;
+			_micActivityBar.height=22;
+
+			var h2:Number=_arrowContainer.visible ? _arrowContainer.height : 0;
+			var h4:Number=_micActivityBar.visible ? _micActivityBar.height : 0;
+
+			totalHeight=_videoHeight + h2 + h4 + _videoBarPanel.height;
 
 			_bg.graphics.clear();
 
@@ -613,7 +634,7 @@ package modules.videoPlayer
 		override public function playVideo():void
 		{
 			super.playVideo();
-			if(state == PLAY_BOTH_STATE)
+			if (state == PLAY_BOTH_STATE)
 				playSecondStream();
 
 			if (!_cuePointTimer)
@@ -804,7 +825,7 @@ package modules.videoPlayer
 
 				case PLAY_BOTH_STATE:
 					_micActivityBar.visible=false;
-					this.updateDisplayList(0,0);
+					this.updateDisplayList(0, 0);
 					break;
 
 				default: // PLAY_STATE
@@ -822,14 +843,28 @@ package modules.videoPlayer
 					break;
 			}
 		}
-		
-		override protected function onStreamNetConnect(value:Boolean):void{
+
+		override protected function onStreamNetConnect(value:Boolean):void
+		{
 			super.onStreamNetConnect(value);
-			if(value){
-				if(_onTop.contains(noConnectionSprite))
-					_onTop.removeChild(noConnectionSprite);
-			} else {
+			if (value)
+			{
+				removeAllChildren(_onTop);
+			}
+			else
+			{
+				//Add the no connection error sprite in the top layer
+				removeAllChildren(_onTop);
 				_onTop.addChild(noConnectionSprite);
+				//Unattach user devices if they were attached (connection failed while recording)
+				unattachUserDevices();
+				//If status is different than PLAY_STATE switch to that state
+				if (_state != PLAY_STATE)
+				{
+					_state=PLAY_STATE;
+					arrows=false;
+					removeArrows();
+				}
 			}
 		}
 
@@ -853,7 +888,8 @@ package modules.videoPlayer
 				_countdownTxt.visible=false;
 				_video.visible=true;
 
-				if (state == RECORD_BOTH_STATE){
+				if (state == RECORD_BOTH_STATE)
+				{
 					_camVideo.visible=true;
 					_micImage.visible=true;
 				}
@@ -865,7 +901,7 @@ package modules.videoPlayer
 
 				startRecording();
 			}
-			else if(state != PLAY_STATE)
+			else if (state != PLAY_STATE)
 				_countdownTxt.text=new String(5 - _countdown.currentCount);
 		}
 
@@ -886,10 +922,16 @@ package modules.videoPlayer
 					PrivacyRights.useMicAndCamera=true;
 				if (state == RECORD_MIC_STATE)
 					PrivacyRights.useMicAndCamera=false;
-				privacyRights=PrivacyRights(PopUpManager.createPopUp(FlexGlobals.topLevelApplication.parent, PrivacyRights, true));
+				//privacyRights=new PrivacyRights();
+				//privacyRights.width=this.width;
+				//privacyRights.height=this.height;//PrivacyRights(PopUpManager.createPopUp(FlexGlobals.topLevelApplication.parent, PrivacyRights, true));
+
+				removeAllChildren(_onTop);
+				_onTop.addChild(privacyRights);
+				privacyRights.initDevices();
 				privacyRights.addEventListener(CloseEvent.CLOSE, privacyBoxClosed);
 
-				PopUpManager.centerPopUp(privacyRights);
+					//PopUpManager.centerPopUp(privacyRights);
 			}
 		}
 
@@ -927,7 +969,9 @@ package modules.videoPlayer
 
 		private function privacyBoxClosed(event:Event):void
 		{
-			PopUpManager.removePopUp(privacyRights);
+			//PopUpManager.removePopUp(privacyRights);
+			removeAllChildren(_onTop);
+
 			_micCamEnabled=DataModel.getInstance().micCamAllowed;
 			if (state == RECORD_MIC_STATE)
 			{
@@ -1045,7 +1089,7 @@ package modules.videoPlayer
 			/*
 			 * Resize cam image
 			 */
-			scaleCamVideo(w,h);
+			scaleCamVideo(w, h);
 
 			updateDisplayList(0, 0); // repaint
 
@@ -1090,10 +1134,10 @@ package modules.videoPlayer
 			_camVideo.height-=2;
 			_camVideo.x+=1;
 			_camVideo.width-=2;
-	
-			_micImage.y = (_videoHeight - _micImage.height)/2;
-			_micImage.x = _videoWidth - _micImage.width - (_camVideo.width - _micImage.width)/2;
-	
+
+			_micImage.y=(_videoHeight - _micImage.height) / 2;
+			_micImage.x=_videoWidth - _micImage.width - (_camVideo.width - _micImage.width) / 2;
+
 		}
 
 		override protected function scaleVideo():void
@@ -1159,13 +1203,22 @@ package modules.videoPlayer
 				dispatchEvent(new RecordingEvent(RecordingEvent.REPLAY_END));
 		}
 
-		public function unattachUserDevices():void{
+		public function unattachUserDevices():void
+		{
 			if (_outNs)
 			{
 				_outNs.attachCamera(null);
 				_outNs.attachAudio(null);
 				_camVideo.clear();
 				_camVideo.attachCamera(null);
+			}
+		}
+		
+		private function removeAllChildren(container:UIComponent):void{
+			if(container && container.numChildren > 0){
+				for(var i:uint=0; i<container.numChildren; i++){
+					container.removeChildAt(i);
+				}	
 			}
 		}
 
@@ -1208,10 +1261,11 @@ package modules.videoPlayer
 				muteRecording(false);
 				muteRecording(true);
 
-				if (_ns != null){
+				if (_ns != null)
+				{
 					//_ns.resume();
 					_ns.play(super.videoSource);
-				}	
+				}
 				_ppBtn.State=PlayButton.PAUSE_STATE;
 			}
 		}
@@ -1261,10 +1315,10 @@ package modules.videoPlayer
 				case "NetStream.Play.UnpublishNotify":
 					break;
 				case "NetStream.Pause.Notify":
-					secondStreamState = SECONDSTREAM_PAUSED_STATE;
+					secondStreamState=SECONDSTREAM_PAUSED_STATE;
 					break;
 				case "NetStream.Unpause.Notify":
-					secondStreamState = SECONDSTREAM_UNPAUSED_STATE;
+					secondStreamState=SECONDSTREAM_UNPAUSED_STATE;
 					break;
 				case "NetStream.Record.Start":
 					break;

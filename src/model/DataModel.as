@@ -1,5 +1,5 @@
 package model
-{	
+{
 	import flash.errors.IOError;
 	import flash.events.AsyncErrorEvent;
 	import flash.events.IOErrorEvent;
@@ -10,46 +10,50 @@ package model
 	import flash.net.FileReference;
 	import flash.net.NetConnection;
 	import flash.utils.Dictionary;
-	
-	
+
+
 	public class DataModel
 	{
 		//This solution for singleton implementation was found in
 		//http://life.neophi.com/danielr/2006/10/singleton_pattern_in_as3.html		
 		public static var instance:DataModel;
-		
-		public function DataModel(){
-			netConnection = new NetConnection();
+
+		public function DataModel()
+		{
+			netConnection=new NetConnection();
 		}
-		
+
 		public static function getInstance():DataModel
 		{
-			if ( !instance )
-				instance = new DataModel();
+			if (!instance)
+				instance=new DataModel();
 			return instance;
 		}
-		
+
 		//NetConnection management variables
 		public var netConnection:NetConnection;
-		[Bindable] public var netConnected:Boolean;
-		[Bindable] public var netConnectOngoingAttempt:Boolean;
-		
+		[Bindable]
+		public var netConnected:Boolean;
+		[Bindable]
+		public var netConnectOngoingAttempt:Boolean;
+
 		//Exercise uploading related data
-		public var server: String = "embedbabelium";
-		public var red5Port: String = "1935";
-		public var uploadDomain:String = "http://"+server+"/";
-		[Bindable] public var streamingResourcesPath:String = "rtmp://" + server + "/oflaDemo";
+		public var server:String="embedbabelium";
+		public var red5Port:String="1935";
+		public var uploadDomain:String="http://" + server + "/";
+		[Bindable]
+		public var streamingResourcesPath:String="rtmp://" + server + "/oflaDemo";
 		public var evaluationStreamsFolder:String="evaluations";
 		public var responseStreamsFolder:String="responses";
 		public var exerciseStreamsFolder:String="exercises";
-		
+
 		// Variables to manage the input devices
 		public var microphone:Microphone;
 		public var camera:Camera;
-		public var micCamAllowed:Boolean = false;
-		public var cameraWidth:int = 320;
-		public var cameraHeight:int = 240;
-		
+		public var micCamAllowed:Boolean=false;
+		public var cameraWidth:int=320;
+		public var cameraHeight:int=240;
+
 		/**
 		 *
 		 * @param uri
@@ -61,11 +65,11 @@ package model
 			//We check if another connect attempt is still ongoing
 			if (!netConnectOngoingAttempt)
 			{
-				netConnectOngoingAttempt = true;
-				
+				netConnectOngoingAttempt=true;
+
 				// Initialize the NetConnection in the model.
 				netConnection.client=this;
-				
+
 				netConnection.objectEncoding=encoding;
 				netConnection.proxyType=proxy;
 				// Setup the NetConnection and listen for NetStatusEvent and SecurityErrorEvent events.
@@ -87,31 +91,37 @@ package model
 					{
 						case 2004:
 							trace("Invalid server location: " + uri);
-							netConnectOngoingAttempt = false;
+							netConnectOngoingAttempt=false;
 							netConnected=false;
 							break;
 						default:
-							trace("Undetermined problem while connecting with: "+uri);
-							netConnectOngoingAttempt = false;
+							trace("Undetermined problem while connecting with: " + uri);
+							netConnectOngoingAttempt=false;
 							netConnected=false;
 							break;
 					}
 				}
 				catch (e:IOError)
 				{
-					trace("IO error while connecting to: "+uri);
-					netConnectOngoingAttempt = false;
+					trace("IO error while connecting to: " + uri);
+					netConnectOngoingAttempt=false;
 					netConnected=false;
 				}
 				catch (e:SecurityError)
 				{
-					trace("Security error while connecting to: "+uri);
-					netConnectOngoingAttempt = false;
+					trace("Security error while connecting to: " + uri);
+					netConnectOngoingAttempt=false;
+					netConnected=false;
+				}
+				catch (e:Error)
+				{
+					trace("Unidentified error while connecting to: " + uri);
+					netConnectOngoingAttempt=false;
 					netConnected=false;
 				}
 			}
 		}
-		
+
 		/**
 		 *
 		 *
@@ -119,103 +129,112 @@ package model
 		public function close():void
 		{
 			// Close the NetConnection.
-			if(netConnection){
+			if (netConnection)
+			{
 				netConnection.close();
 			}
 		}
-		
+
 		/**
 		 *
 		 * @param event
 		 */
 		protected function netStatus(event:NetStatusEvent):void
 		{
-			netConnectOngoingAttempt = false;
-			
+			netConnectOngoingAttempt=false;
+
 			var info:Object=event.info;
 			var statusCode:String=info.code;
-			
-			switch (statusCode)
+
+			try
 			{
-				case "NetConnection.Connect.Success":
-					//Set a flag in the model to denote the successful connection
-					netConnected=true;
-					
-					// find out if it's a secure (HTTPS/TLS) connection
-					if (event.target.connectedProxyType == "HTTPS" || event.target.usingTLS)
-						trace("Connected to secure server");
-					else
-						trace("Connected to server");
-					break;
-				
-				case "NetConnection.Connect.Failed":
-					trace("Connection to server failed");
-					netConnected = false;
-					break;
-				
-				case "NetConnection.Connect.Closed":
-					trace("Connection to server closed");
-					netConnected = false;
-					break;
-				
-				case "NetConnection.Connect.InvalidApp":
-					trace("Application not found on server");
-					netConnected = false;
-					break;
-				
-				case "NetConnection.Connect.AppShutDown":
-					trace("Application has been shutdown");
-					netConnected = false;
-					break;
-				
-				case "NetConnection.Connect.Rejected":
-					trace("No permissions to connect to the application");
-					netConnected = false;
-					break;
-				
-				default:
-					// statements
-					break;
+				switch (statusCode)
+				{
+					case "NetConnection.Connect.Success":
+						//Set a flag in the model to denote the successful connection
+						netConnected=true;
+
+						// find out if it's a secure (HTTPS/TLS) connection
+						if (event.target.connectedProxyType == "HTTPS" || event.target.usingTLS)
+							trace("Connected to secure server");
+						else
+							trace("Connected to server");
+						break;
+
+					case "NetConnection.Connect.Failed":
+						trace("Connection to server failed");
+						netConnected=false;
+						break;
+
+					case "NetConnection.Connect.Closed":
+						trace("Connection to server closed");
+						netConnected=false;
+						break;
+
+					case "NetConnection.Connect.InvalidApp":
+						trace("Application not found on server");
+						netConnected=false;
+						break;
+
+					case "NetConnection.Connect.AppShutDown":
+						trace("Application has been shutdown");
+						netConnected=false;
+						break;
+
+					case "NetConnection.Connect.Rejected":
+						trace("No permissions to connect to the application");
+						netConnected=false;
+						break;
+
+					default:
+						// statements
+						break;
+				}
+			}
+			catch (e:Error)
+			{
+				trace("NetStatus threw an error: " + e.message);
+				netConnected=false;
 			}
 		}
-		
+
 		/**
 		 * The Red5 oflaDemo returns bandwidth stats.
 		 */
 		public function onBWDone():void
 		{
-			
+
 		}
-		
+
 		/**
 		 *
 		 * @param event
 		 */
 		protected function netSecurityError(event:SecurityErrorEvent):void
 		{
-			netConnectOngoingAttempt = false;
+			netConnectOngoingAttempt=false;
 			trace("Security error - " + event.text);
 		}
-		
+
 		/**
 		 *
 		 * @param event
 		 */
 		protected function netIOError(event:IOErrorEvent):void
 		{
-			netConnectOngoingAttempt = false;
+			netConnectOngoingAttempt=false;
 			trace("Input/output error - " + event.text);
 		}
-		
+
 		/**
 		 *
 		 * @param event
 		 */
 		protected function netASyncError(event:AsyncErrorEvent):void
 		{
-			netConnectOngoingAttempt = false;
+			netConnectOngoingAttempt=false;
 			trace("Asynchronous code error - " + event.error);
-		}	
+		}
 
 	}
 }
