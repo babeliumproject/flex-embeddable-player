@@ -85,10 +85,9 @@ class UserVideoHistory{
 		$sessionId = session_id();
 
 		$sql = "SELECT id, session_id FROM user_session WHERE ( session_id = '%s' AND fk_user_id = '%d' AND closed = 0 )";
-		$result = $this->conn->_execute ( $sql, $sessionId, $_SESSION['uid'] );
-		$row = $this->conn->_nextRow($result);
+		$row = $this->conn->_singleSelect($sql, $sessionId, $_SESSION['uid']);
 		if($row){
-			return $row[0];
+			return $row->id;
 		} else {
 			return false;
 		}

@@ -170,14 +170,13 @@ class Exercise {
 		$sql = "UPDATE (users u JOIN preferences p)
 				SET u.creditCount=u.creditCount+p.prefValue
 				WHERE (u.ID=%d AND p.prefName='uploadExerciseCredits') ";
-		return $this->conn->_execute ( $sql, $_SESSION['uid'] );
+		return $this->conn->_update ( $sql, $_SESSION['uid'] );
 	}
 
 	private function _addUploadingToCreditHistory($exerciseId){
 		$sql = "SELECT prefValue FROM preferences WHERE ( prefName='uploadExerciseCredits' )";
-		$result = $this->conn->_execute ( $sql );
-		$row = $this->conn->_nextRow($result);
-		if($row){
+		$result = $this->conn->_singleSelect ( $sql );
+		if($result){
 			$sql = "INSERT INTO credithistory (fk_user_id, fk_exercise_id, changeDate, changeType, changeAmount) ";
 			$sql = $sql . "VALUES ('%d', '%d', NOW(), '%s', '%d') ";
 			return $this->conn->_insert($sql, $_SESSION['uid'], $exerciseId, 'exercise_upload', $row[0]);
@@ -190,46 +189,38 @@ class Exercise {
 
 		$sql = "SELECT name, creditCount, joiningDate, isAdmin FROM users WHERE (id = %d) ";
 
-		return $this->_singleQuery($sql, $_SESSION['uid']);
-	}
-
-	private function _singleQuery(){
-		$valueObject = new stdClass();
-		$result = $this->conn->_execute(func_get_args());
-
-		$row = $this->conn->_nextRow($result);
-		if ($row)
-		{
-			$valueObject->name = $row[0];
-			$valueObject->creditCount = $row[1];
-			$valueObject->joiningDate = $row[2];
-			$valueObject->isAdmin = $row[3]==1;
-		}
-		else
-		{
-			return false;
-		}
-		return $valueObject;
+		return $this->conn->_singleSelect($sql, $_SESSION['uid']);
 	}
 
 	private function _getResourceDirectories(){
-		$sql = "SELECT prefValue FROM preferences
+		$sql = "SELECT prefValue 
+				FROM preferences
 				WHERE (prefName='exerciseFolder' OR prefName='responseFolder' OR prefName='evaluationFolder') 
 				ORDER BY prefName";
-		$result = $this->conn->_execute($sql);
-
-		$row = $this->conn->_nextRow($result);
-		$this->evaluationFolder = $row ? $row[0] : '';
-		$row = $this->conn->_nextRow($result);
-		$this->exerciseFolder = $row ? $row[0] : '';
-		$row = $this->conn->_nextRow($result);
-		$this->responseFolder = $row ? $row[0] : '';
+		$result = $this->conn->_multipleSelect($sql);
+		if($result){
+			$this->evaluationFolder = $result[0] ? $result[0]->prefValue : '';
+			$this->exerciseFolder = $result[1] ? $result[1]->prefValue : '';
+			$this->responseFolder = $result[2] ? $result[2]->prefValue : '';
+		}
 	}
 
 	public function getExercises(){
-		$sql = "SELECT e.id, e.title, e.description, e.language, e.tags, e.source, e.name, e.thumbnail_uri,
-       				   e.adding_date, e.duration, u.name, 
-       				   avg (suggested_level) as avgLevel, e.status, license, reference
+		$sql = "SELECT e.id, 
+					   e.title, 
+					   e.description, 
+					   e.language, 
+					   e.tags, 
+					   e.source, 
+					   e.name, 
+					   e.thumbnail_uri as thumbnailUri,
+       				   e.adding_date as addingDate, 
+       				   e.duration, 
+       				   u.name, 
+       				   avg (suggested_level) as avgDifficulty, 
+       				   e.status, 
+       				   e.license, 
+       				   e.reference
 				FROM   exercise e INNER JOIN users u ON e.fk_user_id= u.ID
        				   LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				   LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
@@ -237,80 +228,46 @@ class Exercise {
 				GROUP BY e.id
 				ORDER BY e.adding_date DESC";
 
-		$searchResults = $this->_exerciseListQuery($sql);
+		$searchResults = $this->conn->multipleSelect($sql);
+		foreach($searchResults as $searchResult){
+			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+		}
 
 		return $searchResults;
 	}
-
-	/*
-	 public function getExercisesWithoutSubtitles(){
-		try {
-		$verifySession = new SessionHandler(true);
-
-		$sql = "SELECT e.id, e.title, e.description, e.language, e.tags, e.source, e.name, e.thumbnail_uri,
-		e.adding_date, e.duration, u.name, avg (suggested_level) as avgLevel, e.status, license, reference
-		FROM exercise e
-		INNER JOIN users u ON e.fk_user_id= u.ID
-		LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
-		LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
-		LEFT OUTER JOIN subtitle a ON e.id=a.fk_exercise_id
-		WHERE e.status = 'Available' AND a.id IS NULL
-		GROUP BY e.id
-		ORDER BY e.adding_date DESC";
-
-		$searchResults = $this->_exerciseListQuery($sql, $_SESSION['uid']);
-		//Filter searchResults to include only the "evaluate" languages of the user
-		//$this->filterResults($searchResults, $languagePurpose);
-
-		return $searchResults;
-		} catch (Exception $e){
-		throw new Exception($e->getMessage());
-		}
-		}
-
-		public function getExercisesToReviewSubtitles(){
-		try {
-		$verifySession = new SessionHandler(true);
-
-		$sql = "SELECT e.id, e.title, e.description, e.language, e.tags, e.source, e.name, e.thumbnail_uri,
-		e.adding_date, e.duration, u.name, avg (suggested_level) as avgLevel, e.status, license, reference
-		FROM exercise e
-		INNER JOIN users u ON e.fk_user_id= u.ID
-		LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
-		LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
-		INNER JOIN subtitle a ON a.fk_exercise_id=e.id
-		WHERE e.status = 'Available'
-		GROUP BY e.id
-		ORDER BY e.adding_date DESC";
-
-		$searchResults = $this->_exerciseListQuery($sql, $_SESSION['uid']);
-			
-		//Filter searchResults to include only the "evaluate" languages of the user
-		//$this->filterResults($searchResults, $languagePurpose);
-
-		return $searchResults;
-		} catch (Exception $e){
-		throw new Exception($e->getMessage());
-		}
-		}
-		*/
 
 	public function getExercisesUnfinishedSubtitling(){
 		try {
 			$verifySession = new SessionHandler(true);
 
-			$sql = "SELECT e.id, e.title, e.description, e.language, e.tags, e.source, e.name, e.thumbnail_uri,
-       					   e.adding_date, e.duration, u.name, avg (suggested_level) as avgLevel, e.status, license, reference
+			$sql = "SELECT e.id, 
+						   e.title, 
+						   e.description, 
+						   e.language, 
+						   e.tags, 
+						   e.source, 
+						   e.name, 
+						   e.thumbnail_uri as thumbnailUri,
+       					   e.adding_date as addingDate, 
+       					   e.duration, 
+       					   u.name, 
+       					   avg (suggested_level) as avgDifficulty, 
+       					   e.status, 
+       					   e.license, 
+       					   e.reference
 					FROM exercise e 
 					 	 INNER JOIN users u ON e.fk_user_id= u.ID
 	 				 	 LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				 	 LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
        				 	 LEFT OUTER JOIN subtitle a ON e.id=a.fk_exercise_id
-       			 	 	 WHERE e.status = 'Available'
+       			 	 	 WHERE (e.status = 'Available' AND a.complete = 1)
 				 	GROUP BY e.id
 				 	ORDER BY e.adding_date DESC";
-
-			$searchResults = $this->_exerciseListQuery($sql, $_SESSION['uid']);
+			
+			$searchResults = $this->conn->multipleSelect($sql);
+			foreach($searchResults as $searchResult){
+				$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+			}
 
 			//Filter searchResults to include only the "evaluate" languages of the user
 			$filteredResults = $this->filterByLanguage($searchResults, 'evaluate');
@@ -321,19 +278,34 @@ class Exercise {
 	}
 
 	public function getRecordableExercises(){
-		$sql = "SELECT e.id, e.title, e.description, e.language, e.tags, e.source, e.name, e.thumbnail_uri,
-       					e.adding_date, e.duration, u.name, 
-       					avg (suggested_level) as avgLevel, e.status, license, reference
+		$sql = "SELECT e.id, 
+					   e.title, 
+					   e.description, 
+					   e.language, 
+					   e.tags, 
+					   e.source, 
+					   e.name, 
+					   e.thumbnail_uri as thumbnailUri,
+       				   e.adding_date as addingDate, 
+       				   e.duration, 
+       				   u.name as userName, 
+       				   avg (suggested_level) as avgDifficulty, 
+       				   e.status, 
+       				   e.license, 
+       				   e.reference
 				 FROM   exercise e 
 				 		INNER JOIN users u ON e.fk_user_id= u.ID
 				 		INNER JOIN subtitle t ON e.id=t.fk_exercise_id
        				    LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				    LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
-       			 WHERE (e.status = 'Available')
+       			 WHERE (e.status = 'Available' AND t.complete = 1)
 				 GROUP BY e.id
 				 ORDER BY e.adding_date DESC, e.language DESC";
-
-		$searchResults = $this->_exerciseListQuery($sql);
+		
+		$searchResults = $this->conn->multipleSelect($sql);
+		foreach($searchResults as $searchResult){
+			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+		}
 
 		try {
 			$verifySession = new SessionHandler(true);
@@ -343,7 +315,7 @@ class Exercise {
 			return $searchResults;
 		}
 
-	}
+	}	
 
 	public function filterByLanguage($searchList, $languagePurpose){
 		if(count($_SESSION['user-languages']) < 1)
@@ -367,19 +339,12 @@ class Exercise {
 	}
 
 	public function getExerciseLocales($exerciseId) {
-		$sql = "SELECT DISTINCT language FROM subtitle
+		$sql = "SELECT DISTINCT language as locale FROM subtitle
 				WHERE fk_exercise_id = %d";
 
-		$searchResults = array ();
-		$result = $this->conn->_execute ( $sql, $exerciseId );
+		$results = $this->conn->_multipleSelect ( $sql, $exerciseId );
 
-		while ( $row = $this->conn->_nextRow ( $result ) ){
-			$t = new stdClass();
-			$t->locale = $row[0];
-			array_push($searchResults, $t);
-		}
-
-		return $searchResults; // return languages
+		return $results; // return languages
 	}
 
 	public function addInappropriateExerciseReport($report){
@@ -447,15 +412,9 @@ class Exercise {
 			$verifySession = new SessionHandler(true);
 
 			$sql = "SELECT *
-		        FROM exercise_score 
-		        WHERE ( fk_exercise_id='%d' AND fk_user_id='%d' AND CURDATE() <= suggestion_date )";
-			$result = $this->conn->_execute ( $sql, $score->exerciseId, $_SESSION['uid']);
-			$row = $this->conn->_nextRow ($result);
-			if ($row){
-				return true;
-			} else {
-				return false;
-			}
+		        	FROM exercise_score 
+		        	WHERE ( fk_exercise_id='%d' AND fk_user_id='%d' AND CURDATE() <= suggestion_date )";
+			return $this->conn->_singleSelect ( $sql, $score->exerciseId, $_SESSION['uid']);
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
@@ -472,13 +431,7 @@ class Exercise {
 			$sql = "SELECT *
 				FROM exercise_report 
 				WHERE ( fk_exercise_id='%d' AND fk_user_id='%d' )";
-			$result = $this->conn->_execute ($sql, $report->exerciseId, $_SESSION['uid']);
-			$row = $this->conn->_nextRow ($result);
-			if ($row){
-				return true;
-			} else {
-				return false;
-			}
+			return $this->conn->_singleSelect ($sql, $report->exerciseId, $_SESSION['uid']);
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
@@ -486,11 +439,13 @@ class Exercise {
 
 	private function getExerciseAvgScore($exerciseId){
 
-		$sql = "SELECT e.id, avg (suggested_score) as avgScore, count(suggested_score) as scoreCount
+		$sql = "SELECT e.id, 
+					   avg (suggested_score) as avgRating, 
+					   count(suggested_score) as ratingCount
 				FROM exercise e LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id    
 				WHERE (e.id = '%d' ) GROUP BY e.id";
 
-		return $this->_singleScoreQuery($sql, $exerciseId);
+		return $this->conn->_singleSelect($sql, $exerciseId);
 	}
 
 	/**
@@ -502,13 +457,12 @@ class Exercise {
 		if(!isset($this->exerciseMinRatingCount)){
 			$sql = "SELECT prefValue FROM preferences WHERE (prefName = 'minVideoRatingCount')";
 
-			$result = $this->conn->_execute($sql);
-			$row = $this->conn->_nextRow($result);
+			$result = $this->conn->_singleSelect($sql);
 
-			if($row)
-			$this->exerciseMinRatingCount = $row[0];
+			if($result)
+				$this->exerciseMinRatingCount = $result->prefValue;
 			else
-			$this->exerciseMinRatingCount = 0;
+				$this->exerciseMinRatingCount = 0;
 		}
 
 		if(!isset($this->exerciseGlobalAvgRating)){
@@ -524,7 +478,7 @@ class Exercise {
 		if ($exerciseRatingCount == 0) $exerciseRatingCount = 1;
 
 		$exerciseBayesianAvg = ($exerciseAvgRating*($exerciseRatingCount/($exerciseRatingCount + $this->exerciseMinRatingCount))) +
-		($this->exerciseGlobalAvgRating*($this->exerciseMinRatingCount/($exerciseRatingCount + $this->exerciseMinRatingCount)));
+							   ($this->exerciseGlobalAvgRating*($this->exerciseMinRatingCount/($exerciseRatingCount + $this->exerciseMinRatingCount)));
 
 		$exerciseRatingData->avgRating = $exerciseBayesianAvg;
 
@@ -535,59 +489,12 @@ class Exercise {
 	private function getExercisesGlobalAvgScore(){
 		$sql = "SELECT avg(suggested_score) as globalAvgScore FROM exercise_score ";
 
-		$result = $this->conn->_execute($sql);
-		$row = $this->conn->_nextRow($result);
-		if($row)
-		return $row[0]; //The avg of all the exercises so far
-		else
-		return 0;
+		return ($result = $this->conn->_singleSelect($sql)) ? $result->globalAvgScore : 0;
 	}
 
-	private function _singleScoreQuery(){
-		$exercise = new stdClass ( );
-		$result = $this->conn->_execute(func_get_args());
-		$row = $this->conn->_nextRow ($result);
-		if ($row){
-			$exercise->id = $row[0];
-			$exercise->avgRating = $row[1];
-			$exercise->ratingCount = $row[2];
-		} else {
-			return false;
-		}
-		return $exercise;
+	
 
-	}
-
-	private function _exerciseListQuery() {
-		$searchResults = array ();
-		$result = $this->conn->_execute ( func_get_args() );
-
-		while ( $row = $this->conn->_nextRow ( $result ) ) {
-			$temp = new stdClass ( );
-
-			$temp->id = $row[0];
-			$temp->title = $row[1];
-			$temp->description = $row[2];
-			$temp->language = $row[3];
-			$temp->tags = $row[4];
-			$temp->source = $row[5];
-			$temp->name = $row[6];
-			$temp->thumbnailUri = $row[7];
-			$temp->addingDate = $row[8];
-			$temp->duration = $row[9];
-			$temp->userName = $row[10];
-			$temp->avgDifficulty = $row[11];
-			$temp->status = $row[12];
-			$temp->license = $row[13];
-			$temp->reference = $row[14];
-
-			$temp->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
-
-			array_push ( $searchResults, $temp );
-		}
-
-		return $searchResults;
-	}
+	
 
 }
 

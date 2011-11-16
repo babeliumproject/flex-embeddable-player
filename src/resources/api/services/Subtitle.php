@@ -245,18 +245,16 @@ class Subtitle {
 		$sql = "UPDATE (users u JOIN preferences p)
 				SET u.creditCount=u.creditCount+p.prefValue 
 				WHERE (u.ID=%d AND p.prefName='subtitleAdditionCredits') ";
-		return $this->conn->_execute ( $sql, $_SESSION['uid'] );
+		return $this->conn->_update ( $sql, $_SESSION['uid'] );
 	}
 
 	private function _addSubtitlingToCreditHistory($exerciseId){
 		$sql = "SELECT prefValue FROM preferences WHERE ( prefName='subtitleAdditionCredits' )";
-		$result = $this->conn->_execute ( $sql );
-		$row = $this->conn->_nextRow($result);
-		if($row){
-
+		$result = $this->conn->_singleSelect ( $sql );
+		if($result){
 			$sql = "INSERT INTO credithistory (fk_user_id, fk_exercise_id, changeDate, changeType, changeAmount) ";
 			$sql = $sql . "VALUES ('%d', '%d', NOW(), '%s', '%d') ";
-			return $this->conn->_insert($sql, $_SESSION['uid'], $exerciseId, 'subtitling', $row[0]);
+			return $this->conn->_insert($sql, $_SESSION['uid'], $exerciseId, 'subtitling', $result->prefValue);
 		} else {
 			return false;
 		}
@@ -264,28 +262,13 @@ class Subtitle {
 
 	private function _getUserInfo(){
 
-		$sql = "SELECT name, creditCount, joiningDate, isAdmin FROM users WHERE (id = %d) ";
+		$sql = "SELECT name, 
+					   creditCount, 
+					   joiningDate, 
+					   isAdmin
+				FROM users WHERE (id = %d) ";
 
-		return $this->_singleQuery($sql, $_SESSION['uid']);
-	}
-
-	private function _singleQuery(){
-		$valueObject = new stdClass();
-		$result = $this->conn->_execute(func_get_args());
-
-		$row = $this->conn->_nextRow($result);
-		if ($row)
-		{
-			$valueObject->name = $row[0];
-			$valueObject->creditCount = $row[1];
-			$valueObject->joiningDate = $row[2];
-			$valueObject->isAdmin = $row[3]==1;
-		}
-		else
-		{
-			return false;
-		}
-		return $valueObject;
+		return $this->conn->_singleSelect($sql, $_SESSION['uid']);
 	}
 
 	private function _subtitlesWereModified($compareSubject)
@@ -293,7 +276,7 @@ class Subtitle {
 		$modified=false;
 		$unmodifiedSubtitlesLines = $_SESSION['unmodified-subtitles'];
 		if (count($unmodifiedSubtitlesLines) != count($compareSubject))
-		$modified=true;
+			$modified=true;
 		else
 		{
 			for ($i=0; $i < count($unmodifiedSubtitlesLines); $i++)
@@ -349,11 +332,16 @@ class Subtitle {
 	
 
 	public function getExerciseSubtitles($exerciseId){
-		$sql = "SELECT s.id, s.fk_exercise_id, u.name, s.language, s.translation, s.adding_date
+		$sql = "SELECT s.id, 
+					   s.fk_exercise_id as exerciseId, 
+					   u.name as userName, 
+					   s.language, 
+					   s.translation, 
+					   s.adding_date as addingDate
 				FROM subtitle s inner join users u on s.fk_user_id=u.ID
 				WHERE fk_exercise_id='%d'
 				ORDER BY s.adding_date DESC";
-		$searchResults = $this->_listSubtitlesQuery ( $sql, $exerciseId );
+		$searchResults = $this->conn->_multipleSelect ( $sql, $exerciseId );
 
 		return $searchResults;
 	}
@@ -364,54 +352,24 @@ class Subtitle {
 				FROM subtitle_line sl INNER JOIN subtitle s ON sl.fk_subtitle_id = s.id
 				WHERE (s.fk_exercise_id= '%d' )";
 
-		$subtitleIdToDelete = $this->_singleSubtitleIdQuery($sql, $exerciseId);
+		$subtitleIdToDelete = $this->conn->_singleSelect($sql, $exerciseId);
 
-		if($subtitleIdToDelete){
+		if($subtitleIdToDelete && $subtitleIdToDelete->id){
 			//Delete the subtitle_line entries ->
 			$sl_delete = "DELETE FROM subtitle_line WHERE (fk_subtitle_id = '%d')";
-			$this->conn->_execute($sl_delete, $subtitleIdToDelete);
+			$result = $this->conn->_delete($sl_delete, $subtitleIdToDelete->id);
 
 			//The first query should suffice to delete all due to ON DELETE CASCADE clauses but
 			//as it seems this doesn't work we delete the rest manually.
 
 			//Delete the exercise_role entries
 			$er_delete = "DELETE FROM exercise_role WHERE (fk_exercise_id = '%d')";
-			$this->conn->_execute($er_delete, $exerciseId);
+			$result = $this->conn->_delete($er_delete, $exerciseId);
 
 			//Delete the subtitle entry
 			$s_delete = "DELETE FROM subtitle WHERE (id ='%d')";
-			$this->conn->_execute($s_delete, $subtitleIdToDelete);
+			$result = $this->conn->_delete($s_delete, $subtitleIdToDelete->id);
 		}
-	}
-
-	private function _singleSubtitleIdQuery(){
-		$subtitleId = 0;
-		$result = $this->conn->_execute(func_get_args());
-		$row = $this->conn->_nextRow($result);
-		if ($row){
-			$subtitleId = $row[0];
-		} else {
-			return false;
-		}
-		return $subtitleId;
-	}
-
-	private function _listSubtitlesQuery(){
-		$searchResults = array();
-		$result = $this->conn->_execute ( func_get_args() );
-
-		while ( $row = $this->conn->_nextRow($result)){
-			$temp = new stdClass();
-			$temp->id = $row[0];
-			$temp->exerciseId = $row[1];
-			$temp->userName = $row[2];
-			$temp->language = $row[3];
-			$temp->translation = $row[4];
-			$temp->addingDate = $row[5];
-			array_push($searchResults, $temp);
-		}
-
-		return $searchResults;
 	}
 
 	private function _listSubtitleLinesQuery() {

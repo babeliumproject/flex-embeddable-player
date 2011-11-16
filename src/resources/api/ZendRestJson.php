@@ -267,10 +267,8 @@ class ZendRestJson extends Zend_Rest_Server
 		$json['header']['session'] = session_id();
 
 		if(isset($struct)){
-			if((is_array($struct) && count($struct) > 1) || is_object($struct)){
+			if((is_array($struct) && count($struct) >= 1) || is_object($struct)){
 				$json['response'] = (object) $struct;
-			} else {
-				$json['response'] = $struct[0];
 			}
 		} else {
 			$json['response'] = null;

@@ -96,12 +96,12 @@ class Auth{
 			} else {
 				//Check whether the user is active or not
 				$sql = "SELECT id FROM users WHERE (name = '%s' AND active = 0)";
-				$result = $this->conn->_select($sql, $user->name);
+				$result = $this->conn->_singleSelect($sql, $user->name);
 				if ( $result )
 				return "inactive_user";
 				//Check if the user provided correct authentication data
 				$sql = "SELECT id, name, realName, realSurname, email, creditCount, joiningDate, isAdmin FROM users WHERE (name='%s' AND password='%s') ";
-				$result = $this->conn->_select($sql, $user->name, $user->pass);
+				$result = $this->conn->_singleSelect($sql, $user->name, $user->pass);
 				if($result){
 					$userId = $result->id;
 					$userLanguages = $this->_getUserLanguages($userId);
@@ -168,7 +168,7 @@ class Auth{
 
 		$sql = "SELECT id, name, realName, realSurname, email, creditCount FROM users WHERE (name = '%s') ";
 
-		return $this->conn->_select($sql, $username);
+		return $this->conn->_singleSelect($sql, $username);
 	}
 
 	/**
@@ -201,7 +201,7 @@ class Auth{
 			return "wrong_user";
 		} else {
 			$sql = "SELECT id, activation_hash FROM users WHERE (name= '%s' AND email= '%s' AND active = 0 AND activation_hash <> '')";
-			$inactiveUserExists = $this->conn->_select($sql, $user->name, $user->email);
+			$inactiveUserExists = $this->conn->_singleSelect($sql, $user->name, $user->email);
 			if ($inactiveUserExists){
 				$userId = $inactiveUserExists->id;
 				$activationHash = $inactiveUserExists->hash;
@@ -293,7 +293,7 @@ class Auth{
 	private function _getUserLanguages($userId){
 		$sql = "SELECT language, level, positives_to_next_level, purpose
 				FROM user_languages WHERE (fk_user_id='%d')";
-		return $this->conn->_select($sql, $userId);
+		return $this->conn->_multipleSelect($sql, $userId);
 	}
 
 }
