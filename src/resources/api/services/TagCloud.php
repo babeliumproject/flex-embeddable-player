@@ -43,18 +43,11 @@ class TagCloud {
 	public function getTagCloud() {
 		$searchResults = array();
 		$sql = "SELECT *
-				 FROM tagcloud
-				 ORDER BY amount DESC, tag
-				 LIMIT " . $this->numTags . ";";
- 		$result = $this->conn->_execute ( $sql );
- 		while ( $row = $this->conn->_nextRow ( $result ) ) {
-			$temp = new stdClass();
-			
-			$temp->tag = $row[0];
-			$temp->amount = $row[1];
-			
-			array_push ( $searchResults, $temp );
-		}
+				FROM tagcloud
+				ORDER BY amount DESC, tag
+				LIMIT " . $this->numTags . ";";
+ 		$searchResults = $this->conn->_multipleSelect ( $sql );
+ 		
 		return $searchResults;
 	}
 }

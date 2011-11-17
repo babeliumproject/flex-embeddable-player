@@ -47,24 +47,31 @@ class Subtitle {
 
 	public function getExerciseRoles($exerciseId) {
 
-		$sql = "SELECT MAX(id),fk_exercise_id,character_name
+		$sql = "SELECT MAX(id) as id,
+					   fk_exercise_id as exerciseId,
+					   character_name as characterName
 				FROM exercise_role WHERE (fk_exercise_id = %d) 
 				GROUP BY exercise_role.character_name ";
 
-		$searchResults = $this->_listRolesQuery ( $sql, $exerciseId );
+		$searchResults = $this->conn->_multipleSelect( $sql, $exerciseId );
 
 		return $searchResults;
 	}
 
-
 	public function getSubtitlesSubtitleLines($subtitleId) {
-		$sql = "SELECT SL.id, SL.show_time, SL.hide_time, SL.text, SL.fk_exercise_role_id, ER.character_name, S.id
+		$sql = "SELECT SL.id, 
+					   SL.show_time as showTime, 
+					   SL.hide_time as hideTime, 
+					   SL.text, 
+					   SL.fk_exercise_role_id as exerciseRoleId, 
+					   ER.character_name as exerciseRoleName, 
+					   S.id as subtitleId
 				FROM subtitle_line AS SL INNER JOIN subtitle AS S ON SL.fk_subtitle_id = S.id 
 				INNER JOIN exercise AS E ON E.id = S.fk_exercise_id 
 				RIGHT OUTER JOIN exercise_role AS ER ON ER.id=SL.fk_exercise_role_id
 				WHERE (SL.fk_subtitle_id = %d)";
 
-		$searchResults = $this->_listSubtitleLinesQuery ($sql, $subtitleId);
+		$searchResults = $this->conn->_multipleSelect($sql, $subtitleId);
 
 		return $searchResults;
 	}
@@ -84,7 +91,13 @@ class Subtitle {
 
 		if(!$subtitleId){
 
-			$sql = "SELECT  SL.id,SL.show_time,SL.hide_time, SL.text, SL.fk_exercise_role_id, ER.character_name, S.id
+			$sql = "SELECT  SL.id,
+							SL.show_time as showTime,
+							SL.hide_time as hideTime, 
+							SL.text, 
+							SL.fk_exercise_role_id as exerciseRoleId, 
+							ER.character_name as exerciseRoleName, 
+							S.id as subtitleId
             		FROM (subtitle_line AS SL INNER JOIN subtitle AS S ON 
 						 SL.fk_subtitle_id = S.id) INNER JOIN exercise AS E ON E.id = 
 						 S.fk_exercise_id RIGHT OUTER JOIN exercise_role AS ER ON ER.id=SL.fk_exercise_role_id
@@ -93,14 +106,20 @@ class Subtitle {
 						       	   WHERE SS.fk_exercise_id ='%d' AND SS.language = '%s') ";
 
 
-			$searchResults = $this->_listSubtitleLinesQuery ( $sql, $exerciseId, $language );
+			$searchResults = $this->conn->_multipleSelect ( $sql, $exerciseId, $language );
 		} else {
-			$sql = "SELECT  SL.id,SL.show_time,SL.hide_time, SL.text, SL.fk_exercise_role_id, ER.character_name, S.id
+			$sql = "SELECT  SL.id,
+							SL.show_time as showTime,
+							SL.hide_time as hideTime, 
+							SL.text, 
+							SL.fk_exercise_role_id as exerciseRoleId, 
+							ER.character_name as exerciseRoleName, 
+							S.id as subtitleId
             		FROM (subtitle_line AS SL INNER JOIN subtitle AS S ON 
 						 SL.fk_subtitle_id = S.id) INNER JOIN exercise AS E ON E.id = 
 						 S.fk_exercise_id RIGHT OUTER JOIN exercise_role AS ER ON ER.id=SL.fk_exercise_role_id
 					WHERE  S.id='%d'";	
-			$searchResults = $this->_listSubtitleLinesQuery ( $sql, $subtitleId );
+			$searchResults = $this->conn->_multipleSelect ( $sql, $subtitleId );
 		}
 
 		//Store the last retrieved subtitle lines to check if there are changes when saving the subtitles.
@@ -108,14 +127,21 @@ class Subtitle {
 
 		return $searchResults;
 	}
+	
 
 	public function getSubtitleLinesUsingId($subtitleId) {
-		$sql = "SELECT SL.id,SL.show_time,SL.hide_time, SL.text, SL.fk_exercise_role_id, ER.character_name, S.id
+		$sql = "SELECT SL.id,
+					   SL.show_time as showTime,
+					   SL.hide_time as hideTime, 
+					   SL.text, 
+					   SL.fk_exercise_role_id as exerciseRoleId, 
+					   ER.character_name as exerciseRoleName, 
+					   S.id as subtitleId
             	FROM (subtitle_line AS SL INNER JOIN subtitle AS S ON SL.fk_subtitle_id = S.id) 
             		 RIGHT OUTER JOIN exercise_role AS ER ON ER.id=SL.fk_exercise_role_id 
 				WHERE ( S.id = %d )";
 
-		$searchResults = $this->_listSubtitleLinesQuery ( $sql, $subtitleId );
+		$searchResults = $this->conn->_multipleSelect( $sql, $subtitleId );
 
 		return $searchResults;
 	}
@@ -129,7 +155,6 @@ class Subtitle {
 			throw new Exception($e->getMessage());
 		}
 	}
-
 
 	private function saveSubtitlesAuth($subtitles) {
 
@@ -175,7 +200,7 @@ class Subtitle {
 		$er_sql = substr($er_sql,0,-1);
 		// put sql query and all params in one array
 		$merge = array_merge((array)$er_sql, $params);
-		$lastRoleId = $this->_vcreate($merge);
+		$lastRoleId = $this->conn->_insert($merge);
 		if(!lastRoleId){
 			$this->conn->_failedTransaction();
 			throw new Exception("Subtitle save failed");
@@ -369,55 +394,6 @@ class Subtitle {
 			//Delete the subtitle entry
 			$s_delete = "DELETE FROM subtitle WHERE (id ='%d')";
 			$result = $this->conn->_delete($s_delete, $subtitleIdToDelete->id);
-		}
-	}
-
-	private function _listSubtitleLinesQuery() {
-		$searchResults = array ();
-		$result = $this->conn->_execute ( func_get_args() );
-
-		while ( $row = $this->conn->_nextRow ( $result ) ) {
-			$temp = new stdClass ( );
-			$temp->id = $row [0];
-			$temp->showTime = $row [1];
-			$temp->hideTime = $row [2];
-			$temp->text=$row [3];
-			$temp->exerciseRoleId=$row[4];
-			$temp->exerciseRoleName=$row[5];
-			$temp->subtitleId=$row[6];
-			array_push ( $searchResults, $temp );
-		}
-
-		return $searchResults;
-	}
-
-	private function _listRolesQuery() {
-		$searchResults = array ();
-		$result = $this->conn->_execute ( func_get_args() );
-
-		while ( $row = $this->conn->_nextRow ( $result ) ) {
-			$temp = new stdClass ( );
-			$temp->id = $row [0];
-			$temp->exerciseId = $row [1];
-			$temp->characterName = $row [2];
-			array_push ( $searchResults, $temp );
-		}
-
-		return $searchResults;
-	}
-
-	private function _vcreate($params) {
-
-		$this->conn->_execute ( $params );
-
-		$sql = "SELECT last_insert_id()";
-		$result = $this->conn->_execute ( $sql );
-
-		$row = $this->conn->_nextRow ( $result );
-		if ($row) {
-			return $row [0];
-		} else {
-			return false;
 		}
 	}
 }

@@ -44,7 +44,7 @@ if ($digest == $headers["Google-Code-Project-Hosting-Hook-Hmac"]){
                 $sql = "UPDATE preferences SET prefValue= '%s' WHERE (prefName='appRevision')";
 
                 $conn = new Datasource ( $settings->host, $settings->db_name, $settings->db_username, $settings->db_password );
-                $conn->_execute ( $sql, $appRevision );
+                $conn->_update ( $sql, $appRevision );
                 error_log("\tCommited revision: ".$appRevision."\n", 3, $logPath.'/webhook.log');
 
         } else {
