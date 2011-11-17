@@ -228,9 +228,9 @@ class Exercise {
 				GROUP BY e.id
 				ORDER BY e.adding_date DESC";
 
-		$searchResults = $this->conn->multipleSelect($sql);
+		$searchResults = $this->conn->_multipleSelect($sql);
 		foreach($searchResults as $searchResult){
-			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 		}
 
 		return $searchResults;
@@ -264,7 +264,7 @@ class Exercise {
 				 	GROUP BY e.id
 				 	ORDER BY e.adding_date DESC";
 			
-			$searchResults = $this->conn->multipleSelect($sql);
+			$searchResults = $this->conn->_multipleSelect($sql);
 			foreach($searchResults as $searchResult){
 				$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
 			}
@@ -302,9 +302,9 @@ class Exercise {
 				 GROUP BY e.id
 				 ORDER BY e.adding_date DESC, e.language DESC";
 		
-		$searchResults = $this->conn->multipleSelect($sql);
+		$searchResults = $this->conn->_multipleSelect($sql);
 		foreach($searchResults as $searchResult){
-			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+			$searchResult->avgRating = $this->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 		}
 
 		try {

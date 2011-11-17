@@ -215,7 +215,7 @@ class Datasource
 	 */
 	public function _singleSelect(){
 		$result = $this->_execute ( func_get_args() );
-		$count = mysqli_num_rows($this->dbLink);
+		$count = mysqli_num_rows($result);
 		$row = $this->_nextRowObject($result);
 		//Check that the result is defined and has only one row
 		if($row && is_object($row) && $count == 1){
@@ -244,6 +244,7 @@ class Datasource
 		} else {
 			$result = $rowList;
 		}
+		return $result;
 	}
 	
 	/**

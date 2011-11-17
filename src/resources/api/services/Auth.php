@@ -203,13 +203,16 @@ class Auth{
 			$sql = "SELECT id, activation_hash FROM users WHERE (name= '%s' AND email= '%s' AND active = 0 AND activation_hash <> '')";
 			$inactiveUserExists = $this->conn->_singleSelect($sql, $user->name, $user->email);
 			if ($inactiveUserExists){
+				$usersFirstMotherTongue = 'en_US';
 				$userId = $inactiveUserExists->id;
-				$activationHash = $inactiveUserExists->hash;
+				$activationHash = $inactiveUserExists->activation_hash;
 				$userLanguages = $this->_getUserLanguages($userId);
-				foreach($userLanguages as $lang){
-					if($lang->level == 7){
-						$usersFirstMotherTongue = $lang->language;
-						break;
+				if($userLanguages){
+					foreach($userLanguages as $lang){
+						if($lang->level == 7){
+							$usersFirstMotherTongue = $lang->language;
+							break;
+						}
 					}
 				}
 				// Submit activation email
@@ -224,7 +227,8 @@ class Auth{
 						'ACTIVATION_LINK' => 'http://'.$_SERVER['HTTP_HOST'].'/Main.html#/activation/activate/hash='.$activationHash.'&user='.$user->name,
 						'SIGNATURE' => 'The Babelium Project Team');
 
-				if ( !$mail->makeTemplate("mail_activation", $args, $usersFirstMotherTongue) ) return null;
+				if ( !$mail->makeTemplate("mail_activation", $args, $usersFirstMotherTongue) ) 
+					return null;
 
 				return $mail->send($mail->txtContent, $subject, $mail->htmlContent);
 			} else {
@@ -291,7 +295,10 @@ class Auth{
 	 * 		Returns an array of languages or null when nothing found
 	 */
 	private function _getUserLanguages($userId){
-		$sql = "SELECT language, level, positives_to_next_level, purpose
+		$sql = "SELECT language, 
+					   level, 
+					   positives_to_next_level as positivesToNextLevel, 
+					   purpose
 				FROM user_languages WHERE (fk_user_id='%d')";
 		return $this->conn->_multipleSelect($sql, $userId);
 	}

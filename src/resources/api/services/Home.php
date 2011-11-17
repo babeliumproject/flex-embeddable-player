@@ -101,7 +101,7 @@ class Home{
 		               A.adding_date as addingDate,
 		               E.id as exerciseId, 
 		               E.name as exerciseName, 
-		               E.duration as exerciseName, 
+		               E.duration as exerciseDuration, 
 		               E.language as exerciseLanguage, 
 		               E.thumbnail_uri as exerciseThumbnailUri, 
 		               E.title as exerciseTitle, 
@@ -131,7 +131,7 @@ class Home{
 		$results = array();
 
 		//List of all the assessments done by the user
-		$evaluation = new EvaluationDAO();
+		$evaluation = new Evaluation();
 		$givenAssessments = $evaluation->getResponsesAssessedByCurrentUser();
 
 		return $this->sliceResultsByNumber($givenAssessments, 5);
@@ -166,7 +166,7 @@ class Home{
 	}
 
 	public function topScoreMostViewedVideos(){
-		
+		$exercise = new Exercise();
 		$sql = "SELECT e.id, 
 					   e.title, 
 					   e.description, 
@@ -194,10 +194,9 @@ class Home{
 		
 		$searchResults = $this->conn->_multipleSelect($sql);
 		foreach($searchResults as $searchResult){
-			$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($temp->id)->avgRating;
+			$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 		}
 
-		$exercise = new Exercise();
 		$filteredResults = $exercise->filterByLanguage($searchResults, 'practice');
 		
 		usort($filteredResults, array($this, 'sortResultsByScore'));
@@ -214,6 +213,7 @@ class Home{
 	}
 
 	public function latestAvailableVideos(){
+		$exercise = new Exercise();
 		$sql = "SELECT e.id, 
 					   e.title, 
 					   e.description, 
@@ -224,7 +224,7 @@ class Home{
 					   e.thumbnail_uri as thumbnailUri, 
 					   e.adding_date as addingDate,
 		               e.duration, 
-		               u.name, 
+		               u.name as userName, 
 		               avg (suggested_level) as avgDifficulty, 
 		               e.status, 
 		               e.license, 
@@ -241,10 +241,9 @@ class Home{
 		
 		$searchResults = $this->conn->_multipleSelect($sql);
 		foreach($searchResults as $searchResult){
-			$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($temp->id)->avgRating;
+			$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 		}
 
-		$exercise = new Exercise();
 		$filteredResults = $exercise->filterByLanguage($searchResults, 'practice');
 		$slicedResults = $this->sliceResultsByNumber($filteredResults, 10);
 		return $slicedResults;
