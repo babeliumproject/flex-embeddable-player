@@ -217,7 +217,9 @@ class Evaluation {
 	 * @return array $searchResults
 	 * 		Returns an array of objects with the scores, comments and videocomments each assessor gave to this response
 	 */
-	public function detailsOfAssessedResponse($responseId){
+	public function detailsOfAssessedResponse($responseId = 0){
+		if(!$responseId)
+			return false;
 		$sql = "SELECT C.name as userName, 
 					   A.score_overall as overallScore, 
 					   A.score_intonation as intonationScore, 
@@ -244,7 +246,9 @@ class Evaluation {
 	 * @return array $searchResults
 	 *	 	Returns an array of objects with the scores, comments and videocomments each assessor gave to this response
 	 */
-	public function getEvaluationChartData($responseId){
+	public function getEvaluationChartData($responseId = 0){
+		if(!$responseId)
+			return false;
 		$sql = "SELECT U.name as userName, 
 				E.score_overall as overallScore, 
 				E.comment
@@ -295,7 +299,9 @@ class Evaluation {
 	 * @throws Exception
 	 * 		Throws an exception when the sql transaction stops unexpectedly at some point
 	 */
-	public function addAssessment($evalData){
+	public function addAssessment($evalData = null){
+		if(!$evalData)
+			return false;
 		
 		$result = 0;
 		$responseId = $evalData->responseId;
@@ -368,7 +374,9 @@ class Evaluation {
 	 * @throws Exception
 	 * 		Throws an exception when the sql transaction stops unexpectedly at some point
 	 */
-	public function addVideoAssessment($evalData){
+	public function addVideoAssessment($evalData = null){
+		if(!$evalData)
+			return false;
 		
 		$result = 0;
 		$responseId = $evalData->responseId;

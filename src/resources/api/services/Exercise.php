@@ -65,10 +65,13 @@ class Exercise {
 		}
 	}
 
-	public function addUnprocessedExercise($exercise) {
+	public function addUnprocessedExercise($exercise = null) {
 
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$exercise)
+				return false;
 
 			$exerciseLevel = new stdClass();
 			$exerciseLevel->userId = $_SESSION['uid'];
@@ -91,11 +94,14 @@ class Exercise {
 
 	}
 
-	public function addWebcamExercise($exercise) {
+	public function addWebcamExercise($exercise = null) {
 
 		try {
 
 			$verifySession = new SessionHandler(true);
+			
+			if(!$exercise)
+				return false;
 
 			$result = 0;
 
@@ -338,7 +344,10 @@ class Exercise {
 
 	}
 
-	public function getExerciseLocales($exerciseId) {
+	public function getExerciseLocales($exerciseId=0) {
+		if(!$exerciseId)
+			return false;
+		
 		$sql = "SELECT DISTINCT language as locale FROM subtitle
 				WHERE fk_exercise_id = %d";
 
@@ -347,9 +356,12 @@ class Exercise {
 		return $results; // return languages
 	}
 
-	public function addInappropriateExerciseReport($report){
+	public function addInappropriateExerciseReport($report = null){
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$report)
+				return false;
 
 			$result = $this->userReportedExercise($report);
 
@@ -377,9 +389,12 @@ class Exercise {
 	}
 	
 
-	public function addExerciseScore($score){
+	public function addExerciseScore($score = null){
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$score)
+				return false;
 
 			$result = $this->userRatedExercise($score);
 			if (!$result){
@@ -407,10 +422,13 @@ class Exercise {
 	 * @param stdClass $score
 	 * @throws Exception
 	 */
-	public function userRatedExercise($score){
+	public function userRatedExercise($score = null){
 		try {
 			$verifySession = new SessionHandler(true);
-
+	
+			if(!$score)
+				return false;
+			
 			$sql = "SELECT *
 		        	FROM exercise_score 
 		        	WHERE ( fk_exercise_id='%d' AND fk_user_id='%d' AND CURDATE() <= suggestion_date )";
@@ -424,10 +442,12 @@ class Exercise {
 	 * Check if the user has already reported about this exercise
 	 * @param stdClass $report
 	 */
-	public function userReportedExercise($report){
+	public function userReportedExercise($report = null){
 		try {
 			$verifySession = new SessionHandler(true);
-
+			if(!$report)
+				return false;
+				
 			$sql = "SELECT *
 				FROM exercise_report 
 				WHERE ( fk_exercise_id='%d' AND fk_user_id='%d' )";
@@ -452,8 +472,11 @@ class Exercise {
 	 * The average score is not accurate information in statistical terms, so we use a weighted value
 	 * @param int $exerciseId
 	 */
-	public function getExerciseAvgBayesianScore($exerciseId){
-
+	public function getExerciseAvgBayesianScore($exerciseId = 0){
+		if(!$exerciseId)
+			return false;
+		
+		
 		if(!isset($this->exerciseMinRatingCount)){
 			$sql = "SELECT prefValue FROM preferences WHERE (prefName = 'minVideoRatingCount')";
 

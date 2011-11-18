@@ -62,7 +62,11 @@ class Response {
 		}
 	}
 
-	public function saveResponse($data){
+	public function saveResponse($data = null){
+		
+		if(!$data)
+			return false;
+		
 		set_time_limit(0);
 		$this->_getResourceDirectories();
 		$thumbnail = 'nothumb.png';
@@ -90,8 +94,11 @@ class Response {
 		return $r;
 	}
 
-	public function makePublic($responseId)
+	public function makePublic($responseId = 0)
 	{
+		if(!$responseId)
+			return false;
+		
 		$result = 0;
 		
 		$this->conn->_startTransaction();

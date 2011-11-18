@@ -49,8 +49,10 @@ class Home{
 
 	}
 
-	public function unsignedMessagesOfTheDay($messageLocale){
+	public function unsignedMessagesOfTheDay($messageLocale = 0){
 
+		if(!$messageLocale)
+			return false;
 		$sql = "SELECT title, 
 					   message, 
 					   code, 
@@ -65,8 +67,10 @@ class Home{
 
 	}
 
-	public function signedMessagesOfTheDay($messageLocale){
+	public function signedMessagesOfTheDay($messageLocale = 0){
 
+		if(!$messageLocale)
+			return false;
 		$sql = "SELECT title, 
 					   message, 
 					   code, 
@@ -162,7 +166,7 @@ class Home{
 	}
 
 	public function usersLatestUploadedVideos(){
-
+		return 0;
 	}
 
 	public function topScoreMostViewedVideos(){

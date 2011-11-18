@@ -48,8 +48,10 @@ class Register{
 		}
 	}
 
-	public function newUser($user)
+	public function newUser($user = null)
 	{
+		if(!$user)
+			return 'Error';
 		$validator = new EmailAddressValidator();
 		if(!$validator->check_email_address($user->email)){
 			return 'wrong_email';
@@ -119,9 +121,11 @@ class Register{
 
 	}
 
-	public function activate($user){
+	public function activate($user = null){
 
-
+		if(!$user)
+			return false;
+		
 		$sql = "SELECT language 
 				FROM users AS u INNER JOIN user_languages AS ul ON u.id = ul.fk_user_id 
 				WHERE (u.name = '%s' AND u.activation_hash = '%s') LIMIT 1";

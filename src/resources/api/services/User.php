@@ -79,11 +79,14 @@ class User {
 		}
 	}
 
-	public function changePass($oldpass, $newpass)
+	public function changePass($oldpass = 0, $newpass = 0)
 	{
 		try {
 			$verifySession = new SessionHandler(true);
 
+			if(!$oldpass || !$newpass)
+				return false;
+			
 			$sql = "SELECT * FROM users WHERE id = %d AND password = '%s'";
 			$result = $this->conn->_singleSelect($sql, $_SESSION['uid'], $oldpass);
 			if (!$result)
@@ -99,10 +102,13 @@ class User {
 	}
 
 	//The parameter should be an array of UserLanguageVO
-	public function modifyUserLanguages($languages) {
+	public function modifyUserLanguages($languages = null) {
 
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$languages)
+				return false;
 
 			$sql = "SELECT prefValue FROM preferences WHERE ( prefName='positives_to_next_level' )";
 			$result = $this->conn->_singleSelect($sql);
@@ -155,9 +161,12 @@ class User {
 
 	}
 	
-	public function modifyUserPersonalData($personalData){
+	public function modifyUserPersonalData($personalData = null){
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$personalData)
+				return false;
 			
 			$validator = new EmailAddressValidator();
 			if(!$validator->check_email_address($personalData->email)){
@@ -228,9 +237,12 @@ class User {
 		}	
 	}
 	
-	public function deleteSelectedVideos($selectedVideos){
+	public function deleteSelectedVideos($selectedVideos = null){
 		try {
 			$verifySession = new SessionHandler(true);
+			
+			if(!$selectedVideos)
+				return false;
 			
 			$whereClause = '';
 			$names = array();
@@ -256,9 +268,12 @@ class User {
 		}	
 	}
 	
-	public function modifyVideoData($videoData){
+	public function modifyVideoData($videoData = null){
 		try{
 			$verifySession = new SessionHandler(true);
+			
+			if(!$videoData)
+				return false;
 			
 			$sql = "UPDATE exercise SET title='%s', description='%s', tags='%s', license='%s', reference='%s', language='%s' 
 					WHERE ( name='%s' AND fk_user_id=%d )";
@@ -286,8 +301,11 @@ class User {
 		return $this->conn->_multipleSelect($sql, $_SESSION['uid']);
 	}
 
-	public function restorePass($username)
+	public function restorePass($username = 0)
 	{
+		if(!$username)
+			return false;
+		
 		$id = -1;
 		$email = "";
 		$user = "";

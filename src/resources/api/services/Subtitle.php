@@ -45,8 +45,10 @@ class Subtitle {
 		}
 	}
 
-	public function getExerciseRoles($exerciseId) {
-
+	public function getExerciseRoles($exerciseId = 0) {
+		if(!$exerciseId)
+			return false;
+			
 		$sql = "SELECT MAX(id) as id,
 					   fk_exercise_id as exerciseId,
 					   character_name as characterName
@@ -58,7 +60,9 @@ class Subtitle {
 		return $searchResults;
 	}
 
-	public function getSubtitlesSubtitleLines($subtitleId) {
+	public function getSubtitlesSubtitleLines($subtitleId = 0) {
+		if(!$subtitleId)
+			return false;
 		$sql = "SELECT SL.id, 
 					   SL.show_time as showTime, 
 					   SL.hide_time as hideTime, 
@@ -83,8 +87,9 @@ class Subtitle {
 	 * When subtitleId is set the returned lines are the ones of that particular subtitle.
 	 * @param SubtitleAndSubtitleLineVO $subtitle
 	 */
-	public function getSubtitleLines($subtitle) {
-
+	public function getSubtitleLines($subtitle=null) {
+		if(!$subtitle)
+			return false;
 		$subtitleId = $subtitle->id;
 		$exerciseId = $subtitle->exerciseId;
 		$language = $subtitle->language;
@@ -129,7 +134,9 @@ class Subtitle {
 	}
 	
 
-	public function getSubtitleLinesUsingId($subtitleId) {
+	public function getSubtitleLinesUsingId($subtitleId = 0) {
+		if(!$subtitleId)
+			return false;
 		$sql = "SELECT SL.id,
 					   SL.show_time as showTime,
 					   SL.hide_time as hideTime, 
@@ -147,10 +154,13 @@ class Subtitle {
 	}
 
 
-	public function saveSubtitles($subtitleData){
+	public function saveSubtitles($subtitleData = null){
 		try {
 			$verifySession = new SessionHandler(true);
-			return $this->saveSubtitlesAuth($subtitleData);
+			if(!$subtitleData)
+				return false;
+			else
+				return $this->saveSubtitlesAuth($subtitleData);
 		} catch (Exception $e) {
 			throw new Exception($e->getMessage());
 		}
@@ -356,7 +366,9 @@ class Subtitle {
 	}
 	
 
-	public function getExerciseSubtitles($exerciseId){
+	public function getExerciseSubtitles($exerciseId = 0){
+		if(!$exerciseId)
+			return false;
 		$sql = "SELECT s.id, 
 					   s.fk_exercise_id as exerciseId, 
 					   u.name as userName, 

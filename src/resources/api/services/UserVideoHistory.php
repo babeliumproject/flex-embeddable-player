@@ -45,8 +45,11 @@ class UserVideoHistory{
 		}
 	}
 
-	public function exerciseWatched($videoHistoryData){
+	public function exerciseWatched($videoHistoryData = null){
 
+		if(!$videoHistoryData)
+			return false;
+		
 		if($sessionId = $this->_currentSessionData($_SESSION['uid'])){
 
 			$sql = "INSERT INTO user_videohistory (fk_user_id, fk_user_session_id, fk_exercise_id, subtitles_are_used, fk_subtitle_id)
@@ -57,7 +60,11 @@ class UserVideoHistory{
 		}
 	}
 
-	public function exerciseAttemptResponse($videoHistoryData){
+	public function exerciseAttemptResponse($videoHistoryData = null){
+		
+		if(!$videoHistoryData)
+			return false;
+		
 		if($sessionId = $this->_currentSessionData($_SESSION['uid'])){
 			$sql = "INSERT INTO user_videohistory (fk_user_id, fk_user_session_id, fk_exercise_id, response_attempt, subtitles_are_used, fk_subtitle_id, fk_exercise_role_id)
 					VALUES ('%d', '%d', '%d', 1, '%d', '%d', '%d')";
@@ -68,7 +75,11 @@ class UserVideoHistory{
 		}
 	}
 
-	public function exerciseSaveResponse($videoHistoryData){
+	public function exerciseSaveResponse($videoHistoryData = null){
+		
+		if(!$videoHistoryData)
+			return false;
+		
 		if($sessionId = $this->_currentSessionData()){
 			$sql = "INSERT INTO user_videohistory (fk_user_id, fk_user_session_id, fk_exercise_id, fk_response_id, subtitles_are_used, fk_subtitle_id, fk_exercise_role_id)
 					VALUES ('%d', '%d', '%d', '%d', '%d', '%d', '%d')";
