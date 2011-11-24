@@ -2,9 +2,9 @@
 
 /**
  * Babelium Project open source collaborative second language oral practice - http://www.babeliumproject.com
- * 
+ *
  * Copyright (c) 2011 GHyM and by respective authors (see below).
- * 
+ *
  * This file is part of Babelium Project.
  *
  * Babelium Project is free software: you can redistribute it and/or modify
@@ -28,13 +28,13 @@ require_once 'utils/VideoProcessor.php';
 
 /**
  * Class to perform exercise related operations
- * 
+ *
  * @author Babelium Team
  *
  */
 class Exercise {
 
-	
+
 	private $filePath;
 	private $imagePath;
 	private $red5Path;
@@ -45,7 +45,7 @@ class Exercise {
 
 	private $exerciseGlobalAvgRating;
 	private $exerciseMinRatingCount;
-	
+
 	private $conn;
 	private $mediaHelper;
 
@@ -69,7 +69,7 @@ class Exercise {
 
 		try {
 			$verifySession = new SessionHandler(true);
-			
+
 			if(!$exercise)
 				return false;
 
@@ -107,11 +107,11 @@ class Exercise {
 
 			set_time_limit(0);
 			$this->_getResourceDirectories();
-			
-			
+
+
 			$videoPath = $this->red5Path .'/'. $this->exerciseFolder .'/'. $exercise->name . '.flv';
 			$imagePath = $this->imagePath .'/'. $exercise->name . '.jpg';
-			
+
 			$mediaData = $this->mediaHelper->retrieveMediaInfo($videoPath);
 			$duration = $mediaData->duration;
 			$this->mediaHelper->takeRandomSnapshot($videoPath, $imagePath);
@@ -256,7 +256,7 @@ class Exercise {
 						   e.thumbnail_uri as thumbnailUri,
        					   e.adding_date as addingDate, 
        					   e.duration, 
-       					   u.name, 
+       					   u.name as userName, 
        					   avg (suggested_level) as avgDifficulty, 
        					   e.status, 
        					   e.license, 
@@ -266,10 +266,10 @@ class Exercise {
 	 				 	 LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				 	 LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
        				 	 LEFT OUTER JOIN subtitle a ON e.id=a.fk_exercise_id
-       			 	 	 WHERE (e.status = 'Available' AND a.complete = 1)
+       			 	 	 WHERE (e.status = 'Available' AND a.complete = 0)
 				 	GROUP BY e.id
 				 	ORDER BY e.adding_date DESC";
-			
+
 			$searchResults = $this->conn->_multipleSelect($sql);
 			foreach($searchResults as $searchResult){
 				$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
@@ -284,27 +284,31 @@ class Exercise {
 	}
 
 	public function getRecordableExercises(){
+
+
+
+
 		$sql = "SELECT e.id, 
-					   e.title, 
-					   e.description, 
-					   e.language, 
-					   e.tags, 
-					   e.source, 
-					   e.name, 
-					   e.thumbnail_uri as thumbnailUri,
-       				   e.adding_date as addingDate, 
-       				   e.duration, 
-       				   u.name as userName, 
-       				   avg (suggested_level) as avgDifficulty, 
-       				   e.status, 
-       				   e.license, 
-       				   e.reference
-				 FROM   exercise e 
+			       e.title, 
+			       e.description, 
+			       e.language, 
+			       e.tags, 
+			       e.source, 
+			       e.name, 
+			       e.thumbnail_uri as thumbnailUri,
+       			       e.adding_date as addingDate, 
+			       e.duration, 
+			       u.name as userName, 
+       			       avg (suggested_level) as avgDifficulty,
+			       e.status, 
+			       e.license, 
+			       e.reference
+			       FROM   exercise e 
 				 		INNER JOIN users u ON e.fk_user_id= u.ID
 				 		INNER JOIN subtitle t ON e.id=t.fk_exercise_id
        				    LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				    LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
-       			 WHERE (e.status = 'Available' AND t.complete = 1)
+       			 WHERE e.status = 'Available' AND t.complete = 1
 				 GROUP BY e.id
 				 ORDER BY e.adding_date DESC, e.language DESC";
 		
@@ -321,7 +325,7 @@ class Exercise {
 			return $searchResults;
 		}
 
-	}	
+	}
 
 	public function filterByLanguage($searchList, $languagePurpose){
 		if(count($_SESSION['user-languages']) < 1)
@@ -347,7 +351,7 @@ class Exercise {
 	public function getExerciseLocales($exerciseId=0) {
 		if(!$exerciseId)
 			return false;
-		
+
 		$sql = "SELECT DISTINCT language as locale FROM subtitle
 				WHERE fk_exercise_id = %d";
 
@@ -359,7 +363,7 @@ class Exercise {
 	public function addInappropriateExerciseReport($report = null){
 		try {
 			$verifySession = new SessionHandler(true);
-			
+
 			if(!$report)
 				return false;
 
@@ -369,7 +373,7 @@ class Exercise {
 				// The user is reporting an innapropriate exercise
 				$sql = "INSERT INTO exercise_report (fk_exercise_id, fk_user_id, reason, report_date)
 				    VALUES ('%d', '%d', '%s', NOW() )";
-				
+
 				$result = $this->conn->_insert($sql, $report->exerciseId, $_SESSION['uid'], $report->reason);
 				//$this->notifyExerciseReported($report);
 				return $result;
@@ -380,14 +384,13 @@ class Exercise {
 			throw new Exception($e->getMessage());
 		}
 	}
-	
+
 	private function notifyExerciseReported($report){
-			$mail = new Mailer();
-			$subject = 'Babelium Project: Exercise reported';
-			$text = sprintf("Exercise (id=%d) has been reported to be %s by the user (id=%d)", $report->exerciseId, $report->reason, $_SESSION['uid']);
-			return ($mail->send($text, $subject, null));
+		$mail = new Mailer();
+		$subject = 'Babelium Project: Exercise reported';
+		$text = sprintf("Exercise (id=%d) has been reported to be %s by the user (id=%d)", $report->exerciseId, $report->reason, $_SESSION['uid']);
+		return ($mail->send($text, $subject, null));
 	}
-	
 
 	public function addExerciseScore($score = null){
 		try {
