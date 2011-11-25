@@ -80,8 +80,7 @@ function utf8_encode(argString) {
         return "";
     }
 
-    var string = (argString + ''); // .replace(/\r\n/g, "\n").replace(/\r/g,
-    // "\n");
+    var string = (argString + ''); // .replace(/\r\n/g, "\n").replace(/\r/g,// "\n");
     var utftext = "",
         start, end, stringl = 0;
 
@@ -121,18 +120,17 @@ function utf8_encode(argString) {
  * Distributed under the BSD License See http://pajhome.org.uk/crypt/md5 for
  * more info.
  */
-var hexcase = 0;
-
-function hex_md5(a) {
-    return rstr2hex(rstr_md5(str2rstr_utf8(a)));
+var hexcase=0;
+function hex_md5(a){
+	return rstr2hex(rstr_md5(str2rstr_utf8(a)));
 }
 
-function hex_hmac_md5(a, b) {
-    return rstr2hex(rstr_hmac_md5(str2rstr_utf8(a), str2rstr_utf8(b)));
+function hex_hmac_md5(a,b){
+	return rstr2hex(rstr_hmac_md5(str2rstr_utf8(a),str2rstr_utf8(b)));
 }
 
-function md5_vm_test() {
-    return hex_md5("abc").toLowerCase() == "900150983cd24fb0d6963f7d28e17f72";
+function md5_vm_test(){
+	return hex_md5("abc").toLowerCase()=="900150983cd24fb0d6963f7d28e17f72";
 }
 
 function rstr_md5(a) {

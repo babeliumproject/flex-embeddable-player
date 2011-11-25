@@ -34,6 +34,7 @@ class ZendRestJson extends Zend_Rest_Server
 {
 
 	protected $_faultResult = false;
+	protected $_allowCORS = true;
 
 	/**
 	 * Constructor
@@ -51,7 +52,19 @@ class ZendRestJson extends Zend_Rest_Server
 			$_SESSION['initiated'] = true;
 		}
 	}
+	
+	private function setHeaders(){
+		$this->_headers = array('Content-Type: application/json');
+		if($this->_allowCORS)
+			$this->setCORSHeaders();
+	}
 
+	private function setCORSHeaders(){
+		if(isset($_SERVER['HTTP_ORIGIN'])){
+     		array_push($this->_headers, 'Access-Control-Allow-Methods: "GET, POST, OPTIONS"', 'Access-Control-Allow-Credentials: true', 'Access-Control-Allow-Headers: "Content-Type, *"',  'Access-Control-Allow-Origin: ' . $_SERVER['HTTP_ORIGIN']);
+		}
+	}
+	
 	/**
 	 * Implement Zend_Server_Interface::handle()
 	 *
@@ -61,7 +74,7 @@ class ZendRestJson extends Zend_Rest_Server
 	 */
 	public function handle($request = false)
 	{
-		$this->_headers = array('Content-Type: application/json');
+		$this->setHeaders();
 		if (!$request) {
 			$request = $_REQUEST;
 		}

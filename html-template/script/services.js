@@ -1,7 +1,7 @@
 function services(){
-	this.protocol = 'http://'
-	this.host = 'embedbabelium/api/';
-	this.endpoint = bpConfig.endpoint;
+	this.protocol = 'http://';
+	this.host = bpConfig.apiHost;
+	this.endpoint = bpConfig.apiEndpoint;
 	this.lastRandomizer = '';
 	this.statToken = 'myMusicFightsAgainstTheSystemThatTeachesToLiveAndDie'; //Bob Marley's Quote
 	this.commToken = '';
@@ -17,7 +17,7 @@ function services(){
 	 */
 	this.send = function(secured,method,parameters,callback){
 		this.protocol = secured ? 'https://' : 'http://';
-		var qs = this.protocol + this.host + this.endpoint + '?' + method;
+		var qs = this.protocol + this.host + '/' + this.endpoint + '?' + method;
 		var data = {};
 		var cb = callback;
 		data.method = method;
@@ -37,6 +37,7 @@ function services(){
 			url: qs,
 			data: data,
 			success: cb,
+			dataType: "json",
 			//error: function(error){
 			//	instance.onServiceError(error);
 			//},
@@ -50,7 +51,7 @@ function services(){
 			
 			});	
 
-	}
+	};
 	
 	this.getCommunicationToken = function(){
 		method = 'getCommunicationToken';
@@ -68,24 +69,24 @@ function services(){
         });
 	    
 		
-	}
+	};
 	
 	this.onCommunicationTokenSuccess = function(data){
 		//The request to the server was successful, now we should check if the response is right or not
 		//Retrieve the communicationToken and store it for future use
 		instance.commToken = data.response;
 		onCommunicationReady();
-	}
+	};
 	
 	this.onServiceSuccess = function(success){
 		//Do sth with this data;
-	}
+	};
 
 	this.onServiceError = function(xhr, status, errorThrown){
 		//Display an error message noticing the user that the request to the server was not successful.
 		var errorObj = jQuery.parseJSON(xhr.responseText);
 		console.log("Request error: ".errorObj.response.message);
-	}
+	};
 	
 	this.createRandomSalt = function(){
 		var randomizer = '';
@@ -95,7 +96,7 @@ function services(){
 			charsGenerated++;
 		}
 		return randomizer !== this.lastRandomizer ? (randomizer) : (createRandomSalt());
-	}
+	};
 
 	this.generateToken = function (method){
 		var salt = this.createRandomSalt();
@@ -103,7 +104,7 @@ function services(){
 		var s = salt + t;
 		//console.log('Method:' + method + ', CommToken: ' + this.commToken + ', StatToken: ' + this.statToken + ', Salt: '+salt);
 		return s;
-	}
+	};
 	
 	
 }

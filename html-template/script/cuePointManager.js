@@ -7,6 +7,8 @@ function cuePointManager(){
 	this.roleColors = [0xffffff, 0xfffd22, 0x69fc00, 0xfd7200, 0x056cf9, 0xff0f0b, 0xc314c9, 0xff6be5];
 	this.colorDictionary = [];
 
+	this.threshold = 0.08; //the amount of looseness we allow in the time polling
+
 	// http://stackoverflow.com/questions/4818615/using-getjson-with-callback-within-a-javascript-object
 	var instance = this;
 	
@@ -91,11 +93,11 @@ function cuePointManager(){
 	this.monitorCuePoints = function(time){
 		var curTime=time;
 		for (var i in this.cpm_cuelist){
-			if (((curTime - 0.08) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + 0.08))){
+			if (((curTime - this.threshold) < this.cpm_cuelist[i].startTime && this.cpm_cuelist[i].startTime < (curTime + this.threshold))){
 				this.cpm_cuelist[i].executeStartCommand();
 				break;
 			}
-			if (((curTime - 0.08) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + 0.08))){
+			if (((curTime - this.threshold) < this.cpm_cuelist[i].endTime && this.cpm_cuelist[i].endTime < (curTime + this.threshold))){
 				this.cpm_cuelist[i].executeEndCommand();
 				break;
 			}
