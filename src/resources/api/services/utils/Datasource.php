@@ -132,7 +132,7 @@ class Datasource
 	 * @return mixed $row
 	 * 		Returns an array of strings that corresponds to the fetched row or NULL if there are no more rows in resultset. 
 	 */
-	public function _nextRow ($result)
+	private function _nextRow ($result)
 	{
 		$row = mysqli_fetch_array($result);
 		return $row;
@@ -146,7 +146,7 @@ class Datasource
 	 * @return mixed $row
 	 * 		Returns an associative array with the data of the next row of the resultSet or NULL if there are no more rows in resultset. 
 	 */
-	public function _nextRowAssoc($result){
+	private function _nextRowAssoc($result){
 		$row = mysqli_fetch_assoc($result);
 		return $row;
 	}
@@ -159,7 +159,7 @@ class Datasource
 	 * @return mixed $row
 	 * 		Returns an object with the data of the next row of the resultSet or NULL if there are no more rows in resultset. 
 	 */
-	public function _nextRowObject($result){
+	private function _nextRowObject($result){
 		$row = mysqli_fetch_object($result);
 		return $row;
 	}
