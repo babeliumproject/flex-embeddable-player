@@ -15,6 +15,8 @@ package modules.videoPlayer
 	import flash.text.TextFieldType;
 	import flash.text.TextFormat;
 	
+	import model.DataModel;
+	
 	import mx.resources.ResourceBundle;
 	import mx.resources.ResourceManager;
 	
@@ -32,7 +34,7 @@ package modules.videoPlayer
 		public function ErrorOverlay()
 		{
 			super();
-			loadAsset("resources/images/popup_bgr_wrong.png");
+			loadAsset(DataModel.getInstance().uploadDomain+"resources/images/popup_bgr_wrong.png");
 			updateChildren(dWidth,dHeight);
 			
 		}

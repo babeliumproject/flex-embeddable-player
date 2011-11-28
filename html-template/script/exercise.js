@@ -123,7 +123,7 @@ function exercise() {
 			var info = data['response'];
 			for(var i in info) {
 				if (info[i] != undefined )
-					$('#localeCombo').append('<option value="' + info[i] + '">' + info[i] + '</option>');
+					$('#localeCombo').append('<option value="' + info[i].locale + '">' + info[i].locale + '</option>');
 			}
 			instance.localesReady = true;
 
