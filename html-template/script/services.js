@@ -56,7 +56,7 @@ function services(){
 	this.getCommunicationToken = function(){
 		method = 'getCommunicationToken';
 		this.protocol = 'http://';
-		var qs = this.protocol + this.host + this.endpoint + '?' + method;
+		var qs = this.protocol + this.host + '/' + this.endpoint + '?' + method;
 		
 		var data = {};
 		data.method = method;

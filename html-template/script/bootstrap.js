@@ -26,7 +26,7 @@ function getSessionID() {
 // Set configuration values
 bpConfig.uuid = makeUUID();
 bpConfig.sessionID = getSessionID();
-bpConfig.apiHost = 'embedbabelium/api/';
+bpConfig.apiHost = 'embedbabelium/api';
 bpConfig.apiEndpoint = 'rest.php';
 
 // Bootstrap
