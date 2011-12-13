@@ -3,3 +3,7 @@ syntax: regexp
 ^src/resources/api/services/utils/Config\.php$
 syntax: regexp
 ^bin-debug$
+syntax: regexp
+^dist$
+syntax: regexp
+^build\.properties$
