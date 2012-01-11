@@ -582,7 +582,7 @@ class VideoProcessor{
 		  * After resizing and applying the overlays we encode the input audio to mp3 and exchange the original exercise's audio with the reencoded audio collage
 		  * using stream index mapping. -map <input_number>:<stream_index>
 		  */
-		$preset_merge_videos = "ffmpeg -i '%s' -i '%s' -vf \"[in]settb=1/25,setpts=N/(25*TB),pad=%d:%d:0:0:0x000000, [T0]overlay=0:0, [T1]overlay=W/2:0 [out]; movie='%s':f=flv:si=0,scale=%d:%d,setpts=PTS-STARTPTS[T0]; movie='%s':f=flv:si=0,scale=%d:%d,setpts=PTS-STARTPTS[T1]\" -acodec libmp3lame -ab 128 -ac 2 -ar 44100 -map 0:0 -map 1:0 -f flv '%s' 2>&1";
+		$preset_merge_videos = "ffmpeg -y -i '%s' -i '%s' -vf \"[in]settb=1/25,setpts=N/(25*TB),pad=%d:%d:0:0:0x000000, [T1]overlay=W/2:0 [out]; movie='%s':f=flv:si=0,scale=%d:%d,setpts=PTS-STARTPTS[T1]\" -acodec libmp3lame -ab 128 -ac 2 -ar 44100 -map 0:0 -map 1:0 -f flv '%s' 2>&1";
 		
 		$sysCall = sprintf($preset_merge_videos,$cleanInputVideoPath1, $inputAudioPath, 2*$width, $height, $cleanInputVideoPath1, $width, $height, $cleanInputVideoPath2, $width, $height, $cleanOutputVideoPath);
 		$result = (exec($sysCall,$output));
@@ -599,7 +599,9 @@ class VideoProcessor{
 			throw new Exception("You don't have enough permissions to write to the output");
 		
 		//TODO  should check the presecence of sox in the $PATH first and throw an error elseways
-		$result = exec('sox '.$cleanInputPath.'/'.$filePrefix.'_* '.$cleanOutputPath.'/'.$filePrefix.'collage.wav 2>&1', $output);
+		$preset = "sox '%s/%s_*' '%s/%scollage.wav' 2>&1";
+		$sysCall = sprintf($preset,$cleanInputPath,$filePrefix,$cleanOutputPath,$filePrefix);
+		$result = (exec($sysCall, $output));
 		return $result;
 	}
 
