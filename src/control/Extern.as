@@ -68,7 +68,8 @@ package control
 			addCB("subtitles",subtitles);
 			addCB("subtitlingControls",subtitlingControls);
 			addCB("subtitlePanelVisible",subtitlePanelVisible);
-			addCB("videoSource",videoSource);
+			addCB("exerciseSource",exerciseSource);
+			addCB("responseSource",responseSource);
 			addCB("highlight",highlight);
 			
 			//Events
@@ -225,13 +226,15 @@ package control
 		private function subtitlingControls(flag:Boolean):void
 		{
 			VP.subtitlingControls = flag;
-		}
+		}	
 		
-		
-		
-		private function videoSource(video:String):void
+		private function exerciseSource(video:String):void
 		{
 			VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
+		}
+		
+		private function responseSource(video:String):void{
+			VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function highlight(flag:Boolean):void{

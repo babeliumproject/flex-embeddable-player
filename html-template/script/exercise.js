@@ -89,7 +89,7 @@ function exercise() {
 		// Prepare new video in VideoPlayer
 		this.bpPlayer.stopVideo();
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_STATE);
-		this.bpPlayer.videoSource(this.exerciseName);
+		this.bpPlayer.exerciseSource(this.exerciseName);
 
 		// Ajax call to the appointed REST service
 		var parameters = {
@@ -192,11 +192,13 @@ function exercise() {
 		if(instance.currentResponse == undefined)
 			instance.setupPlayCommands();
 		else{
-			instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
-			instance.bpPlayer.videoSource(instance.currentResponse.name);
-			instance.bpPlayer.secondSource(instance.currentResponse.file_identifier);
-			instance.selectedRole = instance.currentResponse.character_name;
-			instance.setupRecordingCommands();
+			//instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
+			instance.bpPlayer.state(instance.bpPlayerStates.PLAY_STATE);
+			instance.bpPlayer.responseSource(instance.currentResponse.file_identifier + '_merge');
+			//instance.bpPlayer.secondSource(instance.currentResponse.file_identifier);
+			//instance.selectedRole = instance.currentResponse.character_name;
+			instance.setupPlayCommands();
+			//instance.setupRecordingCommands();
 			//instance.showArrows();
 			instance.bpPlayer.addEventListener('onMetadataRetrieved', 'bpExercises.onMetadataRetrieved');
 		}
@@ -266,7 +268,7 @@ function exercise() {
 		// Set the videoplayer to playback both the exercise and the
 		// last response.
 		this.setupRecordingCommands();
-		this.bpPlayer.videoSource(this.exerciseName);
+		this.bpPlayer.exerciseSource(this.exerciseName);
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_BOTH_STATE);
 		this.bpPlayer.secondSource(this.recordedFilename);
 
@@ -460,7 +462,7 @@ function exercise() {
 	this.resetComp = function(){
 		this.bpPlayer.endVideo(); // Stop video
 		this.bpPlayer.setSubtitle(""); // Clear subtitles if any
-		this.bpPlayer.videoSource(""); // Reset video source
+		this.bpPlayer.exerciseSource(""); // Reset video source
 		this.bpPlayer.state(this.bpPlayerStates.PLAY_STATE); //Reset the player window to display only the exercise
 
 		this.hideArrows(); // Hide arrows
@@ -515,7 +517,7 @@ function exercise() {
 			$('#watchExerciseAndResponseBtn').click(function() {
 				instance.showArrows();
 				instance.setupRecordingCommands();
-				instance.bpPlayer.videoSource(instance.exerciseName);
+				instance.bpPlayer.exerciseSource(instance.exerciseName);
 				instance.bpPlayer.state(instance.bpPlayerStates.PLAY_BOTH_STATE);
 				instance.bpPlayer.secondSource(instance.recordedFilename);
 				instance.bpPlayer.seek(false);
@@ -525,7 +527,7 @@ function exercise() {
 				instance.showArrows();
 				isntance.setupReplayCommands();
 
-				instance.bpPlayer.videoSource(instance.recordedFilename);
+				instance.bpPlayer.responseSource(instance.recordedFilename);
 				instance.bpPlayer.state(instance.bpPlayerStates.PLAY_STATE);
 
 				instance.bpPlayer.seek(false);
@@ -533,7 +535,7 @@ function exercise() {
 
 			// Record again
 			$('#recordAgainBtn').click(function() {
-				instance.bpPlayer.videoSource(instance.exerciseName);
+				instance.bpPlayer.exerciseSource(instance.exerciseName);
 				instance.setupRecordingCommands();
 				instance.showArrows();
 
