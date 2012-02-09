@@ -248,20 +248,25 @@
 							  width="100%"
 							  height="100%"
 							  verticalAlign="middle">
-						<s:HGroup>
+						<s:HGroup width="100%" height="100%" verticalAlign="middle">
 							<mx:Text width="100%"
 									 text="{resourceManager.getString('myResources','TEXT_MIC_NOT_FOUND')}"/>
-							<mx:Image source="resources/images/privacy_micError.png"/>
+							<mx:Image source="resources/images/privacy_micError.png" width="102" height="102"/>
 						</s:HGroup>
-						<s:HGroup>
+						<s:HGroup width="100%"
+								  horizontalAlign="left"
+								  verticalAlign="bottom"
+								  paddingTop="8">
 							<s:Button id="micNotFoundErrorRetryButton"
 									  label="{resourceManager.getString('myResources','BUTTON_RETRY')}"
 									  click="initDevices()"
+									  styleName="bigBlueButton"
 									  buttonMode="true"/>
 
 							<s:Button id="micNotFoundErrorCancelButton"
 									  label="{resourceManager.getString('myResources','BUTTON_CANCEL')}"
 									  click="cancelButtonClickHandler(event)"
+									  styleName="bigBlueButton"
 									  buttonMode="true"/>
 						</s:HGroup>
 					</s:VGroup>
@@ -272,20 +277,24 @@
 							  width="100%"
 							  height="100%"
 							  verticalAlign="middle">
-						<s:HGroup width="100%"
-								  verticalAlign="middle">
+						<s:HGroup width="100%" height="100%" verticalAlign="middle">
 							<mx:Text width="100%"
 									 text="{resourceManager.getString('myResources','TEXT_CAMERA_NOT_FOUND')}"/>
-							<mx:Image source="resources/images/privacy_webcamError.png"/>
+							<mx:Image source="resources/images/privacy_webcamError.png" width="102" height="102"/>
 						</s:HGroup>
-						<s:HGroup>
+						<s:HGroup width="100%"
+								  horizontalAlign="left"
+								  verticalAlign="bottom"
+								  paddingTop="8">
 							<s:Button id="camNotFoundErrorRetryButton"
 									  label="{resourceManager.getString('myResources','BUTTON_RETRY')}"
 									  click="initDevices()"
+									  styleName="bigBlueButton"
 									  buttonMode="true"/>
 							<s:Button id="camNotFoundErrorCancelButton"
 									  label="{resourceManager.getString('myResources','BUTTON_CANCEL')}"
 									  click="cancelButtonClickHandler(event)"
+									  styleName="bigBlueButton"
 									  buttonMode="true"/>
 						</s:HGroup>
 					</s:VGroup>
@@ -301,6 +310,7 @@
 						<s:Button id="adminErrorButton"
 								  label="{resourceManager.getString('myResources','BUTTON_OK')}"
 								  click="cancelButtonClickHandler(event)"
+								  styleName="bigBlueButton"
 								  buttonMode="true"/>
 					</s:VGroup>
 				</s:NavigatorContent>
