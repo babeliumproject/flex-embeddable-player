@@ -201,7 +201,9 @@ class VideoProcessor{
 	 * @param string $ffmpegOutput
 	 */
 	private function retrieveVideoInfo($ffmpegOutput){
-		if(preg_match('/Video: (([^,]+), ([^,]+), ([^,]+), ([^,]+, )?([^,]+, )?([\w\.]+\stbr), ([\w\.]+\stbn), ([\w\.]+\stbc))/s', $ffmpegOutput, $result)){
+		
+		if(preg_match('/Stream \#\d:\d: Video: (([^,]+), ([^,]+), ([^,]+), ([^,]+, )?([^,]+, )?([\w\.]+\stbr), ([\w\.]+\stbn), ([\w\.]+\stbc))/s', $ffmpegOutput, $result)){
+		//if(preg_match('/Video: (([^,]+), ([^,]+), ([^,]+), ([^,]+, )?([^,]+, )?([\w\.]+\stbr), ([\w\.]+\stbn), ([\w\.]+\stbc))/s', $ffmpegOutput, $result)){
 			$this->mediaContainer->hasVideo = true;
 			$this->mediaContainer->videoCodec = trim($result[2]);
 			$this->mediaContainer->videoColorspace = trim($result[3]);
@@ -563,14 +565,14 @@ class VideoProcessor{
 		if($width<5 || $height<5)
 			throw new Exception("Specified size is too small");
 		
-		if(!is_readable($cleanInputVideoPath1) || !is_file($cleanInputVideoPath1) || !is_readable($cleanInputVideoPath2) || !is_file($cleanInputVideoPath2))
+		if( !is_readable($cleanInputVideoPath1) || !is_readable($cleanInputVideoPath2) )
 			throw new Exception("You don't have enough permissions to read from the input, or the input is not a file");
-		if(!is_writable(dirname($cleanOutputVideoPath)))
+		if( !is_writable(dirname($cleanOutputVideoPath)) )
 			throw new Exception("You don't have enough permissions to write to the output");
 			
 		if($inputAudioPath){
 			$cleanAudioPath = escapeshellcmd($inputAudioPath);
-			if(!is_readable($cleanAudioPath) || !is_file($cleanAudioPath))
+			if(!is_readable($cleanAudioPath))
 				throw new Exception("You don't have enough permissions to read from the input, or the input is not a file");
 		}
 		
@@ -584,7 +586,7 @@ class VideoProcessor{
 		  */
 		$preset_merge_videos = "ffmpeg -y -i '%s' -i '%s' -vf \"[in]settb=1/25,setpts=N/(25*TB),pad=%d:%d:0:0:0x000000, [T1]overlay=W/2:0 [out]; movie='%s':f=flv:si=0,scale=%d:%d,setpts=PTS-STARTPTS[T1]\" -acodec libmp3lame -ab 128 -ac 2 -ar 44100 -map 0:0 -map 1:0 -f flv '%s' 2>&1";
 		
-		$sysCall = sprintf($preset_merge_videos,$cleanInputVideoPath1, $inputAudioPath, 2*$width, $height, $cleanInputVideoPath1, $width, $height, $cleanInputVideoPath2, $width, $height, $cleanOutputVideoPath);
+		$sysCall = sprintf($preset_merge_videos,$cleanInputVideoPath1, $inputAudioPath, 2*$width, $height, $cleanInputVideoPath2, $width, $height, $cleanOutputVideoPath);
 		$result = (exec($sysCall,$output));
 		return $result;
 		
