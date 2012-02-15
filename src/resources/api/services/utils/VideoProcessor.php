@@ -496,7 +496,7 @@ class VideoProcessor{
 	}
 	
 	public function muxEncodeAudio($inputVideoPath, $outputVideoPath, $inputAudioPath){
-		$preset = "ffmpeg -i '%s' -i '%s' -acodec libmp3lame -ab 128 -ac 2 -ar 44100 -map 0:0 -map 1:0 -f flv '%s'";
+		$preset = "ffmpeg -i '%s' -i '%s' -acodec libmp3lame -ab 128 -ac 2 -ar 44100 -map 0:0 -map 1:0 -f flv '%s' 2>&1";
 		
 		$cleanInputVideoPath = escapeshellcmd($inputVideoPath);
 		$cleanOutputVideoPath = escapeshellcmd($outputVideoPath);
