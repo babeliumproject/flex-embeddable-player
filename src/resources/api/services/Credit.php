@@ -64,7 +64,7 @@ class Credit {
 				FROM (((credithistory c INNER JOIN users u ON c.fk_user_id=u.id) INNER JOIN exercise e ON e.id=c.fk_exercise_id) LEFT OUTER JOIN response r on r.id=c.fk_response_id) 
 				WHERE (c.fk_user_id = %d AND CURDATE() <= c.changeDate ) ORDER BY changeDate DESC ";
 		
-		return $this->_listQuery ( $sql, $_SESSION['uid'] );
+		return $this->conn->_multipleSelect ( $sql, $_SESSION['uid'] );
 	}
 	
 	/**

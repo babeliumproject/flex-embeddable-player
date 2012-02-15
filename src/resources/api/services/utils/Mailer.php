@@ -73,7 +73,7 @@ class Mailer
 			$aux = "email";
 
 		$sql = "SELECT name, email FROM users WHERE (".$aux." = '%s') ";
-		$result = $this->conn->_singleSelect($sql, $username);
+		$result = $this->_conn->_singleSelect($sql, $username);
 		if ($result)
 		{
 			$this->_userRealName = $result->name;

@@ -2,9 +2,9 @@
 
 /**
  * Babelium Project open source collaborative second language oral practice - http://www.babeliumproject.com
- * 
+ *
  * Copyright (c) 2011 GHyM and by respective authors (see below).
- * 
+ *
  * This file is part of Babelium Project.
  *
  * Babelium Project is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ require_once 'utils/SessionHandler.php';
 
 /**
  * This class performs signup and user activation operations
- * 
+ *
  * @author Babelium Team
  *
  */
@@ -51,52 +51,70 @@ class Register{
 	public function newUser($user = null)
 	{
 		if(!$user)
-			return 'Error';
+			return 'error_no_parameters';
 		$validator = new EmailAddressValidator();
 		if(!$validator->check_email_address($user->email)){
 			return 'wrong_email';
 		} else {
-			$initialCredits = $this->_getInitialCreditsQuery($sql);
+			$initialCredits = $this->_getInitialCreditsQuery();
 			$hash = $this->_createRegistrationHash();
-			
-			$insert = "INSERT INTO users (name, password, email, realName, realSurname, creditCount, activation_hash)";
-			$insert .= " VALUES ('%s', '%s', '%s' , '%s', '%s', '%d', '%s' ) ";
 
-			$realName = $user->realName? $user->realName : "unknown";
-			$realSurname = $user->realSurname? $user->realSurname : "unknown";
+			try{
+				$this->conn->_startTransaction();
+					
+				$insert = "INSERT INTO users (name, password, email, realName, realSurname, creditCount, activation_hash)";
+				$insert .= " VALUES ('%s', '%s', '%s' , '%s', '%s', '%d', '%s' ) ";
 
-			$result = $this->_insert ( $user, $insert, $user->name, $user->pass, $user->email,$realName, $realSurname, $initialCredits, $hash );
-			if ( $result != false )
-			{
-				//Add the languages selected by the user
-				$languages = $user->languages;
-				if (count($languages) > 0)
-					$this->addUserLanguages($languages, $result->id);
+				$realName = $user->realName? $user->realName : "unknown";
+				$realSurname = $user->realSurname? $user->realSurname : "unknown";
 
-				//We get the first mother tongue as message locale
-				$motherTongueLocale = $languages[0]->language;
+				$result = $this->_create ($insert, $user->name, $user->pass, $user->email,$realName, $realSurname, $initialCredits, $hash);
+				if ($result)
+				{
+					//Add the languages selected by the user
+					$motherTongueLocale = 'en_US';
+					$languages = $user->languages;
+					if ($languages && is_array($languages) && count($languages) > 0){
+						$languageInsertResult = $this->addUserLanguages($languages, $result);
+						//We get the first mother tongue as message locale
+						$motherTongueLocale = $languages[0]->language;
+					}
 
+					if($result && $languageInsertResult){
+						$this->conn->_endTransaction();
+					} else {
+						throw new Exception("Error inserting user or adding user languages");
+					}
 
-				// Submit activation email
-				$mail = new Mailer($user->name);
+					// Submit activation email
+					$mail = new Mailer($user->name);
 
-				$subject = 'Babelium Project: Account Activation';
+					$subject = 'Babelium Project: Account Activation';
 
-				$args = array(
+					$params = new stdClass();
+					$params->name = $user->name;
+					$params->activationHash = $hash;
+					$activation_link = urlencode(htmlspecialchars('http://'.$_SERVER['HTTP_HOST'].'/?module=register&action=activate&params='.base64_encode(json_encode($params))));
+
+					$args = array(
 						'PROJECT_NAME' => 'Babelium Project',
 						'USERNAME' => $user->name,
-						'PROJECT_SITE' => 'http://'.$_SERVER['HTTP_HOST'].'/Main.html#',
-						'ACTIVATION_LINK' => 'http://'.$_SERVER['HTTP_HOST'].'/Main.html#/activation/activate/hash='.$hash.'&user='.$user->name,
+						'PROJECT_SITE' => 'http://'.$_SERVER['HTTP_HOST'],
+						'ACTIVATION_LINK' => $activation_link,
 						'SIGNATURE' => 'The Babelium Project Team');
 
-				if ( !$mail->makeTemplate("mail_activation", $args, $motherTongueLocale) ) 
-					return null;
+					if ( !$mail->makeTemplate("mail_activation", $args, $motherTongueLocale) )
+					return false;
 
-				$mail->send($mail->txtContent, $subject, $mail->htmlContent);
+					$mail = $mail->send($mail->txtContent, $subject, $mail->htmlContent);
 
-				return $result;
+					return $result;
+				}
+				return "user_email_already_registered";
+			} catch (Exception $e){
+				$this->conn->_failedTransaction();
+				return "error_registering_user";
 			}
-			return "User or email already exists";
 		}
 	}
 
@@ -125,8 +143,8 @@ class Register{
 
 		if(!$user)
 			return false;
-		
-		$sql = "SELECT language 
+
+		$sql = "SELECT language
 				FROM users AS u INNER JOIN user_languages AS ul ON u.id = ul.fk_user_id 
 				WHERE (u.name = '%s' AND u.activation_hash = '%s') LIMIT 1";
 		$result = $this->conn->_singleSelect($sql, $user->name, $user->activationHash);
@@ -142,32 +160,17 @@ class Register{
 	}
 
 
-	private function _create() {
-		$data = func_get_args();
-		$user = array_shift($data); // remove User VO
+	private function _create($insert, $userName, $userPass, $userEmail, $userRealName, $userRealSurname, $userInitialCredits, $userHash) {
 
 		// Check user with same name or same email
 		$sql = "SELECT ID FROM users WHERE (name='%s' OR email = '%s' ) ";
-		$result = $this->conn->_singleSelect($sql, $user->name, $user->email);
+		$result = $this->conn->_singleSelect($sql, $userName, $userEmail);
 		if ($result)
-			return false;
+		return false;
 
-		$userId = $this->conn->_insert( $data );
+		$result = $this->conn->_insert( $insert, $userName, $userPass, $userEmail, $userRealName, $userRealSurname, $userInitialCredits, $userHash );
 
-		if ($userId) {
-			$sql = "SELECT ID as id, 
-						   name, 
-						   email, 
-						   password, 
-						   creditCount 
-					FROM users WHERE (ID= '%d' ) ";
-
-		
-			$result = $this->conn->_singleSelect($sql, $userId);
-			return $result;
-		} else {
-			return false;
-		}
+		return $result;
 	}
 
 	private function _createRegistrationHash()
