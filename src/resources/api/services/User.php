@@ -65,6 +65,8 @@ class User {
 			$verifySession = new SessionHandler(true);
 
 			$sessionId = session_id();
+			if(empty($sessionId))
+				throw new Exception("Error. Session not set.");
 
 			//Check that there's not another active session for this user
 			$sql = "SELECT * FROM user_session WHERE ( session_id = '%s' AND fk_user_id = '%d' AND closed = 0 )";
@@ -227,7 +229,7 @@ class User {
 			$exercise = new Exercise();
 			foreach($searchResults as $searchResult){
 				$searchResult->isSubtitled = $searchResult->isSubtitled ? true : false;
-				$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($temp->id)->avgRating;
+				$searchResult->avgRating = $exercise->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 			}
 			
 			return $searchResults;
