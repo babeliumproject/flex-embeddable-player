@@ -155,7 +155,7 @@ class Evaluation {
 					 LEFT OUTER JOIN exercise_level E ON B.id=E.fk_exercise_id
 				WHERE ( A.fk_user_id = '%d' ) 
 				GROUP BY A.id,B.id 
-				ORDER BY %s"; 
+				ORDER BY '%s'";
 
 		$searchResults = $this->conn->_multipleSelect( $sql, $_SESSION['uid'], $querySortField);
 
@@ -367,8 +367,8 @@ class Evaluation {
 		
 		return $result;	
 	}
-
-   /**
+	
+	/**
 	 * Adds new assessment data to the provided response (plus video-comment data)
 	 * 
 	 * @param stdClass $evalData
@@ -471,7 +471,7 @@ class Evaluation {
 		return $result;	
 		
 	}
-
+	
 	/**
 	 * Grants the current user some credits for assessing other user, and thus, collaborating with the system 
 	 * @return mixed $results
@@ -537,7 +537,7 @@ class Evaluation {
 		$sql = "SELECT name, creditCount, joiningDate, isAdmin FROM users WHERE (id = %d) ";
 		return $this->conn->_singleSelect($sql, $_SESSION['uid']);
 	}
-
+	
 	/**
 	 * Retrieves the directory names of several media resources
 	 */	

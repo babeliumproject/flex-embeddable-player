@@ -214,7 +214,7 @@ class Exercise {
 		if($result){
 			$sql = "INSERT INTO credithistory (fk_user_id, fk_exercise_id, changeDate, changeType, changeAmount) ";
 			$sql = $sql . "VALUES ('%d', '%d', NOW(), '%s', '%d') ";
-			return $this->conn->_insert($sql, $_SESSION['uid'], $exerciseId, 'exercise_upload', $row[0]);
+			return $this->conn->_insert($sql, $_SESSION['uid'], $exerciseId, 'exercise_upload', $result->prefValue);
 		} else {
 			return false;
 		}
@@ -295,13 +295,13 @@ class Exercise {
 	 				 	 LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				 	 LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
        				 	 LEFT OUTER JOIN subtitle a ON e.id=a.fk_exercise_id
-       			 	 	 WHERE (e.status = 'Available' AND a.complete = 0)
+       			 	 	 WHERE (e.status = 'Available' AND a.complete IS NULL OR a.complete=0)
 				 	GROUP BY e.id
 				 	ORDER BY e.adding_date DESC";
 
 			$searchResults = $this->conn->_multipleSelect($sql);
 			foreach($searchResults as $searchResult){
-				$searchResult->avgRating = $this->getExerciseAvgBayesianScore($temp->id)->avgRating;
+				$searchResult->avgRating = $this->getExerciseAvgBayesianScore($searchResult->id)->avgRating;
 			}
 
 			//Filter searchResults to include only the "evaluate" languages of the user

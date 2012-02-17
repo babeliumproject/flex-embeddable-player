@@ -54,7 +54,7 @@ class User {
 					   creditCount 
 				FROM users AS U WHERE U.active = 1 ORDER BY creditCount DESC LIMIT 10";
 
-		$searchResults = $this->conn->_multipleQuery($sql);
+		$searchResults = $this->conn->_multipleSelect($sql);
 
 		return $searchResults;
 	}
@@ -81,7 +81,7 @@ class User {
 		}
 	}
 
-	public function changePass($oldpass = 0, $newpass = 0)
+	public function changePass($oldpass = null, $newpass = null)
 	{
 		try {
 			$verifySession = new SessionHandler(true);
@@ -126,7 +126,7 @@ class User {
 
 			if(!$result){
 				$this->conn->_failedTransaction();
-				throw new Exception("Language modify failed");
+				throw new Exception("Language modification failed");
 			}
 
 			//Insert the new languages

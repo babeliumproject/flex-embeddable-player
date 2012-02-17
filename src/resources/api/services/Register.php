@@ -48,7 +48,7 @@ class Register{
 		}
 	}
 
-	public function newUser($user = null)
+	public function register($user = null)
 	{
 		if(!$user)
 			return 'error_no_parameters';
@@ -104,7 +104,7 @@ class Register{
 						'SIGNATURE' => 'The Babelium Project Team');
 
 					if ( !$mail->makeTemplate("mail_activation", $args, $motherTongueLocale) )
-					return false;
+						return false;
 
 					$mail = $mail->send($mail->txtContent, $subject, $mail->htmlContent);
 
