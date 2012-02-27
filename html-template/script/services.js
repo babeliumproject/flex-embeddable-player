@@ -63,12 +63,21 @@ function services(){
 		data.parameters = {'secretKey': hex_md5(bpConfig.sessionID)};
 		data.header = {"session":bpConfig.sessionID,"uuid":bpConfig.uuid};
 		
-	    $.post(qs, data, bpServices.onCommunicationTokenSuccess, "json")
-        .error(function(error){
-                instance.onServiceError(error);
-        });
-	    
-		
+		$.support.cors = true;
+		$.ajax({
+			type: "POST",
+			url: qs,
+			data: data,
+			success: bpServices.onCommunicationTokenSuccess,
+			dataType: "json",
+			error: function (xhr, status, errorThrown){
+				instance.onServiceError(xhr,status,errorThrown);
+			},
+			xhrFields: {
+				withCredentials: true
+			},
+			crossDomain: true	
+		});
 	};
 	
 	this.onCommunicationTokenSuccess = function(data){
@@ -85,7 +94,7 @@ function services(){
 	this.onServiceError = function(xhr, status, errorThrown){
 		//Display an error message noticing the user that the request to the server was not successful.
 		var errorObj = jQuery.parseJSON(xhr.responseText);
-		console.log("Request error: ".errorObj.response.message);
+		console.log("Request error: "+errorObj.response.message);
 	};
 	
 	this.createRandomSalt = function(){

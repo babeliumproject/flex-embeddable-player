@@ -120,7 +120,7 @@ class Register{
 
 	//The parameter should be an array of UserLanguageVO
 	private function addUserLanguages($languages, $userId) {
-		$positivesToNextLevel = $this->_getPositivesToNextLevel($sql);
+		$positivesToNextLevel = $this->_getPositivesToNextLevel();
 
 		$params = array();
 

@@ -35,7 +35,7 @@ require_once 'utils/SessionHandler.php';
 class Auth{
 
 	private $conn;
-	
+
 	/**
 	 * Constructor method
 	 * @throws Exception
@@ -50,7 +50,7 @@ class Auth{
 			throw new Exception($e->getMessage());
 		}
 	}
-	
+
 	/**
 	 *
 	 */

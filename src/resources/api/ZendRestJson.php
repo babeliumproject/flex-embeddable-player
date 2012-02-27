@@ -149,10 +149,18 @@ class ZendRestJson extends Zend_Rest_Server
 								// for some reason, invokeArgs() does not work the same as
 								// invoke(), and expects the first argument to be an object.
 								// So, using a callback if the method is static.
-								$result = $this->_callStaticMethod($class, $calling_args);
+								try {
+									$result = $this->_callStaticMethod($class, $calling_args);
+								} catch (Exception $e) {
+									$result = $this->fault($e);
+								}
 							} else {
 								// Object method
-								$result = $this->_callObjectMethod($class, $calling_args);
+								try {
+									$result = $this->_callObjectMethod($class, $calling_args);
+								} catch (Exception $e) {
+									$result = $this->fault($e);	
+								}
 							}
 						} elseif (!$result) {
 							try {
@@ -188,7 +196,7 @@ class ZendRestJson extends Zend_Rest_Server
 		}
 
 	
-		error_log(print_r($result,true),3,"/tmp/test.log");
+		error_log("Response:\n".print_r($result,true)."\n",3,"/tmp/test.log");
 		
 		if (!$this->_faultResult){
 			if (is_array($result) || is_object($result)) {
