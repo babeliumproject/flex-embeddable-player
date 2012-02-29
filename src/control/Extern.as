@@ -252,9 +252,13 @@ package control
 		}
 		
 		
-		private function addEventListener(event:String, listener:String):void{
-			
-			if(!listener)
+		//private function addEventListener(event:String, listener:String):void{ //added generic argument type and count to avoid a Windows Flash player bug
+		private function addEventListener(...args):void{
+			if(args.length < 2 )
+				return;
+			var listener:String = (args[1] is String) ? args[1] : null;
+			var event:String = (args[0] is String) ? args[0] : null;
+			if(!listener || !event)
 				return;
 			
 			switch(event){
@@ -286,10 +290,13 @@ package control
 			}
 		}
 		
-		private function removeEventListener(event:String, listener:String):void{
-			
-			if(!listener)
-				return;		
+		private function removeEventListener(...args):void{
+			if(args.length < 2 )
+				return;
+			var listener:String = (args[1] is String) ? args[1] : null;
+			var event:String = (args[0] is String) ? args[0] : null;
+			if(!listener || !event)
+				return;
 			
 			switch(event){
 				case 'onEnterFrame':
