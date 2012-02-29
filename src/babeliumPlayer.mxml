@@ -25,14 +25,17 @@
 	
 	<fx:Script>
 		<![CDATA[
-			
 			import model.DataModel;
 			
 			import modules.videoPlayer.events.VideoPlayerEvent;
 			
 			import mx.core.FlexGlobals;
+			import mx.resources.Locale;
+			import mx.resources.ResourceManager;
+			import mx.utils.ObjectUtil;
 			
 			private var videoId:String=null;
+			private var explicit_locale:String=null;
 			
 			[Bindable]
 			private var app:Object = FlexGlobals.topLevelApplication;
@@ -43,6 +46,11 @@
 				Security.allowDomain("*");	
 				
 				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+				explicit_locale=FlexGlobals.topLevelApplication.parameters.locale;
+				explicit_locale=parseLocale(explicit_locale);
+				if(explicit_locale){
+					ResourceManager.getInstance().localeChain=[explicit_locale];
+				}
 			}
 			
 			private function complete():void
@@ -57,8 +65,38 @@
 					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
 				
 				// Setups javascripts external controls
-				Extern.getInstance().setup(VP);
-				
+				Extern.getInstance().setup(VP);	
+			}
+			
+			private function parseLocale(locale:String):String{
+				var parsed_locale:String=null;
+				var language:String=null;
+				var country:String=null;
+				var available_languages:Array;
+				if(locale){
+					available_languages = ResourceManager.getInstance().getLocales();
+					var parts:Array = locale.split("_");
+					if (parts.length > 0){
+						language = parts[0];
+						if (parts.length > 1)
+							country = (parts[1] as String).toUpperCase();
+						for each (var l:String in available_languages){
+							var lparts:Array = l.split("_");
+							if(country){
+								if(lparts[0] == language && lparts[1] == country){
+									parsed_locale = l;
+									break;
+								}
+							} else{
+								if(lparts[0] == language){
+									parsed_locale = l;
+									break;
+								}
+							}
+						}
+					}	
+				}
+				return parsed_locale;
 			}
 			
 			private function onConnect(e:Event):void

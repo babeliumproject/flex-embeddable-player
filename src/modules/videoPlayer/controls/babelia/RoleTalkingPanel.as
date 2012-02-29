@@ -93,7 +93,7 @@ package modules.videoPlayer.controls.babelia
 			
 			_textBox.x = _defaultMargin*3;
 			_textBox.y = _defaultMargin;
-			_textBox.width = 55;
+			_textBox.width = 70;
 			_textBox.height = 20;
 			_textBox.setStyle("color", getSkinColor(TEXT_COLOR));
 			
