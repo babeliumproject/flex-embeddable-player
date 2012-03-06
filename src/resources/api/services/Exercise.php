@@ -156,7 +156,7 @@ class Exercise {
 					throw new Exception("Couldn't update no-practice exercise. Changes rollbacked.");
 				}
 				$sql = "INSERT INTO response (fk_user_id, fk_exercise_id, file_identifier, is_private, thumbnail_uri, source, duration, adding_date, rating_amount, character_name, fk_transcription_id, fk_subtitle_id)
-						VALUES (%d, %d, '%s', false, 'default.jpg', 'Red5', %d, NOW(), 0, 'None', NULL, NULL)";
+					VALUES (%d, %d, '%s', false, 'default.jpg', 'Red5', %d, NOW(), 0, 'None', NULL, NULL)";
 				$lastResponseId = $this->conn->_insert($sql,$_SESSION['uid'],$lastExerciseId,$exercise->name,$duration);
 				if(!$lastResponseId){
 					$this->conn->_failedTransaction();
@@ -242,21 +242,21 @@ class Exercise {
 
 	public function getExercises(){
 		$sql = "SELECT e.id, 
-					   e.title, 
-					   e.description, 
-					   e.language, 
-					   e.tags, 
-					   e.source, 
-					   e.name, 
-					   e.thumbnail_uri as thumbnailUri,
-       				   e.adding_date as addingDate, 
-       				   e.duration, 
-       				   u.name as userName, 
-       				   avg (suggested_level) as avgDifficulty, 
-       				   e.status, 
-       				   e.license, 
-       				   e.reference
-				FROM   exercise e INNER JOIN users u ON e.fk_user_id= u.ID
+			       e.title, 
+			       e.description, 
+			       e.language, 
+			       e.tags, 
+			       e.source, 
+			       e.name, 
+			       e.thumbnail_uri as thumbnailUri,
+       			       e.adding_date as addingDate, 
+			       e.duration, 
+			       u.name as userName, 
+			       avg (suggested_level) as avgDifficulty, 
+			       e.status, 
+			       e.license, 
+			       e.reference
+			FROM   exercise e INNER JOIN users u ON e.fk_user_id= u.ID
        				   LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				   LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
        			WHERE (e.status = 'Available')
@@ -270,7 +270,7 @@ class Exercise {
 
 		return $searchResults;
 	}
-	
+
 	/**
 	 * Return exercise by id
 	 */
@@ -279,27 +279,25 @@ class Exercise {
 			return;
 			
 		$sql = "SELECT e.id, 
-					   e.title, 
-					   e.description, 
-					   e.language, 
-					   e.tags, 
-					   e.source, 
-					   e.name, 
-					   e.thumbnail_uri as thumbnailUri,
-       				   e.adding_date as addingDate, 
-       				   e.duration, 
-       				   u.name as userName, 
-       				   avg (suggested_level) as avgDifficulty, 
-       				   e.status, 
-       				   e.license, 
-       				   e.reference
-				FROM   exercise e INNER JOIN users u ON e.fk_user_id= u.ID
-       				   LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
-       				   LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
-       			WHERE (e.id = %d)
-				GROUP BY e.id
-				LIMIT 1";
-		
+			       e.title, 
+			       e.description, 
+			       e.language, 
+			       e.tags, 
+			       e.source, 
+			       e.name, 
+			       e.thumbnail_uri as thumbnailUri,
+			       e.adding_date as addingDate, 
+			       e.duration, 
+			       u.name as userName, 
+			       avg (suggested_level) as avgDifficulty,
+			       e.status, 
+			       e.license, 
+			       e.reference
+			FROM   exercise e INNER JOIN users u ON e.fk_user_id= u.ID
+			LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
+			LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
+			WHERE (e.id = %d AND e.status='Available')
+			GROUP BY e.id";
 		$result = $this->conn->_singleSelect($sql,$id);
 		if($result)
 			$result->avgRating = $this->getExerciseAvgBayesianScore($result->id)->avgRating;
@@ -348,21 +346,21 @@ class Exercise {
 			$verifySession = new SessionHandler(true);
 
 			$sql = "SELECT e.id, 
-						   e.title, 
-						   e.description, 
-						   e.language, 
-						   e.tags, 
-						   e.source, 
-						   e.name, 
-						   e.thumbnail_uri as thumbnailUri,
-       					   e.adding_date as addingDate, 
-       					   e.duration, 
-       					   u.name as userName, 
-       					   avg (suggested_level) as avgDifficulty, 
-       					   e.status, 
-       					   e.license, 
-       					   e.reference
-					FROM exercise e 
+				       e.title, 
+				       e.description, 
+				       e.language, 
+				       e.tags, 
+				       e.source, 
+				       e.name, 
+				       e.thumbnail_uri as thumbnailUri,
+				       e.adding_date as addingDate, 
+				       e.duration, 
+				       u.name as userName, 
+				       avg (suggested_level) as avgDifficulty, 
+				       e.status, 
+				       e.license, 
+				       e.reference
+				FROM exercise e 
 					 	 INNER JOIN users u ON e.fk_user_id= u.ID
 	 				 	 LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id
        				 	 LEFT OUTER JOIN exercise_level l ON e.id=l.fk_exercise_id
@@ -560,8 +558,8 @@ class Exercise {
 	private function getExerciseAvgScore($exerciseId){
 
 		$sql = "SELECT e.id, 
-					   avg (suggested_score) as avgRating, 
-					   count(suggested_score) as ratingCount
+			       avg (suggested_score) as avgRating, 
+			       count(suggested_score) as ratingCount
 				FROM exercise e LEFT OUTER JOIN exercise_score s ON e.id=s.fk_exercise_id    
 				WHERE (e.id = '%d' ) GROUP BY e.id";
 

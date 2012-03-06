@@ -166,19 +166,19 @@ class Response {
 	private function _getUserInfo(){
 
 		$sql = "SELECT name, 
-					   creditCount, 
-					   joiningDate, 
-					   isAdmin 
-				FROM users WHERE (id = %d) ";
+			       creditCount, 
+			       joiningDate, 
+			       isAdmin 
+			FROM users WHERE (id = %d) ";
 
 		return $this->conn->_singleSelect($sql, $_SESSION['uid']);
 	}
 
 	private function _getResourceDirectories(){
 		$sql = "SELECT prefValue 
-				FROM preferences
-				WHERE (prefName='exerciseFolder' OR prefName='responseFolder' OR prefName='evaluationFolder') 
-				ORDER BY prefName";
+			FROM preferences
+			WHERE (prefName='exerciseFolder' OR prefName='responseFolder' OR prefName='evaluationFolder') 
+			ORDER BY prefName";
 		$result = $this->conn->_multipleSelect($sql);
 		if($result){
 			$this->evaluationFolder = $result[0] ? $result[0]->prefValue : '';
