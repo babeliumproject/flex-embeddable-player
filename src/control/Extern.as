@@ -63,7 +63,8 @@ package control
 			addCB("secondSource",secondSource);
 			addCB("seek",seek);
 			addCB("skin",skin);
-			addCB("state",state);
+			addCB("getState",getState);
+			addCB("setState",setState);
 			addCB("streamTime",streamTime);
 			addCB("subtitles",subtitles);
 			addCB("subtitlingControls",subtitlingControls);
@@ -208,7 +209,11 @@ package control
 			VP.skin = skinfile;
 		}
 		
-		private function state(st:int):void
+		private function getState():int{
+			return VP.state;
+		}
+		
+		private function setState(st:int):void
 		{
 			VP.state = st;
 		}
