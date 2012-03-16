@@ -1071,8 +1071,10 @@ package modules.videoPlayer
 
 			if (_videoHeight != h) // cause we can call twice to this method
 				_lastVideoHeight=_videoHeight; // store last value
+				trace("splitVideoPanel: _lastVideoheight = "+_lastVideoHeight);
 
 			_videoHeight=h;
+			trace("splitVideoPanel: _videoHeight = "+_videoHeight);
 
 			var scaleY:Number=h / _video.height;
 			var scaleX:Number=w / _video.width;
@@ -1104,6 +1106,7 @@ package modules.videoPlayer
 			// NOTE: problems with _videoWrapper.width
 			if (_lastVideoHeight > _videoHeight)
 				_videoHeight=_lastVideoHeight;
+			trace("recoverVideoPanel: _videoHeight = "+_videoHeight);
 
 			scaleVideo();
 
@@ -1151,10 +1154,12 @@ package modules.videoPlayer
 				var w:Number=_videoWidth / 2 - 2;
 				var h:int=w * _video.height / _video.width;
 
-				if (_videoHeight != h) // cause we can call twice to this method
-					_lastVideoHeight=_videoHeight; // store last value
+				//if (_videoHeight != h) // cause we can call twice to this method
+				//	_lastVideoHeight=_videoHeight; // store last value
+					trace("scaleVideo: _lastVideoheight = "+_lastVideoHeight);
 
 				_videoHeight=h;
+				trace("scaleVideo: _videoHeight = "+_videoHeight);
 
 				var scaleY:Number=h / _video.height;
 				var scaleX:Number=w / _video.width;
@@ -1195,7 +1200,7 @@ package modules.videoPlayer
 			{
 				unattachUserDevices();
 
-				trace("Recording of " + _fileName + " has been finished");
+				trace("Recording of " + _fileName + " finished");
 				dispatchEvent(new RecordingEvent(RecordingEvent.END, _fileName));
 				enableControls(); // TODO: new feature - enable controls while recording
 			}
@@ -1212,6 +1217,7 @@ package modules.videoPlayer
 				_camVideo.clear();
 				_camVideo.attachCamera(null);
 			}
+			removeAllChildren(_onTop); //Remove the privacy box in case someone cancels the recording before starting
 		}
 		
 		private function removeAllChildren(container:UIComponent):void{
@@ -1336,7 +1342,7 @@ package modules.videoPlayer
 					break;
 			}
 
-			trace("Response status: " + event.info.code);
+			//trace("Response status: " + event.info.code);
 		}
 
 	}

@@ -44,8 +44,6 @@ package modules.videoPlayer.controls.babelia
 
 			_bg=new Sprite();
 			addChild(_bg);
-			
-			loadAsset(DataModel.getInstance().uploadDomain+"resources/images/vp_roleStartRedArrow.png");
 
 			_arrows=new ArrayCollection();
 
@@ -113,17 +111,28 @@ package modules.videoPlayer.controls.babelia
 			_highlight = flag;
 			refresh();
 		}
+		
+		private function drawArrowSprite():Sprite
+		{
+			var arrow2:Sprite = new Sprite();
+			arrow2.graphics.clear();
+			arrow2.graphics.beginFill(0xa12829);
+			arrow2.graphics.moveTo(4,0);
+			arrow2.graphics.lineTo(4,26);
+			arrow2.graphics.lineTo(0,26);
+			arrow2.graphics.lineTo(8,34);
+			arrow2.graphics.lineTo(16,26);
+			arrow2.graphics.lineTo(12,26);
+			arrow2.graphics.lineTo(12,0);
+			arrow2.graphics.lineTo(4,0);
+			arrow2.graphics.endFill();
+			return arrow2;
+		}
 
 		private function doShowArrow(time:Number, duration:Number, flag:Boolean):void
-		{/*
-			var arrow:Image=new Image();
-			if (flag)
-				arrow.source="resources/images/fletxa_gorri.png";
-			else return;
-			//	arrow.source="resources/images/fletxa_beltza.png";*/
-			
+		{	
 			if(flag)
-				var arrow:Bitmap = new Bitmap(selectedRoleArrow.bitmapData.clone());
+				var arrow:Sprite = drawArrowSprite();
 			else
 				return;
 
@@ -133,38 +142,20 @@ package modules.videoPlayer.controls.babelia
 			 * |__|______________________________|
 			 * 0                               duration
 			 * 
-			 * arrow's width: 17px
+			 * arrow's width: 16px
 			 * scrubber's width: 10px
 			 * margins: ~5px (left) ~5px (right)
 			 * ***********************************/
 			var margin:int = 5;
 			var scrubberW:int = 10;
 			
-			arrow.width = 17;
-			arrow.height = 35;
-			arrow.x = time * (width-scrubberW - margin*2) / duration + (margin + scrubberW - arrow.width/2 -1); // -1 
+			arrow.width = 16;
+			arrow.height = 34;
+			arrow.x = time * (width-scrubberW - margin*2) / duration + (margin + scrubberW - arrow.width/2); // -1 
 			arrow.y = 4;
 
 			_arrows.addItem(arrow);
 			addChild(arrow);
-		}
-		
-		private function loadAsset(url:String):void{
-			var loader:Loader = new Loader();
-			loader.contentLoaderInfo.addEventListener(Event.COMPLETE, completeHandler);
-			loader.contentLoaderInfo.addEventListener(IOErrorEvent.IO_ERROR, ioErrorHandler);
-			
-			var request:URLRequest = new URLRequest(url);
-			loader.load(request);
-		}
-		
-		private function completeHandler(event:Event):void{
-			var loader:Loader = Loader(event.target.loader);
-			selectedRoleArrow = Bitmap(loader.content);
-		}
-		
-		private function ioErrorHandler(event:IOErrorEvent):void{
-			trace("Unable to load image: " + event);
 		}
 	}
 }

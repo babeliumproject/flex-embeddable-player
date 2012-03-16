@@ -546,7 +546,7 @@ package modules.videoPlayer
 
 		private function netStatus(e:NetStatusEvent):void
 		{
-			trace("Exercise status: " + e.info.code);
+			//trace("Exercise status: " + e.info.code);
 
 			switch (e.info.code)
 			{
@@ -746,7 +746,7 @@ package modules.videoPlayer
 		 */
 		public function onSourceChange(e:VideoPlayerEvent):void
 		{
-			trace("Requested to play another video");
+			//trace("Requested to play another video");
 			//trace(e.currentTarget);
 			//if ( _ns ) 
 			//{
@@ -854,7 +854,7 @@ package modules.videoPlayer
 		 */
 		protected function onVideoFinishedPlaying(e:VideoPlayerEvent):void
 		{
-			trace("onVideoFinishedPlaying");
+			//trace("onVideoFinishedPlaying");
 			stopVideo();
 		}
 
