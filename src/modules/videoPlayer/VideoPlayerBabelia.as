@@ -1217,7 +1217,7 @@ package modules.videoPlayer
 				_camVideo.clear();
 				_camVideo.attachCamera(null);
 			}
-			if(_onTop.getChildAt(0) is PrivacyRights)
+			if((_onTop.numChildren > 0) && (_onTop.getChildAt(0) is PrivacyRights) )
 				removeAllChildren(_onTop); //Remove the privacy box in case someone cancels the recording before starting
 		}
 		
