@@ -335,7 +335,7 @@ package modules.videoPlayer
 
 			var xmlURL:URLRequest=new URLRequest(fileName);
 			_skinLoader=new URLLoader(xmlURL);
-			_skinLoader.addEventListener(Event.COMPLETE, onSkinFileReaded);
+			_skinLoader.addEventListener(Event.COMPLETE, onSkinFileRead);
 			_skinLoader.addEventListener(IOErrorEvent.IO_ERROR, onSkinFileReadingError);
 			_loadingSkin=true;
 		}
@@ -343,7 +343,7 @@ package modules.videoPlayer
 		/**
 		 * Parses Skin file
 		 */
-		public function onSkinFileReaded(e:Event):void
+		public function onSkinFileRead(e:Event):void
 		{
 			var xml:XML=new XML(_skinLoader.data);
 
@@ -354,13 +354,11 @@ package modules.videoPlayer
 
 				if (cmp == null)
 					continue;
-
 				for each (var xElement:XML in xChild.child("Property"))
 				{
 					var propertyName:String=xElement.attribute("name").toString();
-					var propertyColor:String=xElement.toString();
-
-					cmp.setSkinColor(propertyName, new uint(propertyColor));
+					var propertyValue:String=xElement.toString();
+					cmp.setSkinProperty(propertyName, propertyValue);
 				}
 			}
 
@@ -383,7 +381,7 @@ package modules.videoPlayer
 
 			_bgVideo.graphics.clear();
 			_bgVideo.graphics.beginFill(getSkinColor(VIDEOBG_COLOR));
-			_bgVideo.graphics.drawRoundRect(_defaultMargin, _defaultMargin, _videoWidth, _videoHeight, 5, 5);
+			_bgVideo.graphics.drawRect(_defaultMargin, _defaultMargin, _videoWidth, _videoHeight);
 			_bgVideo.graphics.endFill();
 
 			_videoBarPanel.width=_videoWidth;
@@ -452,10 +450,10 @@ package modules.videoPlayer
 			_bg.graphics.clear();
 
 			_bg.graphics.beginFill(getSkinColor(BORDER_COLOR));
-			_bg.graphics.drawRoundRect(0, 0, width, height, 15, 15);
+			_bg.graphics.drawRect(0, 0, width, height);
 			_bg.graphics.endFill();
 			_bg.graphics.beginFill(getSkinColor(BG_COLOR));
-			_bg.graphics.drawRoundRect(3, 3, width - 6, height - 6, 12, 12);
+			_bg.graphics.drawRect(3, 3, width - 6, height - 6);
 			_bg.graphics.endFill();
 		}
 
@@ -546,12 +544,12 @@ package modules.videoPlayer
 
 		private function netStatus(e:NetStatusEvent):void
 		{
-			//trace("Exercise status: " + e.info.code);
+			//trace("[INFO] Exercise stream: Status code " + e.info.code);
 
 			switch (e.info.code)
 			{
 				case "NetStream.Play.StreamNotFound":
-					trace("Stream not found code: " + e.info.code + " for video " + _videoSource);
+					trace("[ERROR] Exercise stream: Stream " + _videoSource + " could not be found");
 					break;
 				case "NetStream.Play.Stop":
 					playbackState=PLAYBACK_STOPPED_STATE;
@@ -619,7 +617,7 @@ package modules.videoPlayer
 				_ppBtn.State=PlayButton.PLAY_STATE;
 				return;
 			}
-			
+
 			if (_ns != null)
 				_ns.close();
 
@@ -633,15 +631,15 @@ package modules.videoPlayer
 			{
 				try
 				{
-					trace("NetStream Play: " + _videoSource);
+					trace("[INFO] Exercise stream: Selected video " + _videoSource);
 					_ns.play(_videoSource);
 				}
 				catch (e:Error)
 				{
-					trace("Error: Can't play. Not connected to the server");
+					trace("[ERROR] Exercise stream: Can't play. Not connected to the server");
 					return;
 				}
-				
+
 				_started=true;
 
 				if (_timer)
@@ -660,13 +658,12 @@ package modules.videoPlayer
 			
 			if (_ns)
 			{
-				//_ns.pause();
-				//_ns.seek(0);
-				
 				//if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
 				//	_ppBtn.State = PlayButton.PLAY_STATE;
 				_ns.play(false);
 				_video.clear();
+				//_ns.pause();
+				//_ns.seek(0);
 			}
 
 			_ppBtn.State=PlayButton.PLAY_STATE;
@@ -717,7 +714,7 @@ package modules.videoPlayer
 		 */
 		public function onMetaData(msg:Object):void
 		{
-			
+		
 			/*
 				trace("metadata: ");
 
@@ -746,16 +743,11 @@ package modules.videoPlayer
 		 */
 		public function onSourceChange(e:VideoPlayerEvent):void
 		{
-			//trace("Requested to play another video");
-			//trace(e.currentTarget);
-			//if ( _ns ) 
-			//{
-				playVideo();
-				_ppBtn.State=PlayButton.PAUSE_STATE;
+			playVideo();
+			_ppBtn.State=PlayButton.PAUSE_STATE;
 
-				if (!autoPlay)
-					pauseVideo();
-			//}
+			if (!autoPlay)
+				pauseVideo();
 		}
 
 		/**
@@ -854,7 +846,7 @@ package modules.videoPlayer
 		 */
 		protected function onVideoFinishedPlaying(e:VideoPlayerEvent):void
 		{
-			//trace("onVideoFinishedPlaying");
+			trace("[INFO] Exercise stream: Finished playing video "+_videoSource);
 			stopVideo();
 		}
 
@@ -879,23 +871,28 @@ package modules.videoPlayer
 		{
 			if (!autoScale)
 			{
+				//If the scalation is different in height and width take the smaller one
 				var scaleY:Number=_videoHeight / _video.height;
 				var scaleX:Number=_videoWidth / _video.width;
 				var scaleC:Number=scaleX < scaleY ? scaleX : scaleY;
 
+				//Center the video in the stage
 				_video.y=Math.floor(_videoHeight / 2 - (_video.height * scaleC) / 2);
 				_video.x=Math.floor(_videoWidth / 2 - (_video.width * scaleC) / 2);
+
+				//Leave space for the margins
 				_video.y+=_defaultMargin;
 				_video.x+=_defaultMargin;
 
-				_video.width*=scaleC;
-				_video.height*=scaleC;
+				//Scale the video
+				_video.width=Math.ceil(_video.width*scaleC);
+				_video.height=Math.ceil(_video.height*scaleC);
 
 				// 1 black pixel, being smarter
-				_video.y+=1;
-				_video.height-=2;
-				_video.x+=1;
-				_video.width-=2;
+				//_video.y+=1;
+				//_video.height-=2;
+				//_video.x+=1;
+				//_video.width-=2;
 			}
 			else
 			{

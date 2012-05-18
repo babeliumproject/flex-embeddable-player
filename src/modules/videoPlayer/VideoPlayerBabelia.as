@@ -10,8 +10,6 @@ package modules.videoPlayer
 	import flash.geom.Matrix;
 	import flash.media.*;
 	import flash.net.*;
-	import flash.system.Security;
-	import flash.system.SecurityPanel;
 	import flash.utils.*;
 	
 	import model.DataModel;
@@ -41,7 +39,6 @@ package modules.videoPlayer
 	import mx.events.EffectEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
-	import mx.validators.EmailValidator;
 	
 	import skins.OverlayPlayButtonSkin;
 	
@@ -84,13 +81,15 @@ package modules.videoPlayer
 		 * XXXX XXX1: split video panel into 2 views
 		 * XXXX XX1X: recording modes
 		 */
-		public static const PLAY_STATE:int=0; // 0000 0000
-		public static const PLAY_BOTH_STATE:int=1; // 0000 0001
-		public static const RECORD_MIC_STATE:int=2; // 0000 0010
+		public static const PLAY_STATE:int=0;        // 0000 0000
+		public static const PLAY_BOTH_STATE:int=1;   // 0000 0001
+		public static const RECORD_MIC_STATE:int=2;  // 0000 0010
 		public static const RECORD_BOTH_STATE:int=3; // 0000 0011
+		
 
 		private const SPLIT_FLAG:int=1; // XXXX XXX1
 		private const RECORD_FLAG:int=2; // XXXX XX1X
+		
 
 		private var _state:int;
 
@@ -110,6 +109,8 @@ package modules.videoPlayer
 		private var _camVideo:Video;
 		private var _defaultCamWidth:Number=DataModel.getInstance().cameraWidth;
 		private var _defaultCamHeight:Number=DataModel.getInstance().cameraHeight;
+		private var _blackPixelsBetweenVideos:uint = 0;
+		private var _lastVideoHeight:Number=0;
 
 		private var _micCamEnabled:Boolean=false;
 
@@ -121,7 +122,7 @@ package modules.videoPlayer
 		private var _fileName:String;
 		private var _recordingMuted:Boolean=false;
 
-		private var _lastVideoHeight:Number=0;
+	
 
 		public static const SECONDSTREAM_READY_STATE:int=0;
 		public static const SECONDSTREAM_STARTED_STATE:int=1;
@@ -186,24 +187,21 @@ package modules.videoPlayer
 
 			_micImage=new Image();
 
-			[Embed(source="../../resources/images/vp_micWatermark.png")]
-			var micWatermark:Class;
-
-			_micImage.source=micWatermark;
-			_micImage.height=128;
-			_micImage.width=128;
-			_micImage.alpha=0.7;
-			_micImage.autoLoad=true;
-			_micImage.visible=false;
-
+			_micImage.source = DataModel.getInstance().uploadDomain+"resources/images/mic-watermark.png";
+			_micImage.height = 128;
+			_micImage.width = 128;
+			_micImage.alpha = 0.7;
+			_micImage.autoLoad = true;
+			_micImage.visible = false;
+	
 			_subtitleStartEnd=new SubtitleStartEndButton();
 			_subtitleStartEnd.visible=false;
-
+			
 			_videoBarPanel.addChild(_subtitleStartEnd);
 
 			_micActivityBar=new MicActivityBar();
 			_micActivityBar.visible=false;
-
+			
 			_overlayButton=new Button();
 			_overlayButton.setStyle("skinClass", OverlayPlayButtonSkin);
 			_overlayButton.width=128;
@@ -219,19 +217,21 @@ package modules.videoPlayer
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.START, onSubtitlingEvent);
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.END, onSubtitlingEvent);
 
+			
 			/**
 			 * Adds components to player
 			 */
 			removeChild(_videoBarPanel); // order
 			addChild(_micActivityBar);
 			addChild(_arrowContainer);
-			addChild(_videoBarPanel);
-
+			
 			addChild(_micImage);
 			addChild(_camVideo);
 
-			addChild(_countdownTxt);
 			addChild(_subtitlePanel);
+			addChild(_videoBarPanel);
+			addChild(_countdownTxt);
+			
 
 			addChild(_overlayButton);
 
@@ -287,15 +287,15 @@ package modules.videoPlayer
 		 */
 		public function setArrows(arrows:ArrayCollection, selectedRole:String):void
 		{
-				_arrowPanel.setArrows(arrows, _duration, selectedRole);
+			_arrowPanel.setArrows(arrows, _duration, selectedRole);
 
-				// Extract only selected roles
-				var tmp:ArrayCollection=new ArrayCollection();
-				for (var i:Number=0; i < arrows.length; i++)
-					if (arrows.getItemAt(i).role == selectedRole)
-						tmp.addItem(arrows.getItemAt(i));
+			// Extract only selected roles
+			var tmp:ArrayCollection=new ArrayCollection();
+			for (var i:Number=0; i < arrows.length; i++)
+				if (arrows.getItemAt(i).role == selectedRole)
+					tmp.addItem(arrows.getItemAt(i));
 
-				_sBar.setMarks(tmp, _duration);
+			_sBar.setMarks(tmp, _duration);
 		}
 
 		// remove arrows from panel
@@ -334,7 +334,7 @@ package modules.videoPlayer
 		public function set subtitlingControls(flag:Boolean):void
 		{
 			_subtitleStartEnd.visible=flag;
-			this.updateDisplayList(0, 0); //repaint component
+			this.updateDisplayList(0,0); //repaint component
 		}
 
 		public function get subtitlingControls():Boolean
@@ -382,7 +382,7 @@ package modules.videoPlayer
 		override protected function onPPBtnChanged(e:PlayPauseEvent):void
 		{
 			super.onPPBtnChanged(e);
-			if (_overlayButton.visible)
+			if(_overlayButton.visible)
 				_overlayButton.visible=false;
 		}
 
@@ -416,11 +416,10 @@ package modules.videoPlayer
 		 **/
 		public function set secondSource(source:String):void
 		{
-			
+			trace("[INFO] Video player: Second video added to stage");
 			if (state != PLAY_BOTH_STATE)
 				return;
 
-			trace("Second video added to player stage");
 			_secondStreamSource=source;
 
 			if (_nc == null)
@@ -481,7 +480,7 @@ package modules.videoPlayer
 			_arrowContainer.x=_defaultMargin;
 
 			var matr:Matrix=new Matrix();
-			matr.createGradientBox(_arrowContainer.height, _arrowContainer.height, 270 * Math.PI / 180, 0, 0);
+			matr.createGradientBox(_arrowContainer.height, _arrowContainer.height, 270*Math.PI/180, 0, 0);
 
 			var colors:Array=[0xffffff, 0xd8d8d8];
 			var alphas:Array=[1, 1];
@@ -505,13 +504,13 @@ package modules.videoPlayer
 
 			// Put subtitle box at top
 			_subtitlePanel.width=_videoBarPanel.width;
-			_subtitlePanel.height=_videoHeight * 0.75;
+			_subtitlePanel.height=_videoHeight*0.75;
 			_subtitlePanel.x=_defaultMargin;
 			/*
 			 * Subtitle panel
 			 */
 			var y2:Number=_arrowContainer.visible ? _arrowContainer.height : 0;
-			var y3:Number=_micActivityBar.visible ? _micActivityBar.height : 0;
+			var y3:Number=_micActivityBar.visible ? _micActivityBar.height: 0;
 
 			_videoBarPanel.y+=y3 + y2;
 
@@ -522,7 +521,7 @@ package modules.videoPlayer
 
 
 			_subtitleBox.y=0;
-			_subtitleBox.resize(_videoWidth, _videoHeight * 0.75);
+			_subtitleBox.resize(_videoWidth, _videoHeight*0.75);
 
 			// Resize arrowPanel
 			_arrowPanel.resize(_sBar.width, _arrowContainer.height - 8);
@@ -552,7 +551,7 @@ package modules.videoPlayer
 			privacyRights.width=this.width;
 			privacyRights.height=this.height;
 
-			if (_subtitleStartEnd.visible)
+			if(_subtitleStartEnd.visible)
 			{
 				_ppBtn.x=0;
 				_ppBtn.refresh();
@@ -604,6 +603,7 @@ package modules.videoPlayer
 
 			}
 
+			drawBG();
 		}
 
 		override protected function drawBG():void
@@ -623,7 +623,7 @@ package modules.videoPlayer
 			_bg.graphics.clear();
 
 			_bg.graphics.beginFill(getSkinColor(BG_COLOR));
-			_bg.graphics.drawRoundRect(0, 0, width, height, 12, 12);
+			_bg.graphics.drawRect(0, 0, width, height);
 			_bg.graphics.endFill();
 		}
 
@@ -634,7 +634,7 @@ package modules.videoPlayer
 		override public function playVideo():void
 		{
 			super.playVideo();
-			if (state == PLAY_BOTH_STATE)
+			if(state == PLAY_BOTH_STATE)
 				playSecondStream();
 
 			if (!_cuePointTimer)
@@ -817,7 +817,6 @@ package modules.videoPlayer
 					break;
 
 				case RECORD_MIC_STATE:
-
 					recoverVideoPanel(); // original size
 					prepareDevices();
 
@@ -825,11 +824,10 @@ package modules.videoPlayer
 
 				case PLAY_BOTH_STATE:
 					_micActivityBar.visible=false;
-					this.updateDisplayList(0, 0);
+					this.updateDisplayList(0,0);
 					break;
 
 				default: // PLAY_STATE
-
 					recoverVideoPanel();
 					_camVideo.attachCamera(null); // TODO: deattach camera
 					_camVideo.visible=false;
@@ -1049,7 +1047,7 @@ package modules.videoPlayer
 
 			_outNs.publish(responseFilename, "record");
 
-			trace("Recording of " + _fileName + " file has started");
+			trace("[INFO] Response stream: Started recording " + _fileName);
 
 			//TODO: new feature - enableControls();
 		}
@@ -1060,21 +1058,17 @@ package modules.videoPlayer
 		 */
 		private function splitVideoPanel():void
 		{
+			//The stage should be splitted only when the right state is set
 			if (!(state & SPLIT_FLAG))
-				return; // security check
+				return;
 
-			/*
-			 * Resize video image
-			 */
-			var w:Number=_videoWidth / 2 - 2;
-			var h:int=w * _video.height / _video.width;
+			var w:Number=_videoWidth / 2 - _blackPixelsBetweenVideos;
+			var h:int=Math.ceil(w * 0.75);//_video.height / _video.width);
 
 			if (_videoHeight != h) // cause we can call twice to this method
 				_lastVideoHeight=_videoHeight; // store last value
-				trace("splitVideoPanel: _lastVideoheight = "+_lastVideoHeight);
 
 			_videoHeight=h;
-			trace("splitVideoPanel: _videoHeight = "+_videoHeight);
 
 			var scaleY:Number=h / _video.height;
 			var scaleX:Number=w / _video.width;
@@ -1088,10 +1082,8 @@ package modules.videoPlayer
 			_video.width*=scaleC;
 			_video.height*=scaleC;
 
-			/*
-			 * Resize cam image
-			 */
-			scaleCamVideo(w, h);
+			//Resize the cam display
+			scaleCamVideo(w,h);
 
 			updateDisplayList(0, 0); // repaint
 
@@ -1103,10 +1095,10 @@ package modules.videoPlayer
 		 */
 		private function recoverVideoPanel():void
 		{
+			trace("[INFO] Video player Babelium: Recover video panel");
 			// NOTE: problems with _videoWrapper.width
 			if (_lastVideoHeight > _videoHeight)
 				_videoHeight=_lastVideoHeight;
-			trace("recoverVideoPanel: _videoHeight = "+_videoHeight);
 
 			scaleVideo();
 
@@ -1118,8 +1110,9 @@ package modules.videoPlayer
 		}
 
 		// Aux: scaling cam image
-		private function scaleCamVideo(w:Number, h:Number):void
+		private function scaleCamVideo(w:Number, h:Number,split:Boolean=true):void
 		{
+		
 			var scaleY:Number=h / _defaultCamHeight;
 			var scaleX:Number=w / _defaultCamWidth;
 			var scaleC:Number=scaleX < scaleY ? scaleX : scaleY;
@@ -1127,20 +1120,27 @@ package modules.videoPlayer
 			_camVideo.width=_defaultCamWidth * scaleC;
 			_camVideo.height=_defaultCamHeight * scaleC;
 
-			_camVideo.y=Math.floor(h / 2 - _camVideo.height / 2);
-			_camVideo.x=Math.floor(w / 2 - _camVideo.width / 2);
-			_camVideo.y+=_defaultMargin;
-			_camVideo.x+=(w + _defaultMargin);
+			if(split){
+				_camVideo.y=Math.floor(h / 2 - _camVideo.height / 2);
+				_camVideo.x=Math.floor(w / 2 - _camVideo.width / 2);
+				_camVideo.y+=_defaultMargin;
+				_camVideo.x+=(w + _defaultMargin);
+				
+				// 1 black pixel, being smarter
+				//_camVideo.y+=1;
+				//_camVideo.height-=2;
+				//_camVideo.x+=1;
+				//_camVideo.width-=2;
+			} else {
+				_camVideo.y=_defaultMargin + 2;
+				_camVideo.height-=4;
+				_camVideo.x=_defaultMargin + 2;
+				_camVideo.width-=4;
+			}
 
-			// 1 black pixel, being smarter
-			_camVideo.y+=1;
-			_camVideo.height-=2;
-			_camVideo.x+=1;
-			_camVideo.width-=2;
-
-			_micImage.y=(_videoHeight - _micImage.height) / 2;
-			_micImage.x=_videoWidth - _micImage.width - (_camVideo.width - _micImage.width) / 2;
-
+			
+			_micImage.y=(_videoHeight - _micImage.height)/2;
+			_micImage.x=_videoWidth - _micImage.width - (_camVideo.width - _micImage.width)/2;
 		}
 
 		override protected function scaleVideo():void
@@ -1148,18 +1148,13 @@ package modules.videoPlayer
 			super.scaleVideo();
 			if (state & SPLIT_FLAG)
 			{
-				/*
-				 * Resize video image
-				 */
-				var w:Number=_videoWidth / 2 - 2;
-				var h:int=w * _video.height / _video.width;
+				var w:Number=_videoWidth / 2 - _blackPixelsBetweenVideos;
+				var h:int=Math.ceil(w * 0.75);//_video.height / _video.width);
 
-				//if (_videoHeight != h) // cause we can call twice to this method
-				//	_lastVideoHeight=_videoHeight; // store last value
-					trace("scaleVideo: _lastVideoheight = "+_lastVideoHeight);
+				if (_videoHeight != h) // cause we can call twice to this method
+					_lastVideoHeight=_videoHeight; // store last value
 
 				_videoHeight=h;
-				trace("scaleVideo: _videoHeight = "+_videoHeight);
 
 				var scaleY:Number=h / _video.height;
 				var scaleX:Number=w / _video.width;
@@ -1200,7 +1195,7 @@ package modules.videoPlayer
 			{
 				unattachUserDevices();
 
-				trace("Recording of " + _fileName + " finished");
+				trace("[INFO] Response stream: Finished recording " + _fileName);
 				dispatchEvent(new RecordingEvent(RecordingEvent.END, _fileName));
 				enableControls(); // TODO: new feature - enable controls while recording
 			}
@@ -1343,7 +1338,7 @@ package modules.videoPlayer
 					break;
 			}
 
-			//trace("Response status: " + event.info.code);
+			//trace("[INFO] Response stream: Status " + event.info.code);
 		}
 
 	}

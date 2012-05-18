@@ -5,8 +5,6 @@ package modules.videoPlayer.controls
 	import flash.display.Sprite;
 	import flash.events.MouseEvent;
 	
-	import mx.core.UIComponent;
-
 	public class PlayButton extends SkinableButton
 	{
 		
@@ -52,31 +50,17 @@ package modules.videoPlayer.controls
 			return _state;
 		}
 		
-		/**
-		 * Methods
-		 * 
-		 */
-		
-		
-		/** OVERRIDEN */
 		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void
 		{
 			super.updateDisplayList( unscaledWidth, unscaledHeight );
 			
 			if( _state == PLAY_STATE )
-			{
 				CreatePlayButton();
-				btn.x = this.width/2 - btn.width/2;
-				btn.y = this.height/2 - btn.height/2;
-			}
 			else
-			{
 				CreatePauseButton();
-				btn.x = this.width/2 - btn.width/2;
-				btn.y = this.height/2 - btn.height/2;
-				
-				addChild( btn );
-			}
+			btn.x = this.width/2 - btn.width/2;
+			btn.y = this.height/2 - btn.height/2;
+			addChild(btn);
 		}
 		
 		
