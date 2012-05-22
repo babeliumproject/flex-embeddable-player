@@ -31,7 +31,7 @@
 		<!-- Put the proper paths in the php classes -->
 		<replaceregexp file="${DEPLOY_DIR}/api/rest.php" match="\('SERVICE_PATH',.+\)" replace="\('SERVICE_PATH', '/services/'\)" flags="g"/>
 		<replaceregexp file="${DEPLOY_DIR}/api/services/utils/VideoProcessor.php" match="\('SERVICE_PATH',.+\)" replace="\('SERVICE_PATH', '/services/'\)" flags="g"/>
-		<replaceregexp file="${DEPLOY_DIR}/api/services/utils/VideoProcessor.php" match="\('WEBROOT_PATH',.+\)" replace="\('WEBROOT_PATH', '${WEB_ROOT}'\)" flags="g"/>
+		<replaceregexp file="${DEPLOY_DIR}/api/services/utils/VideoProcessor.php" match="\('WEB_ROOT',.+\)" replace="\('WEB_ROOT', '${WEB_ROOT}'\)" flags="g"/>
 	</target>
 	
 	
@@ -41,13 +41,8 @@
 		<mxmlc file="${APP_ROOT}/babeliumPlayer.mxml" 
 			   output="${DEPLOY_DIR}/babeliumPlayer.swf"
 			   locale="en_US,es_ES,eu_ES">
-			   <!-- services="${APP_ROOT}/service-config.xml" -->
 			
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
-			
-			<compiler.library-path dir="${BASE}" append="true">
-				<include name="libs"/>
-			</compiler.library-path>
 			
 			<source-path path-element="${BASE}/src"/>
 			<source-path path-element="${BASE}/locale/{locale}"/>
@@ -84,9 +79,9 @@
 	</target>
 	
 	<target name="app-fix-domains">
-		<!--  <replace file="${APP_ROOT}/service-config.xml" token='/embedbabelium' value="/${WEB_DOMAIN}" /> -->
-		<replace file="${APP_ROOT}/model/DataModel.as" token='"embedbabelium' value='"${WEB_DOMAIN}' />
-		<replace file="${APP_ROOT}/resources/crossdomain.xml" token='"embedbabelium' value='"${WEB_DOMAIN}' />
+		<replaceregexp file="${APP_ROOT}/model/DataModel.as" match="server:String.+;" replace="server:String='${WEB_DOMAIN}';"/>
+		<replaceregexp file="${APP_ROOT}/model/DataModel.as" match="streamingApp:String.+;" replace="streamingApp:String='${RED5_APPNAME}';"/>
+		<replaceregexp file="${APP_ROOT}/resources/crossdomain.xml" match="allow-access-from domain=&quot;[^&quot;]+&quot;" replace="allow-access-from domain=&quot;${WEB_DOMAIN}&quot;"/>
 	</target>
 	
 	<target name="app-fill-config">
@@ -95,7 +90,7 @@
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="db_username.+;" replace="db_username = '${SQL_BABELIUM_USER}';"/>
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="db_password.+;" replace="db_password = '${SQL_BABELIUM_USER_PASS}';"/>
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="db_name.+;" replace="db_name = '${SQL_DB_NAME}';"/>
-		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="red5Path.+;" replace="red5Path = '${RED5_PATH}/webapps/oflaDemo/streams';"/>
+		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="red5Path.+;" replace="red5Path = '${RED5_PATH}/webapps/${RED5_APPNAME}/streams';"/>
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="smtp_server_username.+;" replace="smtp_server_username = '${SMTP_SERVER_USER}';"/>
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="smtp_server_password.+;" replace="smtp_server_password = '${SMTP_SERVER_PASS}';"/>
 		<replaceregexp file="${APP_ROOT}/resources/api/services/utils/Config.php" match="smtp_mail_setFromMail.+;" replace="smtp_mail_setFromMail = '${SMTP_SERVER_USER}';"/>

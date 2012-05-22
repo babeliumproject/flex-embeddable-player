@@ -38,11 +38,12 @@ package model
 		public var netConnectOngoingAttempt:Boolean;
 
 		//Exercise uploading related data
-		public var server:String="embedbabelium";
+		public var server:String='embedbabelium';
 		public var red5Port:String="1935";
 		public var uploadDomain:String="http://" + server + "/";
+		public var streamingApp:String='vod';
 		[Bindable]
-		public var streamingResourcesPath:String="rtmp://" + server + "/oflaDemo";
+		public var streamingResourcesPath:String="rtmp://" + server + "/" + streamingApp;
 		public var evaluationStreamsFolder:String="evaluations";
 		public var responseStreamsFolder:String="responses";
 		public var exerciseStreamsFolder:String="exercises";
@@ -198,12 +199,15 @@ package model
 			}
 		}
 
-		/**
-		 * The Red5 oflaDemo returns bandwidth stats.
-		 */
-		public function onBWDone():void
-		{
 
+		protected function onBWCheck(... args):void
+		{
+			//Bandwidth measurements between the client and the server
+		}
+
+		protected function onBWDone(... args):void
+		{
+			//Results of the bandwidth measurement
 		}
 
 		/**

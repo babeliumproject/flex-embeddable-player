@@ -2,12 +2,21 @@
 	<compiler>
 		<!-- Compile a release build with no debugging capabilites -->
 		<debug>false</debug>
+		
+		<!-- New compiler versions are capable of omitting trace messages -->
+		<omit-trace-statements>false</omit-trace-statements>
+		
+		<!-- Turns on the display of stack traces for uncaught runtime errors. -->
+      	<verbose-stacktraces>true</verbose-stacktraces>
 
 		<show-shadowed-device-font-warnings>false</show-shadowed-device-font-warnings>
 
 		<!-- compiler.use-resource-bundle-metadata: determina si se incluyen los paquetes de recursos en la aplicación. -->
 		<use-resource-bundle-metadata>true</use-resource-bundle-metadata>
 	</compiler>
+	
+	<!-- Avoid Flash bug of 17 reloads lead to wrong signature error. More weight in the final swf -->
+	<static-link-runtime-shared-libraries>true</static-link-runtime-shared-libraries>
 
 	<!-- default-background-color: color de fondo predeterminado (el código de la aplicación lo puede sobrescribir) -->
 	<default-background-color>0xFFFFFF</default-background-color>
@@ -23,8 +32,8 @@
 
 	<!-- default-size: tamaño de aplicación predeterminado (los atributos raíz de la aplicación lo pueden sobrescribir) -->
 	<default-size>
-		<width>1024</width>
-		<height>768</height>
+		<width>500</width>
+		<height>400</height>
 	</default-size>
 
 	<framework>halo</framework>
