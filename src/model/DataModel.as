@@ -41,7 +41,7 @@ package model
 		public var server:String='embedbabelium';
 		public var red5Port:String="1935";
 		public var uploadDomain:String="http://" + server + "/";
-		public var streamingApp:String='vod';
+		public var streamingApp:String='oflaDemo';
 		[Bindable]
 		public var streamingResourcesPath:String="rtmp://" + server + "/" + streamingApp;
 		public var evaluationStreamsFolder:String="evaluations";

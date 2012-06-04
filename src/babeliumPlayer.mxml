@@ -5,8 +5,6 @@
 			   xmlns:videoPlayer="modules.videoPlayer.*"
 			   xmlns:control="control.*"
 			   preinitialize="init()"
-			   width="500"
-			   height="400"
 			   creationComplete="complete()">
 	
 	<s:layout>
@@ -37,14 +35,17 @@
 			private var videoId:String=null;
 			private var explicit_locale:String=null;
 			
-			[Bindable]
-			private var app:Object = FlexGlobals.topLevelApplication;
+			[Bindable] private var app:Object = FlexGlobals.topLevelApplication;
+			
+			[Bindable] private var appWidth:uint;
+			[Bindable] private var appHeight:uint;
 			
 			private function init():void
 			{
 				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
-				Security.allowDomain("*");	
-				
+				Security.allowDomain("*");
+				appWidth=FlexGlobals.topLevelApplication.width;
+				appHeight=FlexGlobals.topLevelApplication.height;
 				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
 				explicit_locale=FlexGlobals.topLevelApplication.parameters.locale;
 				explicit_locale=parseLocale(explicit_locale);
@@ -129,9 +130,9 @@
 									subtitles="true"
 									autoScale="false"
 									arrows="false"
+									width="{appWidth}"
+									height="{appHeight-20}"
 									subtitlingControls="false"
-									width="500"
-									height="{VP.width * 10 / 16}"
 									streamSource="{DataModel.getInstance().streamingResourcesPath}"
 									controlsEnabled="true"/>
 	
