@@ -38,7 +38,7 @@ package model
 		public var netConnectOngoingAttempt:Boolean;
 
 		//Exercise uploading related data
-		public var server:String='embedbabelium';
+		public var server:String='localhost';
 		public var red5Port:String="1935";
 		public var uploadDomain:String="http://" + server + "/";
 		public var streamingApp:String='oflaDemo';

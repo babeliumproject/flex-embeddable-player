@@ -5,6 +5,8 @@
 			   xmlns:videoPlayer="modules.videoPlayer.*"
 			   xmlns:control="control.*"
 			   preinitialize="init()"
+			   width="500"
+			   height="400"
 			   creationComplete="complete()">
 	
 	<s:layout>
@@ -130,8 +132,8 @@
 									subtitles="true"
 									autoScale="false"
 									arrows="false"
-									width="{appWidth}"
-									height="{appHeight-20}"
+									width="500"
+									height="{VP.width * 10 / 16}"
 									subtitlingControls="false"
 									streamSource="{DataModel.getInstance().streamingResourcesPath}"
 									controlsEnabled="true"/>
