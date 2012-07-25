@@ -29,46 +29,62 @@ package model
 				instance=new DataModel();
 			return instance;
 		}
+		
+		//Streaming constants
+		public static const RTMP:String = "rtmp";
+		public static const RTMPT:String = "rtmpt";
+		public static const RTMPS:String = "rtmps";
+		public static const RTMPE:String = "rtmpe";
+		
+		public static const RTMP_PORT:uint=1935;
+		public static const RTMPT_PORT:uint=80;
 
 		//NetConnection management variables
 		public var netConnection:NetConnection;
-		[Bindable]
-		public var netConnected:Boolean;
-		[Bindable]
-		public var netConnectOngoingAttempt:Boolean;
+		public var bandwidthInfo:Object;
+		[Bindable] public var netConnected:Boolean;
+		[Bindable] public var netConnectOngoingAttempt:Boolean;
 
-		//Exercise uploading related data
-		public var server:String='localhost';
-		public var red5Port:String="1935";
+		//Domain setup
+		public var server:String='embedbabelium';
 		public var uploadDomain:String="http://" + server + "/";
-		public var streamingApp:String='oflaDemo';
-		[Bindable]
-		public var streamingResourcesPath:String="rtmp://" + server + "/" + streamingApp;
+		
+		//Streaming resource setup
+		[Bindable] public var streamingResourcesPath:String=streamingProtocol+"://" + server + ":"+ streamingPort + "/" + streamingApp;
+		public var streamingProtocol:String=RTMP;
+		public var streamingPort:uint=RTMP_PORT;
+		public var streamingApp:String="vod";
 		public var evaluationStreamsFolder:String="evaluations";
 		public var responseStreamsFolder:String="responses";
 		public var exerciseStreamsFolder:String="exercises";
-
+		
 		// Variables to manage the input devices
 		public var microphone:Microphone;
 		public var camera:Camera;
 		public var micCamAllowed:Boolean=false;
 		public var cameraWidth:int=320;
 		public var cameraHeight:int=240;
+		
+		private var encapsulateRTMP:Boolean=false;
+		private var proxy:String='none';
+		private var encoding:uint=3;
 
 		/**
-		 *
-		 * @param uri
+		 * Attempts to connect to the streaming server using the settings of DataModel and the provided proxy and AMF encodings
 		 * @param proxy
 		 * @param encoding
 		 */
-		public function connect(uri:String, proxy:String='none', encoding:uint=3):void
+		public function connect(proxy:String='none', encoding:uint=3):void
 		{
+			this.proxy=proxy;
+			this.encoding=encoding;
 			//We check if another connect attempt is still ongoing
 			if (!netConnectOngoingAttempt)
 			{
 				netConnectOngoingAttempt=true;
 
-				// Initialize the NetConnection in the model.
+				if(netConnection)
+					netConnection = new NetConnection();
 				netConnection.client=this;
 
 				netConnection.objectEncoding=encoding;
@@ -81,9 +97,12 @@ package model
 				// connect to server
 				try
 				{
-					trace("Connecting to " + uri);
+					streamingProtocol = encapsulateRTMP ?  RTMPT : RTMP;
+					streamingPort = encapsulateRTMP ?  RTMPT_PORT : RTMP_PORT;
+					streamingResourcesPath = streamingProtocol+"://"+server+":"+streamingPort+"/"+streamingApp;
+					trace("Connecting to " + streamingResourcesPath);
 					// Create connection with the server.
-					netConnection.connect(uri);
+					netConnection.connect(streamingResourcesPath);
 				}
 				catch (e:ArgumentError)
 				{
@@ -91,12 +110,12 @@ package model
 					switch (e.errorID)
 					{
 						case 2004:
-							trace("Invalid server location: " + uri);
+							trace("Invalid server location: " + streamingResourcesPath);
 							netConnectOngoingAttempt=false;
 							netConnected=false;
 							break;
 						default:
-							trace("Undetermined problem while connecting with: " + uri);
+							trace("Undetermined problem while connecting with: " + streamingResourcesPath);
 							netConnectOngoingAttempt=false;
 							netConnected=false;
 							break;
@@ -104,19 +123,19 @@ package model
 				}
 				catch (e:IOError)
 				{
-					trace("IO error while connecting to: " + uri);
+					trace("IO error while connecting to: " + streamingResourcesPath);
 					netConnectOngoingAttempt=false;
 					netConnected=false;
 				}
 				catch (e:SecurityError)
 				{
-					trace("Security error while connecting to: " + uri);
+					trace("Security error while connecting to: " + streamingResourcesPath);
 					netConnectOngoingAttempt=false;
 					netConnected=false;
 				}
 				catch (e:Error)
 				{
-					trace("Unidentified error while connecting to: " + uri);
+					trace("Unidentified error while connecting to: " + streamingResourcesPath);
 					netConnectOngoingAttempt=false;
 					netConnected=false;
 				}
@@ -124,12 +143,10 @@ package model
 		}
 
 		/**
-		 *
-		 *
+		 * Closes the currently active NetConnection
 		 */
 		public function close():void
 		{
-			// Close the NetConnection.
 			if (netConnection)
 			{
 				netConnection.close();
@@ -137,7 +154,7 @@ package model
 		}
 
 		/**
-		 *
+		 * Callback dispatched when info about the current connection attempt is received from the server
 		 * @param event
 		 */
 		protected function netStatus(event:NetStatusEvent):void
@@ -164,7 +181,11 @@ package model
 
 					case "NetConnection.Connect.Failed":
 						trace("Connection to server failed");
-						netConnected=false;
+						if(!encapsulateRTMP)
+							encapsulateRTMP = true;
+						else
+							netConnected=false;
+						connect(proxy,encoding);
 						break;
 
 					case "NetConnection.Connect.Closed":
@@ -198,17 +219,37 @@ package model
 				netConnected=false;
 			}
 		}
-
-
-		protected function onBWCheck(... args):void
-		{
-			//Bandwidth measurements between the client and the server
+		
+		/**
+		 * Details of the ongoing bandwidth measurement between the client and the server
+		 * @param info
+		 */
+		protected function onBWCheck(info:Object=null):void{
+			if(info){
+				/*
+				trace("[bwCheck] count: "+info.count+" cumLatency: "+info.cumLatency+" latency: "+info.latency+" sent: "+info.sent+" timePassed: "+info.timePassed);
+				var payload:Array = info.payload as Array;
+				var payloadTrace:String = '';
+				for (var i:int; i<payload.length; i++){
+				payloadTrace += " ("+i+") "+payload[i];
+				}
+				trace("payload: "+payloadTrace);
+				*/
+			}
 		}
-
-		protected function onBWDone(... args):void
+		
+		/**
+		 * Results of the bandwidth measurement
+		 * @param info
+		 */
+		protected function onBWDone(info:Object=null):void
 		{
-			//Results of the bandwidth measurement
+			if(info){
+				bandwidthInfo = info;
+				trace("[bwDone] deltaDown: "+info.deltaDown+" deltaTime: "+info.deltaTime+" kbitDown: "+info.kbitDown+" latency: "+info.latency);
+			}
 		}
+		
 
 		/**
 		 *

@@ -47,7 +47,7 @@ package modules.videoPlayer
 		/**
 		 * Skin related variables
 		 */
-		private const SKIN_PATH:String=DataModel.getInstance().uploadDomain+"util/swf/resources/skin/";
+		private const SKIN_PATH:String=DataModel.getInstance().uploadDomain+"/resources/skin/";
 		private var _skinableComponents:Dictionary;
 		private var _skinLoader:URLLoader;
 		private var _loadingSkin:Boolean=false;
@@ -465,11 +465,6 @@ package modules.videoPlayer
 			//Establish a binding to listen the status of netConnection
 			BindingUtils.bindSetter(onStreamNetConnect, DataModel.getInstance(), "netConnected");
 
-			// Disable controls until streaming connection is made
-			//disableControls();
-			//if (_streamSource)
-			//	connectToStreamingServer(_streamSource);
-
 			// Dispatch CREATION_COMPLETE event
 			dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.CREATION_COMPLETE));
 		}
@@ -479,7 +474,7 @@ package modules.videoPlayer
 		 */
 		protected function onStreamNetConnect(value:Boolean):void
 		{
-			trace("netConnectedValueChanged. Current value: "+value);
+
 			if (DataModel.getInstance().netConnected == true)
 			{
 				if(_reconnectionTimer != null)
@@ -491,12 +486,6 @@ package modules.videoPlayer
 				_ppBtn.State=PlayButton.PAUSE_STATE;
 				if(!_autoPlay)
 					pauseVideo();
-
-				//if (_autoPlay)
-				//{
-				//	playVideo();
-				//	_ppBtn.State=PlayButton.PAUSE_STATE;
-				//}
 
 				enableControls();
 
@@ -531,7 +520,7 @@ package modules.videoPlayer
 		public function connectToStreamingServer():void
 		{
 			if (!DataModel.getInstance().netConnection.connected)
-				DataModel.getInstance().connect(_streamSource);
+				DataModel.getInstance().connect();
 			else
 				onStreamNetConnect(true);
 		}
@@ -658,8 +647,6 @@ package modules.videoPlayer
 			
 			if (_ns)
 			{
-				//if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
-				//	_ppBtn.State = PlayButton.PLAY_STATE;
 				_ns.play(false);
 				_video.clear();
 				//_ns.pause();
@@ -684,8 +671,6 @@ package modules.videoPlayer
 			if (_ns)
 			{
 				_ns.pause();
-				//if ( _ppBtn.getState() == PlayButton.PAUSE_STATE )
-				//_ppBtn.State = PlayButton.PLAY_STATE;
 			}
 			_ppBtn.State=PlayButton.PLAY_STATE;
 		}
@@ -696,8 +681,6 @@ package modules.videoPlayer
 			{
 				_ns.seek(_currentTime);
 				_ns.resume();
-				//if ( _ppBtn.getState() == PlayButton.PLAY_STATE )
-				//_ppBtn.State = PlayButton.PAUSE_STATE;
 				//trace(_currentTime, _ns.time);
 			}
 			_ppBtn.State=PlayButton.PAUSE_STATE;
@@ -716,11 +699,11 @@ package modules.videoPlayer
 		{
 		
 			/*
-				trace("metadata: ");
+			   trace("metadata: ");
 
-				for (var a:* in msg)
-				trace(a + " : " + msg[a]);
-			*/
+			   for (var a:* in msg)
+			   trace(a + " : " + msg[a]);
+			 */
 
 			_duration=msg.duration;
 
@@ -871,6 +854,8 @@ package modules.videoPlayer
 		{
 			if (!autoScale)
 			{
+				//trace("Scaling info");
+				
 				//If the scalation is different in height and width take the smaller one
 				var scaleY:Number=_videoHeight / _video.height;
 				var scaleX:Number=_videoWidth / _video.width;
@@ -887,6 +872,8 @@ package modules.videoPlayer
 				//Scale the video
 				_video.width=Math.ceil(_video.width*scaleC);
 				_video.height=Math.ceil(_video.height*scaleC);
+				
+				//trace("Scaling info");
 
 				// 1 black pixel, being smarter
 				//_video.y+=1;

@@ -119,7 +119,7 @@ package control
 		public function resizeWidth(width:Number):void
 		{
 			ExternalInterface.call( 
-				"function( id, w ) { $('#' + id).parent().width(w); }", 
+				"function( id, w ) { document.getElementById(id).style.width = w + 'px'; }", 
 				ExternalInterface.objectID, 
 				width 
 			);
@@ -128,7 +128,7 @@ package control
 		public function resizeHeight(height:Number):void
 		{
 			ExternalInterface.call( 
-				"function( id, h ) { $('#' + id).parent().height(h); }", 
+				"function( id, h ) { document.getElementById(id).style.height = h + 'px'; }", 
 				ExternalInterface.objectID, 
 				height 
 			);

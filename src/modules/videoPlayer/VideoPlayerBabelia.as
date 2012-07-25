@@ -5,6 +5,8 @@
 
 package modules.videoPlayer
 {
+	//import events.ResponseEvent;
+	
 	import flash.display.*;
 	import flash.events.*;
 	import flash.geom.Matrix;
@@ -17,12 +19,14 @@ package modules.videoPlayer
 	import modules.videoPlayer.controls.PlayButton;
 	import modules.videoPlayer.controls.babelia.ArrowPanel;
 	import modules.videoPlayer.controls.babelia.MicActivityBar;
+	//import modules.videoPlayer.controls.babelia.RecStopButton;
 	import modules.videoPlayer.controls.babelia.RoleTalkingPanel;
 	import modules.videoPlayer.controls.babelia.SubtitleButton;
 	import modules.videoPlayer.controls.babelia.SubtitleStartEndButton;
 	import modules.videoPlayer.controls.babelia.SubtitleTextBox;
 	import modules.videoPlayer.events.PlayPauseEvent;
 	import modules.videoPlayer.events.VideoPlayerEvent;
+	//import modules.videoPlayer.events.babelia.RecStopButtonEvent;
 	import modules.videoPlayer.events.babelia.RecordingEvent;
 	import modules.videoPlayer.events.babelia.StreamEvent;
 	import modules.videoPlayer.events.babelia.SubtitleButtonEvent;
@@ -46,6 +50,8 @@ package modules.videoPlayer
 	import spark.primitives.BitmapImage;
 	
 	import view.PrivacyRights;
+	
+	//import vo.ResponseVO;
 
 	public class VideoPlayerBabelia extends VideoPlayer
 	{
@@ -85,11 +91,11 @@ package modules.videoPlayer
 		public static const PLAY_BOTH_STATE:int=1;   // 0000 0001
 		public static const RECORD_MIC_STATE:int=2;  // 0000 0010
 		public static const RECORD_BOTH_STATE:int=3; // 0000 0011
-		
+		public static const UPLOAD_MODE_STATE:int=4; // 0000 0100
 
 		private const SPLIT_FLAG:int=1; // XXXX XXX1
 		private const RECORD_FLAG:int=2; // XXXX XX1X
-		
+		private const UPLOAD_FLAG:int=4; // XXXX X1XX
 
 		private var _state:int;
 
@@ -98,8 +104,8 @@ package modules.videoPlayer
 		private const DEFAULT_VOLUME:Number=40;
 		private const COUNTDOWN_TIMER_SECS:int=5;
 
-		private var _outNs:NetStream;
-		private var _inNs:NetStream;
+		private var _outNs:NetStreamClient;
+		private var _inNs:NetStreamClient;
 		private var _secondStreamSource:String;
 
 		private var _mic:Microphone;
@@ -216,7 +222,7 @@ package modules.videoPlayer
 			_subtitleButton.addEventListener(SubtitleButtonEvent.STATE_CHANGED, onSubtitleButtonClicked);
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.START, onSubtitlingEvent);
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.END, onSubtitlingEvent);
-
+			//_recStopBtn.addEventListener(RecStopButtonEvent.BUTTON_CLICK, onRecStopEvent);
 			
 			/**
 			 * Adds components to player
@@ -342,6 +348,31 @@ package modules.videoPlayer
 			return _subtitlingControls.visible;
 		}
 
+		/*
+		public function set recControls(value:Boolean):void
+		{
+			_recStopBtn.recMode=value;	
+		}
+		
+		public function get recControls():Boolean
+		{
+			return _recStopBtn.recMode;
+		}
+		
+		public function onRecStopEvent(event:RecStopButtonEvent):void{
+			if(recControls){
+				if(event.state==RecStopButton.REC_STATE){
+					state=UPLOAD_MODE_STATE;
+				}else{
+					Alert.show("Stop recording");
+					onVideoFinishedPlaying(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
+				}
+			} else {
+				stopVideo();
+			}
+		}
+		*/
+		
 		/**
 		 * Autoplay
 		 */
@@ -404,10 +435,11 @@ package modules.videoPlayer
 				(flag) ? _mic.gain=0 : _mic.gain=DEFAULT_VOLUME;
 			else if (state == PLAY_BOTH_STATE)
 			{
-				if (flag && _inNs != null)
-					_inNs.soundTransform=new SoundTransform(0);
-				else if (_inNs != null)
-					_inNs.soundTransform=new SoundTransform(DEFAULT_VOLUME / 100);
+				if (flag && _inNs && _inNs.netStream){
+					_inNs.netStream.soundTransform=new SoundTransform(0);
+				}else if (_inNs && _inNs.netStream){
+					_inNs.netStream.soundTransform=new SoundTransform(DEFAULT_VOLUME / 100);
+				}
 			}
 		}
 
@@ -494,6 +526,7 @@ package modules.videoPlayer
 
 			_subtitleButton.resize(45, 20);
 			_sBar.width=_videoWidth - _ppBtn.width - _stopBtn.width - _eTime.width - _audioSlider.width - 45;
+			//_sBar.width=_videoWidth - _ppBtn.width - _recStopBtn.width - _eTime.width - _audioSlider.width - 45;
 			_eTime.x=_sBar.x + _sBar.width;
 			_audioSlider.x=_eTime.x + _eTime.width;
 			_sBar.refresh();
@@ -556,6 +589,10 @@ package modules.videoPlayer
 				_ppBtn.x=0;
 				_ppBtn.refresh();
 
+				//_recStopBtn.x=_ppBtn.x + _ppBtn.width;
+				//_recStopBtn.refresh();
+				
+				//_subtitleStartEnd.x = _recStopBtn.x + _recStopBtn.width;
 				_stopBtn.x=_ppBtn.x + _ppBtn.width;
 				_stopBtn.refresh();
 
@@ -573,7 +610,8 @@ package modules.videoPlayer
 				_subtitleButton.visible=false;
 
 				_sBar.width=_videoWidth - _ppBtn.width - _stopBtn.width - _subtitleStartEnd.width - _eTime.width - _audioSlider.width;
-
+				//_sBar.width=_videoWidth - _ppBtn.width - _recStopBtn.width - _subtitleStartEnd.width - _eTime.width - _audioSlider.width;
+				
 				_eTime.x=_sBar.x + _sBar.width;
 				_audioSlider.x=_eTime.x + _eTime.width;
 
@@ -587,6 +625,10 @@ package modules.videoPlayer
 				_stopBtn.refresh();
 
 				_sBar.x=_stopBtn.x + _stopBtn.width;
+				//_recStopBtn.x=_ppBtn.x + _ppBtn.width;
+				//_recStopBtn.refresh();
+				
+				//_sBar.x=_recStopBtn.x + _recStopBtn.width;
 				_sBar.refresh();
 
 				_eTime.refresh();
@@ -597,7 +639,8 @@ package modules.videoPlayer
 				_subtitleButton.visible=true;
 
 				_sBar.width=_videoWidth - _ppBtn.width - _stopBtn.width - _eTime.width - _audioSlider.width - _subtitleButton.width;
-
+				//_sBar.width=_videoWidth - _ppBtn.width - _recStopBtn.width - _eTime.width - _audioSlider.width - _subtitleButton.width;
+				
 				_eTime.x=_sBar.x + _sBar.width;
 				_audioSlider.x=_eTime.x + _eTime.width;
 
@@ -668,10 +711,11 @@ package modules.videoPlayer
 				_roleTalkingPanel.pauseTalk();
 
 			if (state & RECORD_FLAG && _micCamEnabled) // TODO: test
-				_outNs.pause();
+				_outNs.netStream.pause();
 
-			if (state == PLAY_BOTH_STATE)
-				_inNs.pause();
+			if (state == PLAY_BOTH_STATE){
+				_inNs.netStream.pause();
+			}
 		}
 
 		/**
@@ -687,10 +731,11 @@ package modules.videoPlayer
 				_roleTalkingPanel.resumeTalk();
 
 			if (state & RECORD_FLAG && _micCamEnabled) // TODO: test
-				_outNs.resume();
+				_outNs.netStream.resume();
 
-			if (state == PLAY_BOTH_STATE)
-				_inNs.resume();
+			if (state == PLAY_BOTH_STATE){
+				_inNs.netStream.resume();
+			}
 		}
 
 		/**
@@ -706,13 +751,13 @@ package modules.videoPlayer
 				_roleTalkingPanel.stopTalk();
 
 			if (state & RECORD_FLAG && _micCamEnabled)
-				_outNs.close();
+				_outNs.netStream.close();
 
 			if (state == PLAY_BOTH_STATE)
 			{
-				if (_inNs != null)
+				if (_inNs && _inNs.netStream)
 				{
-					_inNs.play(false);
+					_inNs.netStream.play(false);
 				}
 			}
 
@@ -723,9 +768,9 @@ package modules.videoPlayer
 		{
 			super.endVideo();
 
-			if (state == PLAY_BOTH_STATE && _inNs != null)
+			if (state == PLAY_BOTH_STATE && _inNs && _inNs.netStream)
 			{
-				_inNs.close();
+				_inNs.netStream.dispose();
 				_inNs=null;
 			}
 		}
@@ -819,7 +864,12 @@ package modules.videoPlayer
 				case RECORD_MIC_STATE:
 					recoverVideoPanel(); // original size
 					prepareDevices();
-
+					break;
+				
+				case UPLOAD_MODE_STATE:
+					recoverVideoPanel();
+					scaleCamVideo(_videoWidth,_videoHeight,false);
+					prepareDevices();
 					break;
 
 				case PLAY_BOTH_STATE:
@@ -886,7 +936,7 @@ package modules.videoPlayer
 				_countdownTxt.visible=false;
 				_video.visible=true;
 
-				if (state == RECORD_BOTH_STATE)
+				if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 				{
 					_camVideo.visible=true;
 					_micImage.visible=true;
@@ -910,13 +960,15 @@ package modules.videoPlayer
 		private function prepareDevices():void
 		{
 			//The devices are permitted and initialized. Time to configure them
-			if ((state == RECORD_MIC_STATE && PrivacyRights.microphoneReady()) || (state == RECORD_BOTH_STATE && PrivacyRights.cameraReady() && PrivacyRights.microphoneReady()))
+			if ((state == RECORD_MIC_STATE && PrivacyRights.microphoneReady()) || 
+				(state == RECORD_BOTH_STATE && PrivacyRights.cameraReady() && PrivacyRights.microphoneReady()) ||
+				(state == UPLOAD_MODE_STATE && PrivacyRights.cameraReady() && PrivacyRights.microphoneReady()))
 			{
 				configureDevices();
 			}
 			else
 			{
-				if (state == RECORD_BOTH_STATE)
+				if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 					PrivacyRights.useMicAndCamera=true;
 				if (state == RECORD_MIC_STATE)
 					PrivacyRights.useMicAndCamera=false;
@@ -929,13 +981,13 @@ package modules.videoPlayer
 				privacyRights.initDevices();
 				privacyRights.addEventListener(CloseEvent.CLOSE, privacyBoxClosed);
 
-					//PopUpManager.centerPopUp(privacyRights);
+				//PopUpManager.centerPopUp(privacyRights);
 			}
 		}
 
 		private function configureDevices():void
-		{
-			if (state == RECORD_BOTH_STATE)
+		{	
+			if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 			{
 				_camera=DataModel.getInstance().camera;
 				_camera.setMode(DataModel.getInstance().cameraWidth, DataModel.getInstance().cameraHeight, 15, false);
@@ -967,6 +1019,7 @@ package modules.videoPlayer
 
 		private function privacyBoxClosed(event:Event):void
 		{
+		
 			//PopUpManager.removePopUp(privacyRights);
 			removeAllChildren(_onTop);
 
@@ -978,7 +1031,7 @@ package modules.videoPlayer
 				else
 					dispatchEvent(new RecordingEvent(RecordingEvent.ABORTED));
 			}
-			if (state == RECORD_BOTH_STATE)
+			if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 			{
 				if (_micCamEnabled && PrivacyRights.microphoneFound && PrivacyRights.cameraFound)
 					configureDevices();
@@ -1003,14 +1056,25 @@ package modules.videoPlayer
 				splitVideoPanel();
 				_camVideo.visible=false;
 				_micImage.visible=false;
+				disableControls();
 			}
 
 			if (state & RECORD_FLAG)
 			{
-				_outNs=new NetStream(_nc);
+				_outNs=new NetStreamClient(_nc,"outNs");
+				disableControls();
 			}
-
-			disableControls();
+			
+			if(state & UPLOAD_FLAG){
+				// Attach Camera
+				_camVideo.attachCamera(_camera);
+				_camVideo.smoothing=true;
+				
+				//	splitVideoPanel();
+				_camVideo.visible=false;
+				_micImage.visible=false;
+				_outNs=new NetStreamClient(_nc,"outNs");
+			}
 
 			_micActivityBar.visible=true;
 			_micActivityBar.mic=_mic;
@@ -1036,16 +1100,16 @@ package modules.videoPlayer
 
 			if (state & RECORD_FLAG)
 			{
-				_outNs.attachAudio(_mic);
+				_outNs.netStream.attachAudio(_mic);
 				muteRecording(true); // mic starts muted
 			}
 
 			if (state == RECORD_BOTH_STATE)
-				_outNs.attachCamera(_camera);
+				_outNs.netStream.attachCamera(_camera);
 
 			_ppBtn.State=PlayButton.PAUSE_STATE;
 
-			_outNs.publish(responseFilename, "record");
+			_outNs.netStream.publish(responseFilename, "record");
 
 			trace("[INFO] Response stream: Started recording " + _fileName);
 
@@ -1069,6 +1133,8 @@ package modules.videoPlayer
 				_lastVideoHeight=_videoHeight; // store last value
 
 			_videoHeight=h;
+			
+			//trace("[INFO] Video player Babelium: BEFORE SPLIT VIDEO PANEL Video area dimensions: "+_videoWidth+"x"+_videoHeight+" video dimensions: "+_video.width+"x"+_video.height+" video placement: x="+_video.x+" y="+_video.y+" last video area heigth: "+_lastVideoHeight);
 
 			var scaleY:Number=h / _video.height;
 			var scaleX:Number=w / _video.width;
@@ -1082,6 +1148,8 @@ package modules.videoPlayer
 			_video.width*=scaleC;
 			_video.height*=scaleC;
 
+			//trace("[INFO] Video player Babelium: AFTER SPLIT VIDEO PANEL Video area dimensions: "+_videoWidth+"x"+_videoHeight+" video dimensions: "+_video.width+"x"+_video.height+" video placement: x="+_video.x+" y="+_video.y+" last video area heigth: "+_lastVideoHeight);
+			
 			//Resize the cam display
 			scaleCamVideo(w,h);
 
@@ -1126,6 +1194,9 @@ package modules.videoPlayer
 				_camVideo.y+=_defaultMargin;
 				_camVideo.x+=(w + _defaultMargin);
 				
+				//trace("[INFO] Video player Babelium: CAM SCALE Video area dimensions: "+_videoWidth+"x"+_videoHeight+" cam dimensions: "+_camVideo.width+"x"+_camVideo.height+" cam placement: x="+_camVideo.x+" y="+_camVideo.y+" last video area heigth: "+_lastVideoHeight);
+				
+				
 				// 1 black pixel, being smarter
 				//_camVideo.y+=1;
 				//_camVideo.height-=2;
@@ -1149,7 +1220,7 @@ package modules.videoPlayer
 			if (state & SPLIT_FLAG)
 			{
 				var w:Number=_videoWidth / 2 - _blackPixelsBetweenVideos;
-				var h:int=Math.ceil(w * 0.75);//_video.height / _video.width);
+				var h:int=Math.ceil(w * 0.75);
 
 				if (_videoHeight != h) // cause we can call twice to this method
 					_lastVideoHeight=_videoHeight; // store last value
@@ -1167,6 +1238,7 @@ package modules.videoPlayer
 
 				_video.width*=scaleC;
 				_video.height*=scaleC;
+				//trace("[INFO] Video player babelia: AFTER SCALE Video area dimensions: "+_videoWidth+"x"+_videoHeight+" video dimensions: "+_video.width+"x"+_video.height+" video placement: x="+_video.x+" y="+_video.y+" last video area heigth: "+_lastVideoHeight);
 			}
 		}
 
@@ -1191,24 +1263,36 @@ package modules.videoPlayer
 		{
 			super.onVideoFinishedPlaying(e);
 
-			if (state & RECORD_FLAG)
+			if (state & RECORD_FLAG || state == UPLOAD_MODE_STATE)
 			{
+				//addDummyVideo();
 				unattachUserDevices();
 
 				trace("[INFO] Response stream: Finished recording " + _fileName);
 				dispatchEvent(new RecordingEvent(RecordingEvent.END, _fileName));
-				enableControls(); // TODO: new feature - enable controls while recording
+				enableControls(); 
 			}
 			else
 				dispatchEvent(new RecordingEvent(RecordingEvent.REPLAY_END));
 		}
 
-		public function unattachUserDevices():void
-		{
-			if (_outNs)
+		/**
+		 * Flash 11.2.x has a bug that makes audio only FLV files non-playable. This workaround adds a dummy video stream to those files to recover
+		 * the playback functionality while Adobe fixes this bug.
+		 */
+		/*
+		protected function addDummyVideo():void{
+			var r:ResponseVO = new ResponseVO();
+			r.fileIdentifier = _fileName;
+			new ResponseEvent(ResponseEvent.ADD_DUMMY_VIDEO,r).dispatch();
+		}
+		*/
+		
+		public function unattachUserDevices():void{
+			if (_outNs && _outNs.netStream)
 			{
-				_outNs.attachCamera(null);
-				_outNs.attachAudio(null);
+				_outNs.netStream.attachCamera(null);
+				_outNs.netStream.attachAudio(null);
 				_camVideo.clear();
 				_camVideo.attachCamera(null);
 			}
@@ -1229,35 +1313,21 @@ package modules.videoPlayer
 		 **/
 		private function playSecondStream():void
 		{
-			if (_inNs != null)
-				_inNs.close();
+			if (_inNs && _inNs.netStream){
+				_inNs.netStream.dispose();
+			}
 
-			//if (_inNc.connected)
-			//{
-			if (_nc.connected)
+			if (_nc && _nc.connected)
 			{
-				//_inNs=new NetStream(_inNc);
-				_inNs=new NetStream(_nc);
-				_inNs.addEventListener(NetStatusEvent.NET_STATUS, onSecondStreamNetStream);
-				_inNs.soundTransform=new SoundTransform(_audioSlider.getCurrentVolume());
+				_inNs=new NetStreamClient(_nc,"inNs");
+				_inNs.netStream.soundTransform=new SoundTransform(_audioSlider.getCurrentVolume());
 
-				// Not metadata nor cuepoint manage needed, so
-				// create an empty client for the second stream
-				// Avoids debbuger messages
-				var nsClient:Object=new Object();
-				nsClient.onMetaData=function():void
-				{
-				};
-				nsClient.onCuePoint=function():void
-				{
-				};
-
-				_inNs.client=nsClient;
-				_camVideo.attachNetStream(_inNs);
+				_camVideo.clear();
+				_camVideo.attachNetStream(_inNs.netStream);
 				_camVideo.visible=true;
 				_micImage.visible=true;
 
-				_inNs.play(_secondStreamSource);
+				_inNs.netStream.play(_secondStreamSource);
 
 				// Needed for video mute
 				muteRecording(false);
@@ -1271,75 +1341,5 @@ package modules.videoPlayer
 				_ppBtn.State=PlayButton.PAUSE_STATE;
 			}
 		}
-
-		private function onSecondStreamNetStream(event:NetStatusEvent):void
-		{
-
-			var info:Object=event.info;
-			switch (info.code)
-			{
-				case "NetStream.Buffer.Empty":
-					if (secondStreamState == SECONDSTREAM_STOPPED_STATE)
-					{
-						secondStreamState=SECONDSTREAM_FINISHED_STATE;
-						dispatchEvent(new VideoPlayerBabeliaEvent(VideoPlayerBabeliaEvent.SECONDSTREAM_FINISHED_PLAYING));
-					}
-					else
-						secondStreamState=SECONDSTREAM_BUFFERING_STATE;
-					break;
-				case "NetStream.Buffer.Full":
-					if (secondStreamState == SECONDSTREAM_READY_STATE)
-						secondStreamState=SECONDSTREAM_STARTED_STATE;
-					if (secondStreamState == SECONDSTREAM_BUFFERING_STATE)
-						secondStreamState=SECONDSTREAM_STARTED_STATE;
-					if (secondStreamState == SECONDSTREAM_UNPAUSED_STATE)
-						secondStreamState=SECONDSTREAM_STARTED_STATE;
-
-					break;
-				case "NetStream.Buffer.Flush":
-					break;
-				case "NetStream.Publish.Start":
-					break;
-				case "NetStream.Publish.Idle":
-					break;
-				case "NetStream.Unpublish.Success":
-					break;
-				case "NetStream.Play.Start":
-					secondStreamState=SECONDSTREAM_READY_STATE;
-					break;
-				case "NetStream.Play.Stop":
-					secondStreamState=SECONDSTREAM_STOPPED_STATE;
-					break;
-				case "NetStream.Play.Reset":
-					break;
-				case "NetStream.Play.PublishNotify":
-					break;
-				case "NetStream.Play.UnpublishNotify":
-					break;
-				case "NetStream.Pause.Notify":
-					secondStreamState=SECONDSTREAM_PAUSED_STATE;
-					break;
-				case "NetStream.Unpause.Notify":
-					secondStreamState=SECONDSTREAM_UNPAUSED_STATE;
-					break;
-				case "NetStream.Record.Start":
-					break;
-				case "NetStream.Record.Stop":
-					break;
-				case "NetStream.Seek.Notify":
-					break;
-				case "NetStream.Connect.Closed":
-					break;
-				case "NetStream.Connect.Success":
-					break;
-				default:
-					//trace("Second NetStream Error: " + info.code);
-					//CustomAlert.error("Error while transferring data from the streaming server. Please try again later.");
-					break;
-			}
-
-			//trace("[INFO] Response stream: Status " + event.info.code);
-		}
-
 	}
 }
