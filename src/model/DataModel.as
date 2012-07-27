@@ -224,7 +224,7 @@ package model
 		 * Details of the ongoing bandwidth measurement between the client and the server
 		 * @param info
 		 */
-		protected function onBWCheck(info:Object=null):void{
+		public function onBWCheck(info:Object=null):void{
 			if(info){
 				/*
 				trace("[bwCheck] count: "+info.count+" cumLatency: "+info.cumLatency+" latency: "+info.latency+" sent: "+info.sent+" timePassed: "+info.timePassed);
@@ -242,7 +242,7 @@ package model
 		 * Results of the bandwidth measurement
 		 * @param info
 		 */
-		protected function onBWDone(info:Object=null):void
+		public function onBWDone(info:Object=null):void
 		{
 			if(info){
 				bandwidthInfo = info;
