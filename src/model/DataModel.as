@@ -46,7 +46,7 @@ package model
 		[Bindable] public var netConnectOngoingAttempt:Boolean;
 
 		//Domain setup
-		public var server:String='embedbabelium';
+		public var server:String='babelium';
 		public var uploadDomain:String="http://" + server + "/";
 		
 		//Streaming resource setup
