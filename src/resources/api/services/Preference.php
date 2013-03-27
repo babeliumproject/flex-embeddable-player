@@ -23,7 +23,7 @@
 
 require_once 'utils/Config.php';
 require_once 'utils/Datasource.php';
-require_once 'utils/SessionHandler.php';
+require_once 'utils/SessionValidation.php';
 
 /**
  * Class to retrieve application preference data
@@ -37,7 +37,7 @@ class Preference {
 
 	public function __construct(){
 		try {
-			$verifySession = new SessionHandler();
+			$verifySession = new SessionValidation();
 			$settings = new Config();
 			$this->conn = new Datasource($settings->host, $settings->db_name, $settings->db_username, $settings->db_password);
 		} catch (Exception $e) {

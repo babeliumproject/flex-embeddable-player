@@ -23,7 +23,7 @@
 
 require_once 'utils/Config.php';
 require_once 'utils/Datasource.php';
-require_once 'utils/SessionHandler.php';
+require_once 'utils/SessionValidation.php';
 require_once 'utils/VideoProcessor.php';
 
 /**
@@ -52,7 +52,7 @@ class Exercise {
 	public function __construct() {
 
 		try {
-			$verifySession = new SessionHandler();
+			$verifySession = new SessionValidation();
 			$settings = new Config ( );
 			$this->filePath = $settings->filePath;
 			$this->imagePath = $settings->imagePath;
@@ -69,7 +69,7 @@ class Exercise {
 	public function addUnprocessedExercise($exercise = null) {
 
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 
 			if(!$exercise)
 				return false;
@@ -105,7 +105,7 @@ class Exercise {
 
 		try {
 
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 			
 			if(!$exercise)
 				return false;
@@ -343,7 +343,7 @@ class Exercise {
 
 	public function getExercisesUnfinishedSubtitling(){
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 
 			$sql = "SELECT e.id, 
 				       e.title, 
@@ -413,7 +413,7 @@ class Exercise {
 		}
 
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 			$filteredResults = $this->filterByLanguage($searchResults, 'practice');
 			return $filteredResults;
 		} catch (Exception $e) {
@@ -457,7 +457,7 @@ class Exercise {
 
 	public function addInappropriateExerciseReport($report = null){
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 
 			if(!$report)
 				return false;
@@ -489,7 +489,7 @@ class Exercise {
 
 	public function addExerciseScore($score = null){
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 			
 			if(!$score)
 				return false;
@@ -522,7 +522,7 @@ class Exercise {
 	 */
 	public function userRatedExercise($score = null){
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 	
 			if(!$score)
 				return false;
@@ -542,7 +542,7 @@ class Exercise {
 	 */
 	public function userReportedExercise($report = null){
 		try {
-			$verifySession = new SessionHandler(true);
+			$verifySession = new SessionValidation(true);
 			if(!$report)
 				return false;
 				
