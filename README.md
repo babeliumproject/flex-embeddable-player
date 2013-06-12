@@ -92,7 +92,7 @@ Copy the embeddable video player files to the Babelium home directory.
 Finally, don't forget to update your Apache's configuration file by adding the following line inside the 
 Document section:
 
-  Header set Access-Control-Allow-Origin "*"
+	Header set Access-Control-Allow-Origin "*"
 
 This will allow your embeddable-player to use remote Javascript calls, even if the called scripts are located 
 on a a different server.
