@@ -1,4 +1,4 @@
-This repository is the code for [Babelium's][] embeddable player.
+﻿This repository is the code for [Babelium's][] embeddable player.
 
 [Babelium's]: http://babeliumproject.com
 
@@ -35,7 +35,7 @@ Fill the `build.properties` file for the embeddable player:
 	$ cp build.properties.template build.properties
 	$ vi build.properties
 
-Remember when editing the `build.properties` file you have to point the home folder of Flex SDK **FLEX_HOME**. For most time you can leave the rest of the fields unchanged.
+Remember when editing the `build.properties` file you have to point the home folder of Flex SDK **FLEX_HOME** and the path to your local repository clone **BASE**. You can leave the rest of the fields unchanged.
 
 	$ ant
 
@@ -46,13 +46,15 @@ Copy the embeddable video player to the target directory
 	$ cd babelium-flex-embeddable-player/dist
 	$ cp babeliumPlayer.* <target_directory>/
 
-If you wan to use the embeddable player to give Moodle access to your Babelium server read below.
+**NOTE:** Many files are copied in the `dist` folder, but we are only interested in the files that begin with `babeliumPlayer`.
+
+If you want to use the embeddable player to give Moodle access to your Babelium server read below.
 
 Enabling Moodle support in the Babelium server
 --------------------------------------------
 If you are using your own Babelium server and want to enable Moodle instances to access the exercises stored there, you have to take additional steps, such as placing some API files and compiling a special version of the video player.
 
-Clone the Moodle plugin repository:
+Clone the Moodle plug-in repository:
 
 	$ git clone git://github.com/babeliumproject/moodle-plugins.git babelium-moodle-plugins
 
@@ -94,14 +96,16 @@ Document section:
 
 	Header set Access-Control-Allow-Origin "*"
 
-This will allow your embeddable-player to use remote Javascript calls, even if the called scripts are located 
+This will allow your embeddable-player to use remote JavaScript calls, even if the called scripts are located 
 on a a different server.
+
+**NOTE:** using "*" means you give access to any host and that could lead to some attacks. We use this wildcard because in our demo server we let users from any domain to sign-up for a Moodle API key, and thus, can't determine the origin beforehand. If you are part of an institution you can limit the access control to your domains to have less security risks.
 
 Following these steps you should be able to register Moodle instances in your Babelium server.
 
 JavaScript API Reference
 ------------------------
-This section describes how developers can interact with the embeddable player using the Javascript API.
+This section describes how developers can interact with the embeddable player using the JavaScript API.
 
 ###Functions
 This is a list of functions available through the JavaScript API of the player.
@@ -130,7 +134,7 @@ bpPlayer.secondSource(videoId:String):Void
 
  This function loads a second video to play it side by side with the previously loaded exercise or response video.
 
- * The `videoId` parameter specifies the ID of either an exercise or a response (usually response) that need be played side-by-side with the previously loaded video. The video player stage gets splitted in two and displaying the previously loaded video on the left and the new video on the right. The videos are "loosely" synchronized to keep the playback as accurate as possible.
+ * The `videoId` parameter specifies the ID of either an exercise or a response (usually response) that need be played side-by-side with the previously loaded video. The video player stage gets split in two and displaying the previously loaded video on the left and the new video on the right. The videos are "loosely" synchronized to keep the playback as accurate as possible.
 
 * ```javascript
 bpPlayer.autoPlay(enableAutoplay:Boolean):Void
@@ -173,7 +177,7 @@ bpPlayer.seekTo(time:Number):Void
 ```
 
  Seeks to a specified time in the video.
- * The `time` parameter specifies the point in time where to jump in the playback. If the given number is greater than the duration of the video, the function call is ignored. The behaviour when the video is different depending on the current status of the video player.
+ * The `time` parameter specifies the point in time where to jump in the playback. If the given number is greater than the duration of the video, the function call is ignored. The behavior when the video is different depending on the current status of the video player.
 
 * ```javascript
 bpPlayer.endVideo():Void
@@ -215,13 +219,13 @@ bpPlayer.removeArrows():Void
  Removes the arrow controls
 
 * ```javascript
-bpPlayer.setSubtitle(text:String, colour:Number):Void
+bpPlayer.setSubtitle(text:String, color:Number):Void
 ```
  
- Displays the provided text as a subtitle in the video player with the given colour. Usually the exercises have an associated set of subtitles that needs be loaded beforehand. Using this function in conjunction with the `onEnterFrame` event allows developers to display the subtitles the way they like best.
+ Displays the provided text as a subtitle in the video player with the given color. Usually the exercises have an associated set of subtitles that needs be loaded beforehand. Using this function in conjunction with the `onEnterFrame` event allows developers to display the subtitles the way they like best.
 
  * The `text` parameter is the text of the subtitle to be displayed.
- * The `colour` parameter is a number with the desired HTML colour code for the displayed text.
+ * The `color` parameter is a number with the desired HTML color code for the displayed text.
 
 * ```javascript
 bpPlayer.startTalking(roleId:String, duration:Number):Void
@@ -331,7 +335,7 @@ bpPlayer.seek(enableSeek:Boolean):Void
 bpPlayer.skin(skinFileUrl:String):Void
 ```
 
- Allows loading a skin file for the video player controls. Skin files consist of an XML that describes the colours and shapes of the UI controls. You can see an example XML in the folder *src/resources/skins/white.xml* of the source code.
+ Allows loading a skin file for the video player controls. Skin files consist of an XML that describes the colors and shapes of the UI controls. You can see an example XML in the folder *src/resources/skins/white.xml* of the source code.
  * The `skinFileUrl` parameter specifies the URL of an skin XML file.
 
 * ```javascript
@@ -366,7 +370,7 @@ player.removeEventListener(event:String, listener:String):Void
 
 * `onEnterFrame`
 
- This event fires each time the flash plugin refreshes the display list of the video player object. This happens at a variable rate but usually is between 15-30 per second on average computers using a regular amount of CPU. The value that the API passes to your event listener function will specify a Number that corresponds to the current playback timestamp in seconds. This event is useful for actions that require high accuracy or need to be synchronized.
+ This event fires each time the flash plug-in refreshes the display list of the video player object. This happens at a variable rate but usually is between 15-30 per second on average computers using a regular amount of CPU. The value that the API passes to your event listener function will specify a Number that corresponds to the current playback timestamp in seconds. This event is useful for actions that require high accuracy or need to be synchronized.
 
 * `onRecordingAborted`
 
