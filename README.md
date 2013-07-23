@@ -1,6 +1,7 @@
 ﻿This repository is the code for [Babelium's][] embeddable player.
 
 [Babelium's]: http://babeliumproject.com
+[Babelium Standalone site readme]: http://https://github.com/babeliumproject/flex-standalone-site
 
 Here you will find the latest version of the embeddable player.
 
@@ -15,27 +16,51 @@ To run the development version of Babelium first clone the git repository.
 Now the entire project should be in the `babelium-flex-embeddable-player/` directory.
 
 
-Compiling the embeddable video player
+Deploying on linux-based machine
 -------------------------------------
-These are the steps you need to take to compile the standalone player from the source code.
 
-Download and unpack Flex SDK 4.6
+###Prerequisites###
 
-	$ wget http://download.macromedia.com/pub/flex/sdk/flex_sdk_4.6.zip
-	$ unzip flex_sdk_4.6.zip
+* Apache Web server 2.0+
+* MySQL 5.2+
+* PHP 5.2+
+* ant
+* file
+* sox
+* Adobe Flash Player 11.0+
+* Zend Framework 1.12 (with Zend AMF)
+* Adobe Flex SDK 4.6+
+* ffmpeg 0.8+
+* Red5 1.0+
 
-Make a locale for Basque language (because it is not included by default):
+####Installation and configuration of prerequisites####
+For information about the installation and configuration of the prerequisites see [Babelium Standalone site readme][].
 
-	$ cd <flex_home>/bin
-	$ ./copylocale en_US eu_ES
+###Configure and deploy the player###
 
+####Build the code using ant####
 Fill the `build.properties` file for the embeddable player:
 
 	$ cd babelium-flex-embeddable-player
 	$ cp build.properties.template build.properties
 	$ vi build.properties
 
-Remember when editing the `build.properties` file you have to point the home folder of Flex SDK **FLEX_HOME** and the path to your local repository clone **BASE**. You can leave the rest of the fields unchanged.
+This table describes the purpose of the property fields you should fill:
+
+<table>
+ <tr><th>Property</th><th>Description</th></tr>
+ <tr><td>FLEX_HOME</td><td>The home directory of your Flex SDK installation.</td></tr>
+ <tr><td>LOCALE_BUNDLES</td><td>The UI language packs to include when building the platform. All available languages are included by default. To choose only a subset of the languages, write a comma-separated list of locale codes. Locale codes have the following format: <strong>es_ES</strong> (es=Spanish, ES=Spain).</td></tr>
+ <tr><td>BASE</td><td>The local path of the cloned repository (e.g. /home/babelium/git/babelium-flex-embeddable-player).</td></tr>
+ <tr><td>WEB_DOMAIN</td><td>The web domain for the platform (e.g. www.babeliumproject.com).</td></tr>
+ <tr><td>WEB_ROOT</td><td>The path to the web root of the platform (e.g. /var/www/babelium) </td></tr>
+ <tr><td>RED5_PATH</td><td>The path to the streaming server (e.g. /var/red5).</td></tr>
+ <tr><td>RED5_APPNAME</td><td>The name of the app that is going to perform the streaming job. By default <strong>vod</strong>.</td></tr>
+</table>
+
+You can leave the rest of the fields unchanged. These additional fields are mainly for filling the `Config.php` file needed for the service calls. If you want to know more about the purpose of these fields please check the [Babelium Standalone site readme][]. If you already deployed the Babelium standalone site you can just grab the `Config.php` file from `<babelium_directory>/services/utils/Config.php` and copy it to `<babelium_directory>/api/services/utils`.
+
+Once you are done editing, run ant to build:
 
 	$ ant
 
@@ -44,7 +69,7 @@ The compiled files are placed in the `dist` folder.
 Copy the embeddable video player to the target directory
 
 	$ cd babelium-flex-embeddable-player/dist
-	$ cp babeliumPlayer.* <target_directory>/
+	$ cp babeliumPlayer.* <babelium_directory>/
 
 **NOTE:** Many files are copied in the `dist` folder, but we are only interested in the files that begin with `babeliumPlayer`.
 
@@ -63,8 +88,8 @@ Now the entire project should be in the `babelium-moodle-plugins/` directory.
 Copy the Moodle API files and the Moodle site registration script:
 
 	$ cd babelium-moodle-plugins/patches
-	$ cp -r api <babelium_home>/
-	$ cp -r css <babelium_home>/
+	$ cp -r api <babelium_directory>/
+	$ cp -r css <babelium_directory>/
 	$ cp moodleapi.php <babelium_directory>/
 
 Copy the video merging script to the Babelium script folder:
@@ -79,11 +104,13 @@ Copy the placeholder video to display while the videos are still not merged:
 
 Apply the provided SQL patch to enable Moodle site registration
 
-	$ mysql -u <babeliumdbuser> -p
+	$ mysql -u <babeliumdbuser> -p<babeliumdbpass>
 	> use <babeliumdbname>;
 	> source babelium-moodle-plugins/patches/sql/moodle_patch.sql;
 
-Fill the data of `<babelium_home>/api/services/utils/Config.php` (or copy from `<babelium_home>/services/utils/Config.php`) and check if the paths in `<babelium_home>/api/services/utils/VideoProcessor.php` are right.
+Fill the data of `<babelium_home>/api/services/utils/Config.php` (or if you already deployed the Babelium server copy it from `<babelium_home>/services/utils/Config.php`).
+
+Check if the paths in `<babelium_home>/api/services/utils/VideoProcessor.php` and `<babelium_script_directory>/VideoCollage.php` are right.
 
 Copy the embeddable video player files to the Babelium home directory.
 
