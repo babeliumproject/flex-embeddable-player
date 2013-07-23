@@ -5,7 +5,7 @@
 
 Here you will find the latest version of the embeddable player.
 
-The player is currently available in 3 languages: English, Spanish and Basque.
+The player is currently available in 5 languages: English, Spanish, Basque, French and German.
 
 Cloning the repository
 ----------------------
