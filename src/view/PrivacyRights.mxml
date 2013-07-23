@@ -251,7 +251,7 @@
 						<s:HGroup width="100%" height="100%" verticalAlign="middle">
 							<mx:Text width="100%"
 									 text="{resourceManager.getString('myResources','TEXT_MIC_NOT_FOUND')}"/>
-							<mx:Image source="resources/images/privacy_micError.png" width="102" height="102"/>
+							<mx:Image source="resources/images/privacy_mic_error.png" width="102" height="102"/>
 						</s:HGroup>
 						<s:HGroup width="100%"
 								  horizontalAlign="left"
@@ -280,7 +280,7 @@
 						<s:HGroup width="100%" height="100%" verticalAlign="middle">
 							<mx:Text width="100%"
 									 text="{resourceManager.getString('myResources','TEXT_CAMERA_NOT_FOUND')}"/>
-							<mx:Image source="resources/images/privacy_webcamError.png" width="102" height="102"/>
+							<mx:Image source="resources/images/privacy_webcam_error.png" width="102" height="102"/>
 						</s:HGroup>
 						<s:HGroup width="100%"
 								  horizontalAlign="left"
