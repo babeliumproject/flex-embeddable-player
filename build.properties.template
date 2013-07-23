@@ -26,6 +26,8 @@ FLEX_HOME=/path/to/flex4.6/sdk
 FLEX_ANT_LIB=${FLEX_HOME}/ant/lib/flexTasks.jar
 FLEX_LIB=${FLEX_HOME}/lib
 
+LOCALE_BUNDLES=en_US,es_ES,eu_ES,fr_FR,de_DE
+
 #Project paths 
 BASE=/path/to/project
 APP_ROOT=${BASE}/src
