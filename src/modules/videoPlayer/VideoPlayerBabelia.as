@@ -19,14 +19,12 @@ package modules.videoPlayer
 	import modules.videoPlayer.controls.PlayButton;
 	import modules.videoPlayer.controls.babelia.ArrowPanel;
 	import modules.videoPlayer.controls.babelia.MicActivityBar;
-	//import modules.videoPlayer.controls.babelia.RecStopButton;
 	import modules.videoPlayer.controls.babelia.RoleTalkingPanel;
 	import modules.videoPlayer.controls.babelia.SubtitleButton;
 	import modules.videoPlayer.controls.babelia.SubtitleStartEndButton;
 	import modules.videoPlayer.controls.babelia.SubtitleTextBox;
 	import modules.videoPlayer.events.PlayPauseEvent;
 	import modules.videoPlayer.events.VideoPlayerEvent;
-	//import modules.videoPlayer.events.babelia.RecStopButtonEvent;
 	import modules.videoPlayer.events.babelia.RecordingEvent;
 	import modules.videoPlayer.events.babelia.StreamEvent;
 	import modules.videoPlayer.events.babelia.SubtitleButtonEvent;
@@ -34,6 +32,7 @@ package modules.videoPlayer
 	import modules.videoPlayer.events.babelia.VideoPlayerBabeliaEvent;
 	
 	import mx.collections.ArrayCollection;
+	import mx.controls.Alert;
 	import mx.controls.Image;
 	import mx.controls.Text;
 	import mx.core.FlexGlobals;
@@ -219,6 +218,7 @@ package modules.videoPlayer
 			/**
 			 * Events listeners
 			 **/
+			super.addEventListener(VideoPlayerEvent.STREAM_NOT_FOUND, streamNotFound);
 			_subtitleButton.addEventListener(SubtitleButtonEvent.STATE_CHANGED, onSubtitleButtonClicked);
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.START, onSubtitlingEvent);
 			_subtitleStartEnd.addEventListener(SubtitlingEvent.END, onSubtitlingEvent);
@@ -902,8 +902,7 @@ package modules.videoPlayer
 			else
 			{
 				//Add the no connection error sprite in the top layer
-				removeAllChildren(_onTop);
-				_onTop.addChild(noConnectionSprite);
+				onError('NO_CONNECTION');
 				//Unattach user devices if they were attached (connection failed while recording)
 				unattachUserDevices();
 				//If status is different than PLAY_STATE switch to that state
@@ -914,6 +913,18 @@ package modules.videoPlayer
 					removeArrows();
 				}
 			}
+		}
+		
+		private function streamNotFound(event:VideoPlayerEvent):void{
+			onError('ERROR_STREAM_PROCESSING');
+		}
+		
+		private function onError(msg:String):void{
+			//Remove previous content on the layer
+			_onTop.removeChildren();
+			stopVideo();
+			noConnectionSprite.setText(ResourceManager.getInstance().getString('myResources',msg));
+			_onTop.addChild(noConnectionSprite);
 		}
 
 		/**

@@ -27,7 +27,8 @@ package modules.videoPlayer
 		private var dHeight:uint = 480;
 
 		private var box:Shape;
-		private var message:TextField;
+		private var errorMsg:TextField;
+		private var text:String;
 		
 		private var backgrImg:Bitmap;
 		
@@ -35,24 +36,34 @@ package modules.videoPlayer
 		{
 			super();
 			loadAsset(DataModel.getInstance().uploadDomain+"resources/images/popup_bgr_wrong.png");
+			text = ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") ? ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") : "Communication lost. Trying to reconnect...";
 			updateChildren(dWidth,dHeight);
-			
+		}
+		
+		public function setText(msg:String):void{
+			if(msg.length)
+				text = msg;
+			updateChildren(0,0); //keep current dimensions
 		}
 		
 		public function updateChildren(nWidth:Number, nHeight:Number):void{
+			if(nWidth && nHeight){
+				dWidth = nWidth;
+				dHeight = nHeight;
+			}
 			
-			var nWidthBox:Number = nWidth*0.85;
-			var nHeightBox:Number = nHeight*0.6;
+			var nWidthBox:Number = dWidth*0.85;
+			var nHeightBox:Number = dHeight*0.8;
 			if(box != null && this.contains(box))
 				this.removeChild(box);
 			if(backgrImg != null && this.contains(backgrImg))
 				this.removeChild(backgrImg);
-			if(message != null && this.contains(message))
-				this.removeChild(message);
+			if(errorMsg != null && this.contains(errorMsg))
+				this.removeChild(errorMsg);
 			
 			this.graphics.clear();
 			this.graphics.beginFill(0x000000,1);
-			this.graphics.drawRect(0,0,nWidth,nHeight);
+			this.graphics.drawRect(0,0,dWidth,dHeight);
 			this.graphics.endFill();		
 			
 			box = new Shape();
@@ -61,7 +72,7 @@ package modules.videoPlayer
 			box.graphics.clear();
 			box.graphics.beginGradientFill(GradientType.LINEAR, [0xF5F5F5,0xE6E6E6], [1,1],[120,255],matr);
 			box.graphics.lineStyle(1, 0xa7a7a7);
-			box.graphics.drawRect(nWidth/2-(nWidthBox/2),nHeight/2-(nHeightBox/2),nWidthBox,nHeightBox);
+			box.graphics.drawRect(dWidth/2-(nWidthBox/2),dHeight/2-(nHeightBox/2),nWidthBox,nHeightBox);
 			
 			box.graphics.endFill();
 			
@@ -69,24 +80,35 @@ package modules.videoPlayer
 			_textFormat.align = "center";
 			_textFormat.font = "Arial";
 			_textFormat.bold = true;
-			_textFormat.size = 14;
-			
-			message = new TextField();
-			message.text = ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") ? ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") : "Communication lost. Trying to reconnect...";
-			message.selectable = false;
-			message.autoSize = TextFieldAutoSize.CENTER;
-			message.x = nWidth/2 - message.textWidth/2;
-			message.y = nHeight/2 - message.textHeight/2;
-			message.setTextFormat(_textFormat);
+			_textFormat.size = Math.floor(nHeightBox * .08);
+		
+			errorMsg = new TextField();
+			errorMsg.text = text; 
+			errorMsg.setTextFormat(_textFormat);
+			errorMsg.width = dWidth * .8;
+			errorMsg.autoSize = TextFieldAutoSize.CENTER;
+			errorMsg.wordWrap=true;
+			//errorMsg.background=true; //position debug
+			//errorMsg.backgroundColor=0xff0000;
+			errorMsg.x = dWidth/2 - errorMsg.width/2;
+			errorMsg.y = dHeight/2 - errorMsg.height/2;
 			
 			this.addChild(box);
-			this.addChild(message);
+			this.addChild(errorMsg);
 			
 			if(backgrImg){
 				backgrImg.width=191;
 				backgrImg.height=192;
-				backgrImg.x = (nWidth/2) + (nWidthBox/2) - backgrImg.width;
-				backgrImg.y = (nHeight/2)-(nHeightBox/2);
+				
+				var scaleC:Number= nHeightBox * .9 / backgrImg.height;
+				
+				backgrImg.x = (dWidth/2) + (nWidthBox/2) - (backgrImg.width * scaleC);
+				backgrImg.y = (dHeight/2) - (nHeightBox/2);
+				
+				
+				backgrImg.width*=scaleC;
+				backgrImg.height*=scaleC;
+				
 				this.addChild(backgrImg);
 			}
 		}
@@ -108,7 +130,5 @@ package modules.videoPlayer
 		private function ioErrorHandler(event:IOErrorEvent):void{
 			trace("Unable to load image: " + event);
 		}
-		
-		
 	}
 }

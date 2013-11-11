@@ -13,8 +13,10 @@ package modules.videoPlayer
 	import flash.net.NetStreamInfo;
 	import flash.utils.ByteArray;
 	
+	import modules.videoPlayer.events.VideoPlayerEvent;
 	import modules.videoPlayer.events.babelia.VideoPlayerBabeliaEvent;
 	
+	import mx.controls.Alert;
 	import mx.utils.ObjectUtil;
 	
 	//http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/NetStream.html
@@ -86,7 +88,10 @@ package modules.videoPlayer
 		public function play(...parameters):void{
 			try{
 				displayTrace("Play "+parameters);
-				_ns.play(parameters);	
+				var stream:String = parameters[0] as String;
+				if(stream.search(/\.flv$/) !=-1)
+					stream = stream.slice(0,-4);
+				_ns.play(stream,0);	
 			} 
 			catch(e:SecurityError){
 				displayTrace("SecurityError ["+e.name+"] "+e.message);
@@ -203,6 +208,21 @@ package modules.videoPlayer
 					break;
 				case "NetStream.Play.UnpublishNotify":
 					break;
+				case "NetStream.Play.Failed":
+					break;
+				case "NetStream.Play.FileStructureInvalid":
+					break;
+				case "NetStream.Play.InsufficientBW":
+					break;
+				case "NetStream.Play.NoSupportedTrackFound":
+					break;
+				case "NetStream.Play.StreamNotFound":
+					this.dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.STREAM_NOT_FOUND));
+					break;
+				case "NetStream.Play.Transition":
+					break;
+				
+				
 				case "NetStream.Pause.Notify":
 					_streamStatus=STREAM_PAUSED;
 					break;

@@ -539,6 +539,7 @@ package modules.videoPlayer
 			{
 				case "NetStream.Play.StreamNotFound":
 					trace("[ERROR] Exercise stream: Stream " + _videoSource + " could not be found");
+					dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.STREAM_NOT_FOUND));
 					break;
 				case "NetStream.Play.Stop":
 					playbackState=PLAYBACK_STOPPED_STATE;
@@ -621,7 +622,10 @@ package modules.videoPlayer
 				try
 				{
 					trace("[INFO] Exercise stream: Selected video " + _videoSource);
-					_ns.play(_videoSource);
+					var stream:String = _videoSource;
+					if(stream.search(/\.flv$/) !=-1)
+						stream = stream.slice(0,-4);
+					_ns.play(stream,0);
 				}
 				catch (e:Error)
 				{
