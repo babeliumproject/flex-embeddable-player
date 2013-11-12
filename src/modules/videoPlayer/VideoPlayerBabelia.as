@@ -42,6 +42,7 @@ package modules.videoPlayer
 	import mx.events.EffectEvent;
 	import mx.managers.PopUpManager;
 	import mx.resources.ResourceManager;
+	import mx.utils.ObjectUtil;
 	
 	import skins.OverlayPlayButtonSkin;
 	
@@ -750,9 +751,10 @@ package modules.videoPlayer
 			if (_roleTalkingPanel.talking)
 				_roleTalkingPanel.stopTalk();
 
-			if (state & RECORD_FLAG && _micCamEnabled)
-				_outNs.netStream.close();
-
+			if (state & RECORD_FLAG && _micCamEnabled){
+				if(_outNs && _outNs.netStream)
+					_outNs.netStream.close();
+			}
 			if (state == PLAY_BOTH_STATE)
 			{
 				if (_inNs && _inNs.netStream)
@@ -897,7 +899,7 @@ package modules.videoPlayer
 			super.onStreamNetConnect(value);
 			if (value)
 			{
-				removeAllChildren(_onTop);
+				_onTop.removeChildren();
 			}
 			else
 			{
@@ -916,13 +918,13 @@ package modules.videoPlayer
 		}
 		
 		private function streamNotFound(event:VideoPlayerEvent):void{
+			stopVideo();
 			onError('ERROR_STREAM_PROCESSING');
 		}
 		
 		private function onError(msg:String):void{
 			//Remove previous content on the layer
 			_onTop.removeChildren();
-			stopVideo();
 			noConnectionSprite.setText(ResourceManager.getInstance().getString('myResources',msg));
 			_onTop.addChild(noConnectionSprite);
 		}
@@ -970,29 +972,30 @@ package modules.videoPlayer
 		 */
 		private function prepareDevices():void
 		{
-			//The devices are permitted and initialized. Time to configure them
-			if ((state == RECORD_MIC_STATE && PrivacyRights.microphoneReady()) || 
-				(state == RECORD_BOTH_STATE && PrivacyRights.cameraReady() && PrivacyRights.microphoneReady()) ||
-				(state == UPLOAD_MODE_STATE && PrivacyRights.cameraReady() && PrivacyRights.microphoneReady()))
+			privacyRights = null;
+			privacyRights = new PrivacyRights();
+			privacyRights.width = this.width;
+			privacyRights.height = this.height;
+			
+			//The devices are permitted and initialized. Time to configure them	
+			if ((state == RECORD_MIC_STATE && privacyRights.microphoneReady()) || 
+				(state == RECORD_BOTH_STATE && privacyRights.cameraReady() && privacyRights.microphoneReady()) ||
+				(state == UPLOAD_MODE_STATE && privacyRights.cameraReady() && privacyRights.microphoneReady()))
 			{
 				configureDevices();
 			}
 			else
 			{
 				if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
-					PrivacyRights.useMicAndCamera=true;
+					privacyRights.useMicAndCamera=true;
 				if (state == RECORD_MIC_STATE)
-					PrivacyRights.useMicAndCamera=false;
-				//privacyRights=new PrivacyRights();
-				//privacyRights.width=this.width;
-				//privacyRights.height=this.height;//PrivacyRights(PopUpManager.createPopUp(FlexGlobals.topLevelApplication.parent, PrivacyRights, true));
-
-				removeAllChildren(_onTop);
+					privacyRights.useMicAndCamera=false;
+				
+				_onTop.removeChildren();
 				_onTop.addChild(privacyRights);
-				privacyRights.initDevices();
+				
 				privacyRights.addEventListener(CloseEvent.CLOSE, privacyBoxClosed);
-
-				//PopUpManager.centerPopUp(privacyRights);
+				privacyRights.initDevices();
 			}
 		}
 
@@ -1016,35 +1019,21 @@ package modules.videoPlayer
 			startCountdown();
 		}
 
-		/*
-		public function micActivityHandler(event:ActivityEvent):void
-		{
-			//The mic has received an input louder than the 0% volume, so there's a mic working correctly.
-			if (event.activating)
-			{
-				DataModel.getInstance().gapsWithNoSound=0;
-				DataModel.getInstance().soundDetected=true;
-				DataModel.getInstance().microphone.removeEventListener(ActivityEvent.ACTIVITY, micActivityHandler);
-			}
-		}*/
-
 		private function privacyBoxClosed(event:Event):void
 		{
-		
-			//PopUpManager.removePopUp(privacyRights);
-			removeAllChildren(_onTop);
+			_onTop.removeChildren();
 
 			_micCamEnabled=DataModel.getInstance().micCamAllowed;
 			if (state == RECORD_MIC_STATE)
 			{
-				if (_micCamEnabled && PrivacyRights.microphoneFound)
+				if (_micCamEnabled && privacyRights.microphoneFound)
 					configureDevices();
 				else
 					dispatchEvent(new RecordingEvent(RecordingEvent.ABORTED));
 			}
 			if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 			{
-				if (_micCamEnabled && PrivacyRights.microphoneFound && PrivacyRights.cameraFound)
+				if (_micCamEnabled && privacyRights.microphoneFound && privacyRights.cameraFound)
 					configureDevices();
 				else
 					dispatchEvent(new RecordingEvent(RecordingEvent.ABORTED));
@@ -1276,7 +1265,6 @@ package modules.videoPlayer
 
 			if (state & RECORD_FLAG || state == UPLOAD_MODE_STATE)
 			{
-				//addDummyVideo();
 				unattachUserDevices();
 
 				trace("[INFO] Response stream: Finished recording " + _fileName);
@@ -1286,18 +1274,6 @@ package modules.videoPlayer
 			else
 				dispatchEvent(new RecordingEvent(RecordingEvent.REPLAY_END));
 		}
-
-		/**
-		 * Flash 11.2.x has a bug that makes audio only FLV files non-playable. This workaround adds a dummy video stream to those files to recover
-		 * the playback functionality while Adobe fixes this bug.
-		 */
-		/*
-		protected function addDummyVideo():void{
-			var r:ResponseVO = new ResponseVO();
-			r.fileIdentifier = _fileName;
-			new ResponseEvent(ResponseEvent.ADD_DUMMY_VIDEO,r).dispatch();
-		}
-		*/
 		
 		public function unattachUserDevices():void{
 			if (_outNs && _outNs.netStream)
@@ -1308,15 +1284,7 @@ package modules.videoPlayer
 				_camVideo.attachCamera(null);
 			}
 			if((_onTop.numChildren > 0) && (_onTop.getChildAt(0) is PrivacyRights) )
-				removeAllChildren(_onTop); //Remove the privacy box in case someone cancels the recording before starting
-		}
-		
-		private function removeAllChildren(container:UIComponent):void{
-			if(container && container.numChildren > 0){
-				for(var i:uint=0; i<container.numChildren; i++){
-					container.removeChildAt(i);
-				}	
-			}
+				_onTop.removeChildren(); //Remove the privacy box in case someone cancels the recording before starting
 		}
 
 		/**

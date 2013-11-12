@@ -28,18 +28,18 @@
 
 			private var _devicesAllowed:Boolean=false;
 
-			public static var microphoneFound:Boolean=false;
-			public static var cameraFound:Boolean=false;
+			public var microphoneFound:Boolean=false;
+			public var cameraFound:Boolean=false;
 
-			public static var useMicAndCamera:Boolean=false;
+			public var useMicAndCamera:Boolean=false;
 
 
-			public static function cameraReady():Boolean
+			public function cameraReady():Boolean
 			{
 				return (DataModel.getInstance().microphone && !DataModel.getInstance().microphone.muted);
 			}
 
-			public static function microphoneReady():Boolean
+			public function microphoneReady():Boolean
 			{
 				return (DataModel.getInstance().camera && !DataModel.getInstance().camera.muted);
 			}
