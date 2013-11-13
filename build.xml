@@ -44,6 +44,11 @@
 			
 			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
 			
+			<compiler.library-path dir="${BASE}" append="true">
+					<include name="libs"/>
+			</compiler.library-path>
+						
+			
 			<source-path path-element="${BASE}/src"/>
 			<source-path path-element="${BASE}/locale/{locale}"/>
 			

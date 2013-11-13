@@ -41,9 +41,14 @@ package modules.videoPlayer
 	import mx.controls.Alert;
 	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
+	
+	import org.as3commons.logging.api.ILogger;
+	import org.as3commons.logging.api.getLogger;
 
 	public class VideoPlayer extends SkinableComponent
 	{
+		private static const logger:ILogger = getLogger(VideoPlayer);
+		
 		/**
 		 * Skin related variables
 		 */
@@ -531,11 +536,18 @@ package modules.videoPlayer
 				DataModel.getInstance().close();
 		}
 
-		private function netStatus(e:NetStatusEvent):void
+		private function netStatus(event:NetStatusEvent):void
 		{
 			//trace("[INFO] Exercise stream: Status code " + e.info.code);
-
-			switch (e.info.code)
+			var info:Object=event.info;
+			var messageClientId:int=info.clientid ? info.clientid : -1;
+			var messageCode:String=info.code;
+			var messageDescription:String=info.description ? info.description : '';
+			var messageDetails:String=info.details ? info.details : '';
+			var messageLevel:String=info.level;
+			logger.debug("NetStatus [{0}] {1} {2}", [messageLevel, messageCode, messageDescription]);	
+			
+			switch (messageCode)
 			{
 				case "NetStream.Play.StreamNotFound":
 					trace("[ERROR] Exercise stream: Stream " + _videoSource + " could not be found");
@@ -558,13 +570,20 @@ package modules.videoPlayer
 					if(playbackState == PLAYBACK_BUFFERING_STATE)
 						playbackState = PLAYBACK_STARTED_STATE;
 					break;
-				case "NetStream.Buffer.Empty":
-					if (playbackState == PLAYBACK_STOPPED_STATE)
-					{
+				case "NetStream.Buffer.Flush":
+					if (playbackState == PLAYBACK_STOPPED_STATE){
 						playbackState=PLAYBACK_FINISHED_STATE;
 						dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
 					}
-					else
+					break;
+				case "NetStream.Buffer.Empty":
+					//if (playbackState == PLAYBACK_STOPPED_STATE)
+					//{
+					//	playbackState=PLAYBACK_FINISHED_STATE;
+					//	dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
+					//}
+					//else
+					if (playbackState != PLAYBACK_STOPPED_STATE)
 						playbackState=PLAYBACK_BUFFERING_STATE;
 					break;
 				case "NetStream.Pause.Notify":
@@ -683,7 +702,7 @@ package modules.videoPlayer
 		{
 			if (_ns)
 			{
-				_ns.seek(_currentTime);
+				//_ns.seek(_currentTime);
 				_ns.resume();
 				//trace(_currentTime, _ns.time);
 			}
