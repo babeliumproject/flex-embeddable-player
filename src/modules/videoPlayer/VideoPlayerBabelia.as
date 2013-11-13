@@ -127,8 +127,7 @@ package modules.videoPlayer
 
 		private var _fileName:String;
 		private var _recordingMuted:Boolean=false;
-
-	
+		private var _recording:Boolean;
 
 		public static const SECONDSTREAM_READY_STATE:int=0;
 		public static const SECONDSTREAM_STARTED_STATE:int=1;
@@ -403,6 +402,8 @@ package modules.videoPlayer
 				enableControls();
 
 			_state=state;
+			
+			//logger.debug("New State: {0}", [_state]);
 			switchPerspective();
 		}
 
@@ -1112,8 +1113,8 @@ package modules.videoPlayer
 			_outNs.netStream.publish(responseFilename, "record");
 
 			trace("[INFO] Response stream: Started recording " + _fileName);
-
 			//TODO: new feature - enableControls();
+			_recording=true;
 		}
 
 
@@ -1265,11 +1266,12 @@ package modules.videoPlayer
 
 			if (state & RECORD_FLAG || state == UPLOAD_MODE_STATE)
 			{
-				unattachUserDevices();
-
-				trace("[INFO] Response stream: Finished recording " + _fileName);
-				dispatchEvent(new RecordingEvent(RecordingEvent.END, _fileName));
-				enableControls(); 
+				if(_recording){
+					unattachUserDevices();
+					trace("[INFO] Response stream: Finished recording " + _fileName);
+					dispatchEvent(new RecordingEvent(RecordingEvent.END, _fileName));
+					enableControls();
+				}
 			}
 			else
 				dispatchEvent(new RecordingEvent(RecordingEvent.REPLAY_END));
@@ -1285,6 +1287,7 @@ package modules.videoPlayer
 			}
 			if((_onTop.numChildren > 0) && (_onTop.getChildAt(0) is PrivacyRights) )
 				_onTop.removeChildren(); //Remove the privacy box in case someone cancels the recording before starting
+			_recording=false;
 		}
 
 		/**

@@ -47,7 +47,7 @@ package modules.videoPlayer
 
 	public class VideoPlayer extends SkinableComponent
 	{
-		private static const logger:ILogger = getLogger(VideoPlayer);
+		protected static const logger:ILogger = getLogger(VideoPlayer);
 		
 		/**
 		 * Skin related variables
