@@ -6,6 +6,9 @@
 
 package modules.videoPlayer
 {
+
+	//import events.CloseConnectionEvent;
+	//import events.StartConnectionEvent;
 	
 	import flash.display.Sprite;
 	import flash.events.AsyncErrorEvent;
@@ -515,8 +518,10 @@ package modules.videoPlayer
 			else{
 				disableControls();
 				if (_streamSource){
-					if(_reconnectionTimer == null || !_reconnectionTimer.running)
-						startReconnectionTimer();//connectToStreamingServer();
+					if(_reconnectionTimer == null || !_reconnectionTimer.running){
+						startReconnectionTimer();
+						//connectToStreamingServer();
+					}
 				}
 			}
 		}
