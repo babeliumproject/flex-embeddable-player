@@ -101,6 +101,22 @@ package modules.videoPlayer
 		public static const PLAYBACK_PAUSED_STATE:int=4;
 		public static const PLAYBACK_UNPAUSED_STATE:int=5;
 		public static const PLAYBACK_BUFFERING_STATE:int=6;
+		public static const PLAYBACK_SEEKING_START_STATE:int=7;
+		public static const PLAYBACK_SEEKING_END_STATE:int=8;
+		
+		/*
+		* Allowed values are -2, -1, 0, or a positive number. 
+		* The default value is -2, which looks for a live stream, then a recorded stream, and if it finds neither, opens a live stream. You cannot use -2 with MP3 files. 
+		* If -1, plays only a live stream. 
+		* If 0 or a positive number, plays a recorded stream, beginning start seconds in.
+		*/
+		private const PLAY_MODE_WAIT_LIVE:int=-2;
+		private const PLAY_MODE_ONLY_LIVE:int=-1;
+		private const PLAY_MODE_ONLY_RECORDED:int=0;
+		
+		private var _defaultPlayMode:int = PLAY_MODE_ONLY_RECORDED;
+		
+		private var _streamFinishBuffer:Object = {"NetStream.Buffer.Empty": 0, "NetStream.Buffer.Flush": 0, "NetStream.Play.Stop": 0};
 
 		[Bindable]
 		public var playbackState:int;
@@ -549,52 +565,72 @@ package modules.videoPlayer
 			
 			switch (messageCode)
 			{
-				case "NetStream.Play.StreamNotFound":
-					trace("[ERROR] Exercise stream: Stream " + _videoSource + " could not be found");
-					dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.STREAM_NOT_FOUND));
-					break;
-				case "NetStream.Play.Stop":
-					playbackState=PLAYBACK_STOPPED_STATE;
-					break;
-				case "NetStream.Play.Start":
-					playbackState=PLAYBACK_READY_STATE;
-					break;
 				case "NetStream.Buffer.Full":
-					if (playbackState == PLAYBACK_UNPAUSED_STATE)
-						playbackState=PLAYBACK_STARTED_STATE;
 					if (playbackState == PLAYBACK_READY_STATE)
 					{
 						playbackState=PLAYBACK_STARTED_STATE;
 						dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_STARTED_PLAYING));
 					}
-					if(playbackState == PLAYBACK_BUFFERING_STATE)
-						playbackState = PLAYBACK_STARTED_STATE;
-					break;
-				case "NetStream.Buffer.Flush":
-					if (playbackState == PLAYBACK_STOPPED_STATE){
-						playbackState=PLAYBACK_FINISHED_STATE;
-						dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
-					}
+					if (playbackState == PLAYBACK_BUFFERING_STATE)
+						playbackState=PLAYBACK_STARTED_STATE;
+					if (playbackState == PLAYBACK_UNPAUSED_STATE)
+						playbackState=PLAYBACK_STARTED_STATE;
+					if (playbackState == PLAYBACK_SEEKING_END_STATE)
+						playbackState=PLAYBACK_STARTED_STATE;
 					break;
 				case "NetStream.Buffer.Empty":
-					//if (playbackState == PLAYBACK_STOPPED_STATE)
-					//{
-					//	playbackState=PLAYBACK_FINISHED_STATE;
-					//	dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
-					//}
-					//else
-					if (playbackState != PLAYBACK_STOPPED_STATE)
-						playbackState=PLAYBACK_BUFFERING_STATE;
+					playbackState=PLAYBACK_BUFFERING_STATE;
 					break;
+				case "NetStream.Play.Start":
+					playbackState=PLAYBACK_STARTED_STATE;
+					break;
+				case "NetStream.Play.Stop":
+					playbackState=PLAYBACK_STOPPED_STATE;
+					break;
+				
+				case "NetStream.Play.StreamNotFound":
+					trace("[ERROR] Exercise stream: Stream " + _videoSource + " could not be found");
+					dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.STREAM_NOT_FOUND));
+					break;
+				
 				case "NetStream.Pause.Notify":
 					playbackState=PLAYBACK_PAUSED_STATE;
 					break;
 				case "NetStream.Unpause.Notify":
 					playbackState=PLAYBACK_UNPAUSED_STATE;
 					break;
+				case "NetStream.Seek.Notify":
+					playbackState=PLAYBACK_SEEKING_START_STATE;
+					break;
+				case "NetStream.SeekStart.Notify":
+					playbackState=PLAYBACK_SEEKING_START_STATE;
+					break;
+				case "NetStream.Seek.Complete":
+					playbackState=PLAYBACK_SEEKING_END_STATE;
+					break;
 				default:
 					break;
 			}
+			
+			if(checkEndingBuffer(messageCode)){
+				playbackState=PLAYBACK_FINISHED_STATE;
+				dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_FINISHED_PLAYING));
+			}
+		}
+		
+		private function checkEndingBuffer(currentNetStatus:String):uint{
+			if(_streamFinishBuffer.hasOwnProperty(currentNetStatus)){
+				_streamFinishBuffer[currentNetStatus] = 1;
+			} else {
+				for(var k:String in _streamFinishBuffer){
+					_streamFinishBuffer[k]=0;
+				}
+			}
+			var result:uint=1;
+			for each(var val:int in _streamFinishBuffer){
+				result &= val;
+			}
+			return result;
 		}
 
 		protected function asyncErrorHandler(event:AsyncErrorEvent):void
@@ -644,7 +680,7 @@ package modules.videoPlayer
 					var stream:String = _videoSource;
 					if(stream.search(/\.flv$/) !=-1)
 						stream = stream.slice(0,-4);
-					_ns.play(stream,0);
+					_ns.play(stream,_defaultPlayMode);
 				}
 				catch (e:Error)
 				{
