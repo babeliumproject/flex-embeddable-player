@@ -139,7 +139,8 @@ This is a list of functions available through the JavaScript API of the player.
 
 ####Video loading functions
 
-* ```javascript
+ 
+```javascript
 bpPlayer.exerciseSource(exerciseId:String):Void
 ```
 
@@ -147,7 +148,7 @@ bpPlayer.exerciseSource(exerciseId:String):Void
 
  * The `exerciseId` parameter specifies the ID of an exercise available in Babelium's server.
 
-* ```javascript
+```javascript
 bpPlayer.responseSource(responseId:String):Void
 ```
 
@@ -155,7 +156,7 @@ bpPlayer.responseSource(responseId:String):Void
 
  * The `responseId` parameter specifies the ID of an exercise response (made following an exercise) available in Babelium's server.
 
-* ```javascript 
+```javascript 
 bpPlayer.secondSource(videoId:String):Void
 ```
 
@@ -163,7 +164,7 @@ bpPlayer.secondSource(videoId:String):Void
 
  * The `videoId` parameter specifies the ID of either an exercise or a response (usually response) that need be played side-by-side with the previously loaded video. The video player stage gets split in two and displaying the previously loaded video on the left and the new video on the right. The videos are "loosely" synchronized to keep the playback as accurate as possible.
 
-* ```javascript
+```javascript
 bpPlayer.autoPlay(enableAutoplay:Boolean):Void
 ```
 
@@ -175,38 +176,38 @@ bpPlayer.autoPlay(enableAutoplay:Boolean):Void
 
 **Playing a video**
 
-* ```javascript
+```javascript
 bpPlayer.playVideo():Void
 ```
 
  Plays the currently loaded video.
 
-* ```javascript
+```javascript
 bpPlayer.pauseVideo():Void
 ```
  
  Pauses the currently loaded video.
 
-* ```javascript
+```javascript
 bpPlayer.resumeVideo():Void
 ```
 
  Resumes the playback of the currently loaded video.
 
-* ```javascript
+```javascript
 bpPlayer.stopVideo():Void
 ```
 
  Stops the currently loaded video.
 
-* ```javascript
+```javascript
 bpPlayer.seekTo(time:Number):Void
 ```
 
  Seeks to a specified time in the video.
  * The `time` parameter specifies the point in time where to jump in the playback. If the given number is greater than the duration of the video, the function call is ignored. The behavior when the video is different depending on the current status of the video player.
 
-* ```javascript
+```javascript
 bpPlayer.endVideo():Void
 ```
 
@@ -214,7 +215,7 @@ bpPlayer.endVideo():Void
 
 **Changing the video volume**
 
-* ```javascript
+```javascript
 bpPlayer.muteVideo(mute:Boolean):Void
 ```
 
@@ -223,14 +224,14 @@ bpPlayer.muteVideo(mute:Boolean):Void
 
 ####Recording functions
 
-* ```javascript
+```javascript
 bpPlayer.muteRecording(mute:Boolean):Void
 ```
 
  Mutes the ongoing recording stream.
  * The `mute` parameter specifies if the stream that is being recorded should be muted or unmuted. Unmuting restores the stream volume to its previous value.
 
-* ```javascript
+```javascript
 bpPlayer.setArrows(arrowTimestamps:Array, roleId:String):Void
 ```
 
@@ -239,13 +240,13 @@ bpPlayer.setArrows(arrowTimestamps:Array, roleId:String):Void
  * The `arrowTimestamps` parameter is a set of time event objects with format `{'startTime': Number, 'endTime': Number, 'role': String}`. It tells the video player where to place the arrow controls when the user is recording an exercise.
  * The `roleId` parameter tells the video player what role do the provided arrow timestamps belong to.
 
-* ```javascript
+```javascript
 bpPlayer.removeArrows():Void
 ```
 
  Removes the arrow controls
 
-* ```javascript
+```javascript
 bpPlayer.setSubtitle(text:String, color:Number):Void
 ```
  
@@ -254,7 +255,7 @@ bpPlayer.setSubtitle(text:String, color:Number):Void
  * The `text` parameter is the text of the subtitle to be displayed.
  * The `color` parameter is a number with the desired HTML color code for the displayed text.
 
-* ```javascript
+```javascript
 bpPlayer.startTalking(roleId:String, duration:Number):Void
 ```
 
@@ -262,7 +263,7 @@ bpPlayer.startTalking(roleId:String, duration:Number):Void
  * The `roleId` parameter tells the video player what role does the box belong to.
  * The `duration` parameter tells the video player the time window available to speak for the specified role.
 
-* ```javascript
+```javascript
 bpPlayer.unattachUserDevices():Void
 ```
 
@@ -270,7 +271,7 @@ bpPlayer.unattachUserDevices():Void
 
 ####Video information
 
-* ```javascript
+```javascript
 bpPlayer.duration():Number
 ```
 
@@ -278,19 +279,19 @@ bpPlayer.duration():Number
 
 ####Playback status
 
-* ```javascript
+```javascript
 bpPlayer.streamTime():Number
 ```
 
  Returns current timestamp in seconds of the currently playing video.
 
-* ```javascript
+```javascript
 bpPlayer.getState():Number
 ```
 
  Returns the current state of the video player
 
-* ```javascript
+```javascript
 bpPlayer.setState(newState:Number):Void
 ```
 
@@ -319,60 +320,60 @@ bpPlayer.setState(newState:Number):Void
 
 			
 ####Video player UI functions
-* ```javascript
+```javascript
 bpPlayer.arrows(displayArrows:Boolean):Void
 ```
 
  Display the panel that shows the role speaking arrows.
  * The `displayArrows` parameter specifies if the video player should display the arrow panel or not.
 
-* ```javascript
+```javascript
 bpPlayer.autoScale(autoscaleVideo:Boolean):Void
 ```
 
  Scales the video to the size of the stage maintaining the aspect ratio as close as possible or scales it to fill the whole stage.
  * The `autoscaleVideo` parameter specifies if the video should be scaled keeping its aspect ratio or scaled to fill the video stage.
 
-* ```javascript
+```javascript
 bpPlayer.disableControls():Void
 ```
 
  Disables the user to interact with any UI control.
 
-* ```javascript
+```javascript
 bpPlayer.enableControls():Void
 ```
 
  Enables the user to interact with any UI control.
 
-* ```javascript
+```javascript
 bpPlayer.toggleControls():Void
 ```
 
  Displays or hides the UI controls.
 
-* ```javascript
+```javascript
 bpPlayer.seek(enableSeek:Boolean):Void
 ```
 
  Determines whether the timeline bar should be interactive or not.
  * The `enableSeek` parameter specifies whether users can click on the timeline bar or not.
 
-* ```javascript
+```javascript
 bpPlayer.skin(skinFileUrl:String):Void
 ```
 
  Allows loading a skin file for the video player controls. Skin files consist of an XML that describes the colors and shapes of the UI controls. You can see an example XML in the folder *src/resources/skins/white.xml* of the source code.
  * The `skinFileUrl` parameter specifies the URL of an skin XML file.
 
-* ```javascript
+```javascript
 bpPlayer.subtitles(displaySubtitles:Boolean):Void
 ```
 
  Determines whether subtitles should be displayed or not.
  * The `displaySubtitles` parameter specifies if the subtitles should be displayed or not.
 
-* ```javascript
+```javascript
 bpPlayer.highlight(displayRoleHighlight:Boolean):Void
 ```
 
@@ -381,13 +382,13 @@ bpPlayer.highlight(displayRoleHighlight:Boolean):Void
 
 ####Managing event listeners
 
-* ```javascript
+```javascript
 player.addEventListener(event:String, listener:String):Void
 ```
 
  Adds a listener function for the specified event. The Events section below identifies the different events that the player might fire. The listener is a string that specifies the function that will execute when the specified event fires.
 
-* ```javascript
+```javascript
 player.removeEventListener(event:String, listener:String):Void
 ```
 
