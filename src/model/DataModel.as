@@ -53,7 +53,7 @@ package model
 		[Bindable] public var streamingResourcesPath:String=streamingProtocol+"://" + server + ":"+ streamingPort + "/" + streamingApp;
 		public var streamingProtocol:String=RTMP;
 		public var streamingPort:uint=RTMP_PORT;
-		public var streamingApp:String="vod";
+		public var streamingApp:String='vod';
 		public var evaluationStreamsFolder:String="evaluations";
 		public var responseStreamsFolder:String="responses";
 		public var exerciseStreamsFolder:String="exercises";
@@ -65,7 +65,7 @@ package model
 		public var cameraWidth:int=320;
 		public var cameraHeight:int=240;
 		
-		private var encapsulateRTMP:Boolean=false;
+		public var encapsulateRTMP:Boolean;
 		private var proxy:String='none';
 		private var encoding:uint=3;
 

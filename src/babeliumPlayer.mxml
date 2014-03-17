@@ -40,8 +40,9 @@
 			//LOGGER_FACTORY.setup = new LevelTargetSetup( new FirebugTarget, LogSetupLevel.DEBUG );
 			LOGGER_FACTORY.setup = new LevelTargetSetup( new FirebugTarget, LogSetupLevel.INFO );
 			
-			private var videoId:String=null;
-			private var explicit_locale:String=null;
+			private var videoId:String;
+			private var explicit_locale:String;
+			private var forceRTMPT:Boolean;
 			
 			[Bindable] private var app:Object = FlexGlobals.topLevelApplication;
 			
@@ -52,10 +53,17 @@
 			{
 				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
 				Security.allowDomain("*");
-				appWidth=FlexGlobals.topLevelApplication.width;
-				appHeight=FlexGlobals.topLevelApplication.height;
-				videoId=FlexGlobals.topLevelApplication.parameters.videoId;
-				explicit_locale=FlexGlobals.topLevelApplication.parameters.locale;
+				
+				var tla:Object = FlexGlobals.topLevelApplication;
+				
+				appWidth=tla.width;
+				appHeight=tla.height;
+				videoId=tla.parameters.videoId;
+				
+				forceRTMPT = tla.parameters.hasOwnProperty('forcertmpt') ? Boolean(parseInt(tla.parameters.forcertmpt)) : false;
+				DataModel.getInstance().encapsulateRTMP=forceRTMPT;
+
+				explicit_locale=tla.parameters.locale;
 				explicit_locale=parseLocale(explicit_locale);
 				if(explicit_locale){
 					ResourceManager.getInstance().localeChain=[explicit_locale];
@@ -65,14 +73,12 @@
 			private function complete():void
 			{
 				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
-				VP.stopVideo();
-				VP.state=VideoPlayerBabelia.PLAY_STATE;
-				
-				//videoId=FlexGlobals.topLevelApplication.parameters.videoId;
+				//VP.stopVideo();
+				//VP.state=VideoPlayerBabelia.PLAY_STATE;
 				
 				if (videoId != null)
 					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
-				
+			
 				// Setups javascripts external controls
 				Extern.getInstance().setup(VP);	
 			}
@@ -110,6 +116,7 @@
 			
 			private function onConnect(e:Event):void
 			{
+				trace("onConnection ready");
 				Extern.getInstance().onConnectionReady();
 			}
 			
@@ -141,10 +148,6 @@
 									width="{appWidth}"
 									height="{appHeight-20}"
 									subtitlingControls="false"
-									streamSource="{DataModel.getInstance().streamingResourcesPath}"
+									streamSource="Yes"
 									controlsEnabled="true"/>
-	
-	
-
-	
 </s:Application>

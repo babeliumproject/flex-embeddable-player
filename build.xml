@@ -65,7 +65,7 @@
 
 	<target name="flex-generate-wrapper" description="Generate the HTML wrapper for the main SWF file">
 		<html-wrapper title="Babelium Embeddable Video Player" 
-					  file="Main.html" 
+					  file="babeliumPlayer.html" 
 					  bgcolor="#ffffff" 
 		 			  height="100%" 
 					  width="100%" 

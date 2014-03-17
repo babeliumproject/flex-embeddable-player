@@ -117,7 +117,7 @@ package modules.videoPlayer
 		private const PLAY_MODE_ONLY_LIVE:int=-1;
 		private const PLAY_MODE_ONLY_RECORDED:int=0;
 		
-		private var _defaultPlayMode:int = PLAY_MODE_ONLY_RECORDED;
+		protected var _defaultPlayMode:int = PLAY_MODE_ONLY_RECORDED;
 		
 		private var _streamFinishBuffer:Object = {"NetStream.Buffer.Empty": 0, "NetStream.Buffer.Flush": 0, "NetStream.Play.Stop": 0};
 
@@ -202,7 +202,7 @@ package modules.videoPlayer
 			_videoSource=location;
 			_video.visible=true;
 
-			if (location != "")
+			if (location && location != "")
 				dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.VIDEO_SOURCE_CHANGED));
 			else
 				resetAppearance();
@@ -677,7 +677,7 @@ package modules.videoPlayer
 			_ns.client=this;
 			_video.attachNetStream(_ns);
 
-			if (_videoSource != '')
+			if (_videoSource != null && _videoSource != '')
 			{
 				try
 				{

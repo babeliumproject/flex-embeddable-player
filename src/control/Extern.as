@@ -196,7 +196,7 @@ package control
 		
 		private function secondSource(video:String):void
 		{
-			VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
+			if(video != null) VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function seek(flag:Boolean):void
@@ -235,11 +235,11 @@ package control
 		
 		private function exerciseSource(video:String):void
 		{
-			VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
+			if(video != null) VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
 		}
 		
 		private function responseSource(video:String):void{
-			VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
+			if(video != null) VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function highlight(flag:Boolean):void{

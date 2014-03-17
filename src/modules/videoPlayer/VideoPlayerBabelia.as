@@ -101,7 +101,7 @@ package modules.videoPlayer
 
 		// Other constants
 		private const RESPONSE_FOLDER:String=DataModel.getInstance().responseStreamsFolder;
-		private const DEFAULT_VOLUME:Number=40;
+		private const DEFAULT_VOLUME:Number=80;
 		private const COUNTDOWN_TIMER_SECS:int=5;
 
 		private var _outNs:NetStreamClient;
@@ -1309,7 +1309,7 @@ package modules.videoPlayer
 				_camVideo.visible=true;
 				_micImage.visible=true;
 
-				_inNs.netStream.play(_secondStreamSource);
+				_inNs.netStream.play(_secondStreamSource, _defaultPlayMode);
 
 				// Needed for video mute
 				muteRecording(false);
@@ -1318,7 +1318,7 @@ package modules.videoPlayer
 				if (_ns != null)
 				{
 					//_ns.resume();
-					_ns.play(super.videoSource);
+					_ns.play(super.videoSource, _defaultPlayMode);
 				}
 				_ppBtn.State=PlayButton.PAUSE_STATE;
 			}
