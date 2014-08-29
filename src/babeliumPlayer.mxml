@@ -26,7 +26,10 @@
 			import model.DataModel;
 			
 			import modules.videoPlayer.events.VideoPlayerEvent;
+			import modules.videoPlayer.events.babelia.RecordingEvent;
+			import modules.videoPlayer.events.babelia.StreamEvent;
 			
+			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.resources.Locale;
 			import mx.resources.ResourceManager;
@@ -131,6 +134,188 @@
 				trace("VP Width: "+VP.width);
 				Extern.getInstance().resizeWidth(width);
 			}
+			
+			/**
+			 * TEMP
+			 * The following code is a Q&D hack to expose the functions of the API to AS3 parents. In later
+			 * versions should consider a dynamic main class in which API is added dynamically
+			 */
+			public function exerciseSource(exerciseId:String):void
+			{
+				if(exerciseId != null) VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + exerciseId;
+			}
+			
+			public function responseSource(responseId:String):void{
+				if(responseId != null) VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + responseId;
+			}
+			
+			public function secondSource(videoId:String):void
+			{
+				if(videoId != null) VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + videoId;
+			}
+			
+			public function playVideo():void{
+				VP.playVideo();
+			}
+			
+			public function pauseVideo():void{
+				VP.pauseVideo();
+			}
+			
+			public function resumeVideo():void{
+				VP.resumeVideo();
+			}
+			
+			public function stopVideo():void{
+				VP.stopVideo();
+			}
+			
+			public function seekTo(time:Number):void{
+				VP.seekTo(time);
+			}
+			
+			public function endVideo():void{
+				VP.endVideo();
+			}
+			
+			public function muteVideo(mute:Boolean):void{
+				VP.muteVideo(mute);
+			}
+			
+			public function muteRecording(mute:Boolean):void{
+				VP.muteRecording(mute);
+			}
+			
+			public function setArrows(arrowTimestamps:Array, roleId:String):void{
+				var aux:ArrayCollection = new ArrayCollection(arrowTimestamps);
+				VP.setArrows(aux, roleId);
+			}
+			
+			public function removeArrows():void{
+				VP.removeArrows();
+			}
+			
+			public function setSubtitle(text:String, color:Number):void{
+				VP.setSubtitle(text,color);
+			}
+			
+			public function startTalking(roleId:String, duration:Number):void{
+				VP.startTalking(roleId, duration);
+			}
+			
+			public function unattachUserDevices():void{
+				VP.unattachUserDevices();
+			}
+			
+			public function duration():Number{
+				return VP.duration;
+			}
+			
+			public function streamTime():Number{
+				return VP.streamTime;
+			}
+			
+			public function getState():Number{
+				return VP.state;
+			}
+			
+			public function setState(newState:Number):void{
+				VP.state = newState;
+			}
+			
+			public function arrows(displayArrows:Boolean):void{
+				VP.arrows = displayArrows;
+			}
+			
+			public function autoScale(autoscaleVideo:Boolean):void{
+				VP.autoScale = autoscaleVideo;
+			}
+			
+			public function disableControls():void{
+				VP.disableControls();
+			}
+			
+			public function enableControls():void{
+				VP.enableControls();
+			}
+			
+			public function toggleControls():void{
+				VP.toggleControls();
+			}
+			
+			public function seek(enableSeek:Boolean):void{
+				VP.seek=enableSeek;
+			}
+			
+			public function skinFile(skinFileUrl:String):void{
+				VP.skin=skinFileUrl;
+			}
+			
+			public function subtitles(displaySubtitles:Boolean):void{
+				VP.subtitles=displaySubtitles;
+			}
+			
+			public function highlight(displayRoleHighlight:Boolean):void{
+				VP.highlight=displayRoleHighlight;
+			}
+			
+			public function addExternalEventListener(event:String, listener:*):void{
+				if(!listener || !event)
+					return;
+				
+				switch(event){
+					case 'onEnterFrame':
+						VP.addEventListener(StreamEvent.ENTER_FRAME, listener);
+						break;
+					case 'onRecordingAborted':
+						VP.addEventListener(RecordingEvent.ABORTED, listener);
+						break;
+					case 'onRecordingFinished':
+						VP.addEventListener(RecordingEvent.END, listener);
+						break;
+					case 'onVideoStartedPlaying':
+						VP.addEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, listener);
+						break;
+					case 'onMetadataRetrieved':
+						VP.addEventListener(VideoPlayerEvent.METADATA_RETRIEVED, listener);
+					case 'onConnectionReady':
+						VP.addEventListener(VideoPlayerEvent.CONNECTED, listener);
+						break;
+					default:
+						break;
+				}
+			}
+			
+			public function removeExternalEventListener(event:String, listener:*):void{
+				if(!listener || !event)
+					return;
+				
+				switch(event){
+					case 'onEnterFrame':
+						VP.removeEventListener(StreamEvent.ENTER_FRAME, listener);
+						break;
+					case 'onRecordingAborted':
+						VP.removeEventListener(RecordingEvent.ABORTED, listener);
+						break;
+					case 'onRecordingFinished':
+						VP.removeEventListener(RecordingEvent.END, listener);
+						break;
+					case 'onVideoStartedPlaying':
+						VP.removeEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, listener);
+						break;	
+					case 'onMetadataRetrieved':
+						VP.removeEventListener(VideoPlayerEvent.METADATA_RETRIEVED, listener);
+					case 'onConnectionReady':
+						VP.removeEventListener(VideoPlayerEvent.CONNECTED, listener);
+					default:
+						break;
+				}
+			}
+			
+			/**
+			 * /TEMP
+			 */
+			
 		]]>
 	</fx:Script>
 	<fx:Binding source="{VP.height}"
