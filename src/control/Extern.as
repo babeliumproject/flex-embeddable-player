@@ -4,7 +4,7 @@ package control
 	import flash.external.ExternalInterface;
 	import flash.utils.Dictionary;
 	
-	import model.DataModel;
+	import model.ConnectionManager;
 	
 	import modules.videoPlayer.VideoPlayerBabelia;
 	import modules.videoPlayer.events.VideoPlayerEvent;
@@ -196,7 +196,7 @@ package control
 		
 		private function secondSource(video:String):void
 		{
-			if(video != null) VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
+			if(video != null) VP.secondSource = ConnectionManager.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function seek(flag:Boolean):void
@@ -235,11 +235,11 @@ package control
 		
 		private function exerciseSource(video:String):void
 		{
-			if(video != null) VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + video;
+			if(video != null) VP.videoSource = ConnectionManager.getInstance().exerciseStreamsFolder + "/" + video;
 		}
 		
 		private function responseSource(video:String):void{
-			if(video != null) VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + video;
+			if(video != null) VP.videoSource = ConnectionManager.getInstance().responseStreamsFolder + "/" + video;
 		}
 		
 		private function highlight(flag:Boolean):void{

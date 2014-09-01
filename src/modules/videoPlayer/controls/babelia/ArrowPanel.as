@@ -7,8 +7,6 @@ package modules.videoPlayer.controls.babelia
 	import flash.events.IOErrorEvent;
 	import flash.net.URLRequest;
 	
-	import model.DataModel;
-	
 	import modules.videoPlayer.controls.SkinableComponent;
 	
 	import mx.collections.ArrayCollection;

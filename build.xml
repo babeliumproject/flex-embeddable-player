@@ -84,8 +84,8 @@
 	</target>
 	
 	<target name="app-fix-domains">
-		<replaceregexp file="${APP_ROOT}/model/DataModel.as" match="server:String.+;" replace="server:String='${WEB_DOMAIN}';"/>
-		<replaceregexp file="${APP_ROOT}/model/DataModel.as" match="streamingApp:String.+;" replace="streamingApp:String='${RED5_APPNAME}';"/>
+		<replaceregexp file="${APP_ROOT}/model/ConnectionManager.as" match="server:String.+;" replace="server:String='${WEB_DOMAIN}';"/>
+		<replaceregexp file="${APP_ROOT}/model/ConnectionManager.as" match="streamingApp:String.+;" replace="streamingApp:String='${RED5_APPNAME}';"/>
 		<replaceregexp file="${APP_ROOT}/resources/crossdomain.xml" match="allow-access-from domain=&quot;[^&quot;]+&quot;" replace="allow-access-from domain=&quot;${WEB_DOMAIN}&quot;"/>
 	</target>
 	

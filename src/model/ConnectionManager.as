@@ -12,21 +12,21 @@ package model
 	import flash.utils.Dictionary;
 
 
-	public class DataModel
+	public class ConnectionManager
 	{
 		//This solution for singleton implementation was found in
 		//http://life.neophi.com/danielr/2006/10/singleton_pattern_in_as3.html		
-		public static var instance:DataModel;
+		public static var instance:ConnectionManager;
 
-		public function DataModel()
+		public function ConnectionManager()
 		{
 			netConnection=new NetConnection();
 		}
 
-		public static function getInstance():DataModel
+		public static function getInstance():ConnectionManager
 		{
 			if (!instance)
-				instance=new DataModel();
+				instance=new ConnectionManager();
 			return instance;
 		}
 		
@@ -46,7 +46,7 @@ package model
 		[Bindable] public var netConnectOngoingAttempt:Boolean;
 
 		//Domain setup
-		public var server:String='babelium';
+		public var server:String='babeliumlms';
 		public var uploadDomain:String="http://" + server + "/";
 		
 		//Streaming resource setup

@@ -15,7 +15,7 @@
 	<fx:Script>
 
 		<![CDATA[
-			import model.DataModel;
+			import model.ConnectionManager;
 
 			import mx.controls.Alert;
 			import mx.events.CloseEvent;
@@ -36,12 +36,12 @@
 
 			public function cameraReady():Boolean
 			{
-				return (DataModel.getInstance().microphone && !DataModel.getInstance().microphone.muted);
+				return (ConnectionManager.getInstance().microphone && !ConnectionManager.getInstance().microphone.muted);
 			}
 
 			public function microphoneReady():Boolean
 			{
-				return (DataModel.getInstance().camera && !DataModel.getInstance().camera.muted);
+				return (ConnectionManager.getInstance().camera && !ConnectionManager.getInstance().camera.muted);
 			}
 
 			private function creationCompleteHandler():void
@@ -62,22 +62,22 @@
 					{
 						microphoneFound=true;
 						var microphone:Microphone=Microphone.getMicrophone();
-						if (!DataModel.getInstance().microphone)
+						if (!ConnectionManager.getInstance().microphone)
 						{
 							_microphoneChanged=true;
-							DataModel.getInstance().microphone=microphone;
+							ConnectionManager.getInstance().microphone=microphone;
 						}
-						else if (DataModel.getInstance().microphone != microphone)
+						else if (ConnectionManager.getInstance().microphone != microphone)
 						{
 							_microphoneChanged=true;
-							DataModel.getInstance().microphone=microphone;
+							ConnectionManager.getInstance().microphone=microphone;
 							trace("Mic device changed.");
 						}
-						if (DataModel.getInstance().microphone.muted)
+						if (ConnectionManager.getInstance().microphone.muted)
 						{
 							micCamViewStack.selectedChild=privacyNoticeNavContent;
 							_devicesAllowed=false;
-							DataModel.getInstance().microphone.addEventListener(StatusEvent.STATUS, microphonePrivacyStatus);
+							ConnectionManager.getInstance().microphone.addEventListener(StatusEvent.STATUS, microphonePrivacyStatus);
 						}
 						else
 						{
@@ -90,23 +90,23 @@
 							{
 								cameraFound=true;
 								var camera:Camera=Camera.getCamera();
-								if (!DataModel.getInstance().camera)
+								if (!ConnectionManager.getInstance().camera)
 								{
 									_cameraChanged=true;
-									DataModel.getInstance().camera=camera;
+									ConnectionManager.getInstance().camera=camera;
 								}
-								else if (DataModel.getInstance().camera != camera)
+								else if (ConnectionManager.getInstance().camera != camera)
 								{
 									_cameraChanged=true;
-									DataModel.getInstance().camera=camera;
+									ConnectionManager.getInstance().camera=camera;
 
 									trace("Camera device changed.");
 								}
-								if (DataModel.getInstance().camera.muted)
+								if (ConnectionManager.getInstance().camera.muted)
 								{
 									micCamViewStack.selectedChild=privacyNoticeNavContent;
 									_devicesAllowed=false;
-									DataModel.getInstance().camera.addEventListener(StatusEvent.STATUS, cameraPrivacyStatus);
+									ConnectionManager.getInstance().camera.addEventListener(StatusEvent.STATUS, cameraPrivacyStatus);
 								}
 								else
 								{
@@ -130,7 +130,7 @@
 				}
 				if (_devicesAllowed)
 				{
-					DataModel.getInstance().micCamAllowed=_devicesAllowed;
+					ConnectionManager.getInstance().micCamAllowed=_devicesAllowed;
 					if (useMicAndCamera)
 					{
 						if (microphoneFound && cameraFound)
@@ -205,7 +205,7 @@
 					showPrivacySettings();
 				else
 				{
-					DataModel.getInstance().micCamAllowed=_devicesAllowed;
+					ConnectionManager.getInstance().micCamAllowed=_devicesAllowed;
 					cancelButtonClickHandler(null);
 				}
 			}

@@ -14,7 +14,7 @@ package modules.videoPlayer
 	import flash.net.*;
 	import flash.utils.*;
 	
-	import model.DataModel;
+	import model.ConnectionManager;
 	
 	import modules.videoPlayer.controls.PlayButton;
 	import modules.videoPlayer.controls.babelia.ArrowPanel;
@@ -100,7 +100,7 @@ package modules.videoPlayer
 		private var _state:int;
 
 		// Other constants
-		private const RESPONSE_FOLDER:String=DataModel.getInstance().responseStreamsFolder;
+		private const RESPONSE_FOLDER:String=ConnectionManager.getInstance().responseStreamsFolder;
 		private const DEFAULT_VOLUME:Number=80;
 		private const COUNTDOWN_TIMER_SECS:int=5;
 
@@ -113,8 +113,8 @@ package modules.videoPlayer
 
 		private var _camera:Camera;
 		private var _camVideo:Video;
-		private var _defaultCamWidth:Number=DataModel.getInstance().cameraWidth;
-		private var _defaultCamHeight:Number=DataModel.getInstance().cameraHeight;
+		private var _defaultCamWidth:Number=ConnectionManager.getInstance().cameraWidth;
+		private var _defaultCamHeight:Number=ConnectionManager.getInstance().cameraHeight;
 		private var _blackPixelsBetweenVideos:uint = 0;
 		private var _lastVideoHeight:Number=0;
 
@@ -192,7 +192,7 @@ package modules.videoPlayer
 
 			_micImage=new Image();
 
-			_micImage.source = DataModel.getInstance().uploadDomain+"resources/images/player_mic_watermark.png";
+			_micImage.source = ConnectionManager.getInstance().uploadDomain+"resources/images/player_mic_watermark.png";
 			_micImage.height = 128;
 			_micImage.width = 128;
 			_micImage.alpha = 0.7;
@@ -393,7 +393,7 @@ package modules.videoPlayer
 		public function set state(state:int):void
 		{
 			//Do nothing if there's not an active connection
-			if (!DataModel.getInstance().netConnected)
+			if (!ConnectionManager.getInstance().netConnected)
 				return;
 
 			stopVideo();
@@ -1004,10 +1004,10 @@ package modules.videoPlayer
 		{	
 			if (state == RECORD_BOTH_STATE || state == UPLOAD_MODE_STATE)
 			{
-				_camera=DataModel.getInstance().camera;
-				_camera.setMode(DataModel.getInstance().cameraWidth, DataModel.getInstance().cameraHeight, 15, false);
+				_camera=ConnectionManager.getInstance().camera;
+				_camera.setMode(ConnectionManager.getInstance().cameraWidth, ConnectionManager.getInstance().cameraHeight, 15, false);
 			}
-			_mic=DataModel.getInstance().microphone;
+			_mic=ConnectionManager.getInstance().microphone;
 			_mic.setUseEchoSuppression(true);
 			_mic.setLoopBack(true);
 			_mic.setSilenceLevel(0, 60000000);
@@ -1024,7 +1024,7 @@ package modules.videoPlayer
 		{
 			_onTop.removeChildren();
 
-			_micCamEnabled=DataModel.getInstance().micCamAllowed;
+			_micCamEnabled=ConnectionManager.getInstance().micCamAllowed;
 			if (state == RECORD_MIC_STATE)
 			{
 				if (_micCamEnabled && privacyRights.microphoneFound)

@@ -23,7 +23,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import model.DataModel;
+			import model.ConnectionManager;
 			
 			import modules.videoPlayer.events.VideoPlayerEvent;
 			import modules.videoPlayer.events.babelia.RecordingEvent;
@@ -64,7 +64,7 @@
 				videoId=tla.parameters.videoId;
 				
 				forceRTMPT = tla.parameters.hasOwnProperty('forcertmpt') ? Boolean(parseInt(tla.parameters.forcertmpt)) : false;
-				DataModel.getInstance().encapsulateRTMP=forceRTMPT;
+				ConnectionManager.getInstance().encapsulateRTMP=forceRTMPT;
 
 				explicit_locale=tla.parameters.locale;
 				explicit_locale=parseLocale(explicit_locale);
@@ -75,12 +75,19 @@
 			
 			private function complete():void
 			{
-				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
+				
+				VP.addEventListener(StreamEvent.ENTER_FRAME, onEnterFrame);
+				VP.addEventListener(RecordingEvent.ABORTED, onRecordingAborted);
+				VP.addEventListener(RecordingEvent.END, onRecordingFinished);
+				VP.addEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, onVideoStartedPlaying);
+				VP.addEventListener(VideoPlayerEvent.METADATA_RETRIEVED, onMetadataRetrieved);
+				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnectionReady);
+				
 				//VP.stopVideo();
 				//VP.state=VideoPlayerBabelia.PLAY_STATE;
 				
 				if (videoId != null)
-					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
+					VP.videoSource=ConnectionManager.getInstance().exerciseStreamsFolder + "/" + videoId;
 			
 				// Setups javascripts external controls
 				Extern.getInstance().setup(VP);	
@@ -117,11 +124,7 @@
 				return parsed_locale;
 			}
 			
-			private function onConnect(e:Event):void
-			{
-				trace("onConnection ready");
-				Extern.getInstance().onConnectionReady();
-			}
+			
 			
 			private function set onUpdateVPHeight(height:int):void
 			{
@@ -142,16 +145,16 @@
 			 */
 			public function exerciseSource(exerciseId:String):void
 			{
-				if(exerciseId != null) VP.videoSource = DataModel.getInstance().exerciseStreamsFolder + "/" + exerciseId;
+				if(exerciseId != null) VP.videoSource = ConnectionManager.getInstance().exerciseStreamsFolder + "/" + exerciseId;
 			}
 			
 			public function responseSource(responseId:String):void{
-				if(responseId != null) VP.videoSource = DataModel.getInstance().responseStreamsFolder + "/" + responseId;
+				if(responseId != null) VP.videoSource = ConnectionManager.getInstance().responseStreamsFolder + "/" + responseId;
 			}
 			
 			public function secondSource(videoId:String):void
 			{
-				if(videoId != null) VP.secondSource = DataModel.getInstance().responseStreamsFolder + "/" + videoId;
+				if(videoId != null) VP.secondSource = ConnectionManager.getInstance().responseStreamsFolder + "/" + videoId;
 			}
 			
 			public function playVideo():void{
@@ -259,59 +262,38 @@
 				VP.highlight=displayRoleHighlight;
 			}
 			
-			public function addExternalEventListener(event:String, listener:*):void{
-				if(!listener || !event)
-					return;
-				
-				switch(event){
-					case 'onEnterFrame':
-						VP.addEventListener(StreamEvent.ENTER_FRAME, listener);
-						break;
-					case 'onRecordingAborted':
-						VP.addEventListener(RecordingEvent.ABORTED, listener);
-						break;
-					case 'onRecordingFinished':
-						VP.addEventListener(RecordingEvent.END, listener);
-						break;
-					case 'onVideoStartedPlaying':
-						VP.addEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, listener);
-						break;
-					case 'onMetadataRetrieved':
-						VP.addEventListener(VideoPlayerEvent.METADATA_RETRIEVED, listener);
-					case 'onConnectionReady':
-						VP.addEventListener(VideoPlayerEvent.CONNECTED, listener);
-						break;
-					default:
-						break;
-				}
+			protected function onEnterFrame(event:StreamEvent):void{
+				this.dispatchEvent(event);
 			}
 			
-			public function removeExternalEventListener(event:String, listener:*):void{
-				if(!listener || !event)
-					return;
-				
-				switch(event){
-					case 'onEnterFrame':
-						VP.removeEventListener(StreamEvent.ENTER_FRAME, listener);
-						break;
-					case 'onRecordingAborted':
-						VP.removeEventListener(RecordingEvent.ABORTED, listener);
-						break;
-					case 'onRecordingFinished':
-						VP.removeEventListener(RecordingEvent.END, listener);
-						break;
-					case 'onVideoStartedPlaying':
-						VP.removeEventListener(VideoPlayerEvent.VIDEO_STARTED_PLAYING, listener);
-						break;	
-					case 'onMetadataRetrieved':
-						VP.removeEventListener(VideoPlayerEvent.METADATA_RETRIEVED, listener);
-					case 'onConnectionReady':
-						VP.removeEventListener(VideoPlayerEvent.CONNECTED, listener);
-					default:
-						break;
-				}
+			protected function onRecordingAborted(event:RecordingEvent):void{
+				this.dispatchEvent(event);
 			}
 			
+			protected function onRecordingFinished(event:RecordingEvent):void{
+				this.dispatchEvent(event);
+			}
+			
+			protected function onVideoStartedPlaying(event:VideoPlayerEvent):void{
+				this.dispatchEvent(event);
+			}
+			
+			protected function onMetadataRetrieved(event:Event):void{
+				this.dispatchEvent(event);
+			}
+			
+			private function onConnectionReady(event:Event):void
+			{
+				this.dispatchEvent(event);
+				Extern.getInstance().onConnectionReady();
+			}
+			
+			public function setSize(width:Number, height:Number):void{
+				if(!isNaN(width) && width > 0 && !isNaN(height) && height > 0){
+					if (VP.width !== width) VP.width = width;
+					if (VP.height !== height) VP.height = height;
+				}
+			}	
 			/**
 			 * /TEMP
 			 */

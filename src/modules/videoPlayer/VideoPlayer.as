@@ -26,7 +26,7 @@ package modules.videoPlayer
 	import flash.utils.Dictionary;
 	import flash.utils.Timer;
 	
-	import model.DataModel;
+	import model.ConnectionManager;
 	
 	import modules.videoPlayer.controls.AudioSlider;
 	import modules.videoPlayer.controls.ElapsedTime;
@@ -55,7 +55,7 @@ package modules.videoPlayer
 		/**
 		 * Skin related variables
 		 */
-		private const SKIN_PATH:String=DataModel.getInstance().uploadDomain+"/resources/videoPlayer/skin/";
+		private const SKIN_PATH:String=ConnectionManager.getInstance().uploadDomain+"/resources/videoPlayer/skin/";
 		private var _skinableComponents:Dictionary;
 		private var _skinLoader:URLLoader;
 		private var _loadingSkin:Boolean=false;
@@ -197,7 +197,7 @@ package modules.videoPlayer
 		 */
 		public function set videoSource(location:String):void
 		{
-			if(!DataModel.getInstance().netConnected)
+			if(!ConnectionManager.getInstance().netConnected)
 				return;
 			_videoSource=location;
 			_video.visible=true;
@@ -487,7 +487,7 @@ package modules.videoPlayer
 		private function onComplete(e:FlexEvent):void
 		{
 			//Establish a binding to listen the status of netConnection
-			BindingUtils.bindSetter(onStreamNetConnect, DataModel.getInstance(), "netConnected");
+			BindingUtils.bindSetter(onStreamNetConnect, ConnectionManager.getInstance(), "netConnected");
 
 			// Dispatch CREATION_COMPLETE event
 			dispatchEvent(new VideoPlayerEvent(VideoPlayerEvent.CREATION_COMPLETE));
@@ -499,12 +499,12 @@ package modules.videoPlayer
 		protected function onStreamNetConnect(value:Boolean):void
 		{
 
-			if (DataModel.getInstance().netConnected == true)
+			if (ConnectionManager.getInstance().netConnected == true)
 			{
 				if(_reconnectionTimer != null)
 					stopReconnectionTimer();
 				//Get the netConnection reference
-				_nc=DataModel.getInstance().netConnection;
+				_nc=ConnectionManager.getInstance().netConnection;
 
 				playVideo();
 				_ppBtn.State=PlayButton.PAUSE_STATE;
@@ -545,16 +545,16 @@ package modules.videoPlayer
 
 		public function connectToStreamingServer():void
 		{
-			if (!DataModel.getInstance().netConnection.connected)
-				DataModel.getInstance().connect();
+			if (!ConnectionManager.getInstance().netConnection.connected)
+				ConnectionManager.getInstance().connect();
 			else
 				onStreamNetConnect(true);
 		}
 
 		public function disconnectFromStreamingService():void
 		{
-			if (DataModel.getInstance().netConnection.connected)
-				DataModel.getInstance().close();
+			if (ConnectionManager.getInstance().netConnection.connected)
+				ConnectionManager.getInstance().close();
 		}
 
 		private function netStatus(event:NetStatusEvent):void
@@ -706,7 +706,7 @@ package modules.videoPlayer
 
 		public function stopVideo():void
 		{
-			if(!DataModel.getInstance().netConnected)
+			if(!ConnectionManager.getInstance().netConnected)
 				return;
 			
 			if (_ns)

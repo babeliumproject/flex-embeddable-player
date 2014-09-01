@@ -15,7 +15,7 @@ package modules.videoPlayer
 	import flash.text.TextFieldType;
 	import flash.text.TextFormat;
 	
-	import model.DataModel;
+	import model.ConnectionManager;
 	
 	import mx.resources.ResourceBundle;
 	import mx.resources.ResourceManager;
@@ -35,7 +35,7 @@ package modules.videoPlayer
 		public function ErrorOverlay()
 		{
 			super();
-			loadAsset(DataModel.getInstance().uploadDomain+"resources/images/popup_bgr_wrong.png");
+			loadAsset(ConnectionManager.getInstance().uploadDomain+"resources/images/popup_bgr_wrong.png");
 			text = ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") ? ResourceManager.getInstance().getString('myResources',"NO_CONNECTION") : "Communication lost. Trying to reconnect...";
 			updateChildren(dWidth,dHeight);
 		}
