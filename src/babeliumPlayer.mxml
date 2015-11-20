@@ -2,32 +2,32 @@
 <s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mx="library://ns.adobe.com/flex/mx"
-			   xmlns:videoPlayer="modules.videoPlayer.*"
+			   xmlns:player="com.babeliumproject.player.*"
 			   xmlns:control="control.*"
 			   preinitialize="init()"
-			   creationComplete="complete()">
-	
+			   creationComplete="completeHandler(event)">
+
 	<s:layout>
 		<s:BasicLayout/>
 	</s:layout>
-	
+
 	<fx:Metadata>
-		[ResourceBundle("myResources")]
-	</fx:Metadata> 
-	
+		[ResourceBundle("PlayerResources")]
+	</fx:Metadata>
+
 	<fx:Style source="babeliumPlayer.css"/>
-	
+
 	<fx:Declarations>
 		<control:Extern/>
 	</fx:Declarations>
-	
+
 	<fx:Script>
 		<![CDATA[
-			import model.DataModel;
+			import com.babeliumproject.player.events.VideoPlayerEvent;
 			
-			import modules.videoPlayer.events.VideoPlayerEvent;
-			
+			import mx.events.FlexEvent;
 			import mx.core.FlexGlobals;
+			import mx.graphics.SolidColor;
 			import mx.resources.Locale;
 			import mx.resources.ResourceManager;
 			import mx.utils.ObjectUtil;
@@ -35,100 +35,81 @@
 			import org.as3commons.logging.api.LOGGER_FACTORY;
 			import org.as3commons.logging.setup.LevelTargetSetup;
 			import org.as3commons.logging.setup.LogSetupLevel;
+			import org.as3commons.logging.setup.log4j.log4jPropertiesToSetup;
 			import org.as3commons.logging.setup.target.FirebugTarget;
 			
-			//LOGGER_FACTORY.setup = new LevelTargetSetup( new FirebugTarget, LogSetupLevel.DEBUG );
-			LOGGER_FACTORY.setup = new LevelTargetSetup( new FirebugTarget, LogSetupLevel.INFO );
+			import spark.primitives.Graphic;
+			import spark.primitives.Path;
+			import spark.primitives.Rect;
 			
-			private var videoId:String;
+			import utils.LocaleUtils;
+
+			private var mediaData:Object;
 			private var explicit_locale:String;
-			private var forceRTMPT:Boolean;
-			
-			[Bindable] private var app:Object = FlexGlobals.topLevelApplication;
-			
-			[Bindable] private var appWidth:uint;
-			[Bindable] private var appHeight:uint;
-			
+
+			[Bindable]
+			private var app:Object=FlexGlobals.topLevelApplication;
+
+			[Bindable]
+			private var appWidth:uint;
+			[Bindable]
+			private var appHeight:uint;
+
 			private function init():void
 			{
 				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
 				Security.allowDomain("*");
-				
-				var tla:Object = FlexGlobals.topLevelApplication;
-				
+
+				var tla:Object=FlexGlobals.topLevelApplication;
+
 				appWidth=tla.width;
 				appHeight=tla.height;
-				videoId=tla.parameters.videoId;
-				
-				forceRTMPT = tla.parameters.hasOwnProperty('forcertmpt') ? Boolean(parseInt(tla.parameters.forcertmpt)) : false;
-				DataModel.getInstance().encapsulateRTMP=forceRTMPT;
+				mediaData=tla.parameters.mediaData;
 
 				explicit_locale=tla.parameters.locale;
-				explicit_locale=parseLocale(explicit_locale);
-				if(explicit_locale){
+				explicit_locale=LocaleUtils.parseLocale(explicit_locale);
+				if (explicit_locale)
+				{
 					ResourceManager.getInstance().localeChain=[explicit_locale];
 				}
 			}
-			
-			private function complete():void
+
+			private function completeHandler(event:FlexEvent):void
 			{
-				VP.addEventListener(VideoPlayerEvent.CONNECTED, onConnect);
-				//VP.stopVideo();
-				//VP.state=VideoPlayerBabelia.PLAY_STATE;
-				
-				if (videoId != null)
-					VP.videoSource=DataModel.getInstance().exerciseStreamsFolder + "/" + videoId;
-			
-				// Setups javascripts external controls
-				Extern.getInstance().setup(VP);	
-			}
-			
-			private function parseLocale(locale:String):String{
-				var parsed_locale:String=null;
-				var language:String=null;
-				var country:String=null;
-				var available_languages:Array;
-				if(locale){
-					available_languages = ResourceManager.getInstance().getLocales();
-					var parts:Array = locale.split("_");
-					if (parts.length > 0){
-						language = parts[0];
-						if (parts.length > 1)
-							country = (parts[1] as String).toUpperCase();
-						for each (var l:String in available_languages){
-							var lparts:Array = l.split("_");
-							if(country){
-								if(lparts[0] == language && lparts[1] == country){
-									parsed_locale = l;
-									break;
-								}
-							} else{
-								if(lparts[0] == language){
-									parsed_locale = l;
-									break;
-								}
-							}
-						}
-					}	
+				loadLoggingConfig('logging.properties');
+				if (mediaData){
+					VP.loadVideoByUrl(mediaData);
 				}
-				return parsed_locale;
+
+				// Setups javascripts external controls
+				Extern.getInstance().setup(VP);
 			}
 			
-			private function onConnect(e:Event):void
-			{
-				trace("onConnection ready");
-				Extern.getInstance().onConnectionReady();
+			private function loadLoggingConfig(url:String):void{
+				var loader:URLLoader = new URLLoader();
+				loader.addEventListener(Event.COMPLETE, parseLoggingConfig);
+				loader.addEventListener(IOErrorEvent.IO_ERROR, urlNotAvailable);
+				loader.load(new URLRequest(url));
 			}
 			
+			private function parseLoggingConfig(event:Event):void{
+				LOGGER_FACTORY.setup = log4jPropertiesToSetup(event.target.data);
+			}
+			
+			private function urlNotAvailable(e:IOErrorEvent):void{
+				trace("Couldn't load the specified resource from the url. "+e.text);
+			}
+
+
 			private function set onUpdateVPHeight(height:int):void
 			{
-				trace("VP Height: "+VP.height);
+				trace("VP Height: " + VP.height);
 				Extern.getInstance().resizeHeight(height);
 			}
-			
+
 			private function set onUpdateVPWidth(width:int):void
 			{
-				trace("VP Width: "+VP.width);
+				trace("VP Width: " + VP.width);
 				Extern.getInstance().resizeWidth(width);
 			}
 		]]>
@@ -138,16 +119,14 @@
 	<fx:Binding source="{VP.width}"
 				destination="this.onUpdateVPWidth"/>
 
-	<videoPlayer:VideoPlayerBabelia id="VP"
-									autoPlay="true"
-									skin="white"
-									seek="true"
-									subtitles="true"
-									autoScale="false"
-									arrows="false"
-									width="{appWidth}"
-									height="{appHeight-20}"
-									subtitlingControls="false"
-									streamSource="Yes"
-									controlsEnabled="true"/>
+	<player:VideoRecorder id="VP"
+						  autoPlay="true"
+						  skinUrl="resources/skin/white.xml"
+						  seekUsingScrubber="true"
+						  displayCaptions="true"
+						  autoScale="false"
+						  width="{appWidth}"
+						  height="{appHeight-20}"
+						  subtitlingControls="false"
+						  controlsEnabled="true"/>
 </s:Application>
