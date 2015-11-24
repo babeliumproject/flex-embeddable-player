@@ -1,11 +1,51 @@
 package utils
 {
+	import mx.resources.IResourceManager;
 	import mx.resources.ResourceManager;
 
 	public class LocaleUtils
 	{
-		public static function parseLocale(locale:String):String{
-			var parsed_locale:String='en_US';
+		public static var DEFAULT_LOCALE:String="en_US";
+
+		public static function arrangeLocaleChain(preferredLocale:String):void
+		{
+			var sourcelocale:String=DEFAULT_LOCALE;
+			var rm:IResourceManager=ResourceManager.getInstance();
+
+			var lchain:Array=rm.localeChain;
+			var oldLocale:String=String(lchain.shift());
+
+			if (preferredLocale == oldLocale)
+				return;
+
+			//Remove the new locale from the chain
+			var nlangidx:int=lchain.indexOf(preferredLocale);
+			if (nlangidx != -1)
+				delete lchain[nlangidx];
+
+			//Remove the source locale from the chain
+			var srclangidx:int=lchain.indexOf(sourcelocale);
+			if (srclangidx != -1)
+				delete lchain[srclangidx];
+
+			if (preferredLocale == sourcelocale)
+			{
+				lchain.unshift(preferredLocale);
+				if (lchain.indexOf(oldLocale) == -1)
+					lchain.push(oldLocale);
+			}
+			else
+			{
+				lchain.unshift(preferredLocale, sourcelocale);
+				if (lchain.indexOf(oldLocale) == -1)
+					lchain.push(oldLocale);
+			}
+			rm.localeChain=lchain;
+		}
+
+		public static function parseLocale(locale:String):String
+		{
+			var parsed_locale:String=DEFAULT_LOCALE;
 			var language:String=null;
 			var country:String=null;
 			var available_languages:Array;

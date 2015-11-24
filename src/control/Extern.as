@@ -184,8 +184,12 @@ package control
 		}
 		
 		/**
-		 * Resize dimensions
-		 */
+		 * The registered listener changes the width the DOM object associated to
+		 * the objectID
+		 * 
+		 * @param width
+		 * 
+		 */		
 		public function resizeWidth(width:Number):void
 		{
 			ExternalInterface.call( 
@@ -205,11 +209,19 @@ package control
 		}
 		
 		/**
+		 * Notices a global scope listener that the video player's been successfully
+		 * initialized and is ready to receive calls. 
+		 */		
+		public function onVideoPlayerInitialized():void{
+			ExternalInterface.call("onVideoPlayerInitialized", ExternalInterface.objectID);
+		}
+		
+		/**
 		 * Event handlers
 		 */
 		public function onVideoPlayerReady():void
 		{
-			ExternalInterface.call("onPlayerReady", ExternalInterface.objectID);
+			ExternalInterface.call(jsListeners['onVideoPlayerReady']);
 		}	
 		
 		public function onUserDeviceAccessDenied(e:RecordingEvent):void{

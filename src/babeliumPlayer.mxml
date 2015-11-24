@@ -25,8 +25,8 @@
 		<![CDATA[
 			import com.babeliumproject.player.events.VideoPlayerEvent;
 			
-			import mx.events.FlexEvent;
 			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
 			import mx.graphics.SolidColor;
 			import mx.resources.Locale;
 			import mx.resources.ResourceManager;
@@ -70,7 +70,7 @@
 				explicit_locale=LocaleUtils.parseLocale(explicit_locale);
 				if (explicit_locale)
 				{
-					ResourceManager.getInstance().localeChain=[explicit_locale];
+					LocaleUtils.arrangeLocaleChain(explicit_locale);
 				}
 			}
 
@@ -78,11 +78,14 @@
 			{
 				loadLoggingConfig('logging.properties');
 				if (mediaData){
-					VP.loadVideoByUrl(mediaData);
+					player.loadVideoByUrl(mediaData);
 				}
 
-				// Setups javascripts external controls
-				Extern.getInstance().setup(VP);
+				//Initialize the external interface with the player's reference
+				Extern.getInstance().setup(player);
+				
+				//Tell JS listeners the player was successfully initialized
+				Extern.getInstance().onVideoPlayerInitialized();
 			}
 			
 			private function loadLoggingConfig(url:String):void{
@@ -103,23 +106,23 @@
 
 			private function set onUpdateVPHeight(height:int):void
 			{
-				trace("VP Height: " + VP.height);
+				trace("VP Height: " + player.height);
 				Extern.getInstance().resizeHeight(height);
 			}
 
 			private function set onUpdateVPWidth(width:int):void
 			{
-				trace("VP Width: " + VP.width);
+				trace("VP Width: " + player.width);
 				Extern.getInstance().resizeWidth(width);
 			}
 		]]>
 	</fx:Script>
-	<fx:Binding source="{VP.height}"
+	<fx:Binding source="{player.height}"
 				destination="this.onUpdateVPHeight"/>
-	<fx:Binding source="{VP.width}"
+	<fx:Binding source="{player.width}"
 				destination="this.onUpdateVPWidth"/>
 
-	<player:VideoRecorder id="VP"
+	<player:VideoRecorder id="player"
 						  autoPlay="true"
 						  skinUrl="resources/skin/white.xml"
 						  seekUsingScrubber="true"
