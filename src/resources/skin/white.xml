@@ -58,22 +58,17 @@
 		<Property name="textColor">0xFFFFFF</Property>
 	</Component>
 	<Component name="AudioSlider">
-		<Property name="bgColor">0xFFFFFF</Property>
-		<Property name="bgGradientAngle">90</Property>
-		<Property name="bgGradientEndAlpha">100</Property>
-		<Property name="bgGradientEndColor">0xd8d8d8</Property>
-		<Property name="bgGradientEndRatio">255</Property>
-		<Property name="bgGradientStartAlpha">100</Property>
-		<Property name="bgGradientStartColor">0xffffff</Property>
-		<Property name="bgGradientStartRatio">120</Property>
 		<Property name="barBgColor">0x333333</Property>
 		<Property name="barColor">0x277991</Property>
 		<Property name="borderColor">0xa7a7a7</Property>
-		<Property name="borderWeight">1</Property>
-		<Property name="muteColor">0x000000</Property>
-		<Property name="muteOverBgColor">0xCECECE</Property>
+		<Property name="borderWidth">0</Property>
 	    <Property name="scrubberColor">0xABABAB</Property>
     	<Property name="scrubberBorderColor">0x888888</Property>
+	</Component>
+	<Component name="MuteButton">
+		<Property name="backgroundColorHover">0xCECECE,0xA7A7A7</Property>
+		<Property name="color">0x4e4d4c</Property>
+		<Property name="colorHover">0x000000</Property>
 	</Component>
 	<Component name="ElapsedTime">
 		<Property name="textColor">0x4E4D4C</Property>

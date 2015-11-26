@@ -5,7 +5,9 @@
 			   xmlns:player="com.babeliumproject.player.*"
 			   xmlns:control="control.*"
 			   preinitialize="init()"
-			   creationComplete="completeHandler(event)">
+			   creationComplete="completeHandler(event)"
+			   width="640"
+			   height="380">
 
 	<s:layout>
 		<s:BasicLayout/>

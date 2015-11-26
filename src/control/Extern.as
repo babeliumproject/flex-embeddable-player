@@ -219,12 +219,12 @@ package control
 		/**
 		 * Event handlers
 		 */
-		public function onVideoPlayerReady():void
+		public function onVideoPlayerReady(event:VideoPlayerEvent):void
 		{
 			ExternalInterface.call(jsListeners['onVideoPlayerReady']);
 		}	
 		
-		public function onUserDeviceAccessDenied(e:RecordingEvent):void{
+		public function onUserDeviceAccessDenied(event:RecordingEvent):void{
 			ExternalInterface.call(jsListeners['onUserDeviceAccessDenied']);
 		}
 		
@@ -247,21 +247,18 @@ package control
 				return;
 			
 			switch(event){
-				
 				case 'onRecordingEnd':
 					jsListeners['onRecordingEnd'] = listener;
 					VP.addEventListener(RecordingEvent.END, onRecordingEnd);
 					break;
-				
 				case 'onUserDeviceAccessDenied':
 					jsListeners['onUserDeviceAccessDenied'] = listener;
 					VP.addEventListener(RecordingEvent.USER_DEVICE_ACCESS_DENIED, onUserDeviceAccessDenied);
 					break;
-				
 				case 'onVideoPlayerError':
 					jsListeners['onVideoPlayerError'] = listener;
 					VP.addEventListener(VideoPlayerEvent.ON_ERROR, onVideoPlayerError);
-				
+					break;
 				case 'onVideoPlayerReady':
 					jsListeners['onVideoPlayerReady'] = listener;
 					VP.addEventListener(VideoPlayerEvent.ON_READY, onVideoPlayerReady);
@@ -280,7 +277,6 @@ package control
 				return;
 			
 			switch(event){
-				
 				case 'onUserDeviceAccessDenied':
 					if(jsListeners['onUserDeviceAccessDenied'])
 						delete jsListeners['onUserDeviceAccessDenied'];
