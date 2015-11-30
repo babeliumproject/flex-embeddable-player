@@ -33,6 +33,7 @@
 			import mx.resources.Locale;
 			import mx.resources.ResourceManager;
 			import mx.utils.ObjectUtil;
+			import mx.utils.URLUtil;
 			
 			import org.as3commons.logging.api.LOGGER_FACTORY;
 			import org.as3commons.logging.setup.LevelTargetSetup;
@@ -56,14 +57,18 @@
 			private var appWidth:uint;
 			[Bindable]
 			private var appHeight:uint;
+			
+			[Bindable]
+			private var baseURL:String='';
 
 			private function init():void
 			{
 				//http://stackoverflow.com/questions/452415/how-to-make-cross-domain-communication-between-javascript-and-flash
 				Security.allowDomain("*");
-
+				
+				baseURL = this.url.substring(0, this.url.lastIndexOf("/") + 1);
+				
 				var tla:Object=FlexGlobals.topLevelApplication;
-
 				appWidth=tla.width;
 				appHeight=tla.height;
 				mediaData=tla.parameters.mediaData;
@@ -75,6 +80,8 @@
 					LocaleUtils.arrangeLocaleChain(explicit_locale);
 				}
 			}
+			
+			
 
 			private function completeHandler(event:FlexEvent):void
 			{
@@ -94,7 +101,7 @@
 				var loader:URLLoader = new URLLoader();
 				loader.addEventListener(Event.COMPLETE, parseLoggingConfig);
 				loader.addEventListener(IOErrorEvent.IO_ERROR, urlNotAvailable);
-				loader.load(new URLRequest(url));
+				loader.load(new URLRequest(baseURL+url));
 			}
 			
 			private function parseLoggingConfig(event:Event):void{
@@ -126,7 +133,7 @@
 
 	<player:VideoRecorder id="player"
 						  autoPlay="true"
-						  skinUrl="resources/skin/white.xml"
+						  skinUrl="{baseURL+'resources/skin/white.xml'}"
 						  seekUsingScrubber="true"
 						  displayCaptions="true"
 						  autoScale="false"
