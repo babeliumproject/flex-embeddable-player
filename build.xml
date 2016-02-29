@@ -1,19 +1,122 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="Babelium Embeddable Video Player" default="app-deploy">
+<project name="Babelium standalone player" basedir="." default="app-deploy">
 
-	<tstamp><format property="DAY_TIME_NOW" pattern="yyyy-MM-dd_HH.mm.ss" /></tstamp>
+    <!-- build property file -->
 	<property file="build.properties" />
 	
-	<path id="project.classpath">
-		<fileset dir="${FLEX_LIB}">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
+    <!-- flextasks definition -->
+	<taskdef resource="flexTasks.tasks" classpath="${FLEXTASKS_FILE}" />
 	
-	<taskdef resource="flexTasks.tasks" classpath="${FLEX_ANT_LIB}" classpathref="project.classpath" />
+    <!-- git macro -->
+    <macrodef name="git">
+        <attribute name="command" />
+        <attribute name="dir" default="" />
+        <element name="args" optional="yes"/>
+        <sequential>
+            <echo message="git @{command}" />
+            <exec executable="git" dir="@{dir}">
+                <arg value="@{command}" />
+                <args />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="clean">
+        <!-- remove the component repository directory -->
+        <delete dir="${COMPONENT_DIR}" failOnError="false" includeEmptyDirs="true" />
+        <delete dir="${RELEASE_DIR}" failOnError="false" includeEmptyDirs="true" />
+    </target>
+
+    <!-- clones the specified git repository and branch -->
+    <target name="fetch-library" depends="clean">
+        <git command="clone">
+            <args>
+                <arg value="${COMPONENT_REPOSITORY}" />
+                <arg value="${COMPONENT_DIR}" />
+            </args>
+        </git>
+        <git dir="${COMPONENT_DIR}" command="checkout">
+            <args>
+                <arg value="${COMPONENT_BRANCH}"/>
+            </args>
+        </git>
+    </target>
+
+    <target name="build-library" depends="fetch-library">
+         <compc output="${COMPONENT_DIR}/release/player-component.swc" debug="${DEBUG_BUILD}">
+            <load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
+            <source-path path-element="${COMPONENT_DIR}/src" />
+            <include-sources dir="${COMPONENT_DIR}/src" includes="*" />
+            <!-- include additional third-party libraries-->
+            <compiler.library-path dir="${COMPONENT_DIR}" append="true">
+                <include name="libs" />
+            </compiler.library-path>
+            <!-- exclude the framework files that belong to spark -->
+            <compiler.external-library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+                <include name="player/11.1/playerglobal.swc" />
+                <include name="framework.swc" />
+                <include name="textLayout.swc" />
+                <include name="spark.swc" />
+                <include name="sparkskins.swc" />
+                <include name="rpc.swc" />
+                <include name="charts.swc" />
+                <include name="osmf.swc" />
+            </compiler.external-library-path>
+        </compc>
+    </target>
+
+	<target name="build-player" depends="build-library">
+		<mxmlc file="${basedir}/src/babeliumPlayer.mxml" 
+			   output="${RELEASE_DIR}/babeliumPlayer.swf"
+			   locale="${LOCALE_BUNDLES}"
+               debug="${DEBUG_BUILD}">
+			
+			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
+			
+			<compiler.library-path dir="${basedir}" append="true">
+				<include name="libs"/>
+			</compiler.library-path>
+			<compiler.library-path dir="${COMPONENT_DIR}" append="true">
+                <include name="release/player-component.swc"/>
+            </compiler.library-path>
+			
+			<source-path path-element="${basedir}/src"/>
+			<source-path path-element="${basedir}/locale/{locale}"/>
+			
+			<load-config filename="${MXMLC_CUSTOM_CONFIG_FILE}" />
+		</mxmlc>
+	</target>
+
+	<target name="flex-deploy" depends="flex-copy-html-template,flex-generate-wrapper,flex-copy-video-player-skins"/>
+
+	<!-- Should check if there's an html-template folder inside our project's root folder an if not copy it -->
+	<target name="flex-copy-html-template" description="Copies the default Flex SDK html-template files to the project's root folder">
+		<copy todir="${BASE}/html-template" overwrite="true">
+			<fileset dir="${FLEX_HOME}/templates/swfobject" />
+		</copy>
+	</target>
+
+	<target name="flex-generate-wrapper" description="Generate the HTML wrapper for the main SWF file">
+		<html-wrapper title="Babelium Embeddable Video Player" 
+					  file="babeliumPlayer.html" 
+					  bgcolor="#ffffff" 
+		 			  height="100%" 
+					  width="100%" 
+					  application="babeliumPlayer" 
+					  swf="babeliumPlayer" 
+					  history="true" 
+					  version-detection="true" 
+					  express-install="true" 
+					  output="${RELEASE_DIR}" />
+	</target>
 	
-	
-	<target name="app-deploy" depends="app-fix-domains,app-fill-config,flex-deploy" >
+	<target name="flex-copy-video-player-skins">
+		<copy todir="${DEPLOY_DIR}/resources/skin" overwrite="true">
+			<fileset dir="${APP_ROOT}/resources/skin" />
+		</copy>
+	</target>
+		
+    <target name="app-deploy" depends="app-fix-domains,app-fill-config,flex-deploy" >
 		<!-- Copy API classes to deploy folder -->
 		<copy todir="${DEPLOY_DIR}/api" overwrite="true">
 			<fileset dir="${APP_ROOT}/resources/api"/>
@@ -34,54 +137,6 @@
 		<replaceregexp file="${DEPLOY_DIR}/api/services/utils/VideoProcessor.php" match="\('WEB_ROOT',.+\)" replace="\('WEB_ROOT', '${WEB_ROOT}'\)" flags="g"/>
 	</target>
 	
-	
-	<target name="flex-deploy" depends="flex-compile,flex-copy-html-template,flex-generate-wrapper,flex-copy-video-player-skins"/>
-
-	<target name="flex-compile" description="Compile the main SWF file">
-		<mxmlc file="${APP_ROOT}/babeliumPlayer.mxml" 
-			   output="${DEPLOY_DIR}/babeliumPlayer.swf"
-			   locale="${LOCALE_BUNDLES}">
-			
-			<load-config filename="${FLEX_HOME}/frameworks/flex-config.xml" />
-			
-			<compiler.library-path dir="${BASE}" append="true">
-					<include name="libs"/>
-			</compiler.library-path>
-						
-			
-			<source-path path-element="${BASE}/src"/>
-			<source-path path-element="${BASE}/locale/{locale}"/>
-			
-			<load-config filename="${MXMLC_CUSTOM_CONFIG_FILE}" />
-		</mxmlc>
-	</target>
-
-	<!-- Should check if there's an html-template folder inside our project's root folder an if not copy it -->
-	<target name="flex-copy-html-template" description="Copies the default Flex SDK html-template files to the project's root folder">
-		<copy todir="${BASE}/html-template" overwrite="true">
-			<fileset dir="${FLEX_HOME}/templates/swfobject" />
-		</copy>
-	</target>
-
-	<target name="flex-generate-wrapper" description="Generate the HTML wrapper for the main SWF file">
-		<html-wrapper title="Babelium Embeddable Video Player" 
-					  file="babeliumPlayer.html" 
-					  bgcolor="#ffffff" 
-		 			  height="100%" 
-					  width="100%" 
-					  application="babeliumPlayer" 
-					  swf="babeliumPlayer" 
-					  history="true" 
-					  version-detection="true" 
-					  express-install="true" 
-					  output="${DEPLOY_DIR}" />
-	</target>
-	
-	<target name="flex-copy-video-player-skins" description="Copies the video player's skin files to the deploy folder's resources folder">
-		<copy todir="${DEPLOY_DIR}/resources/skin" overwrite="true">
-			<fileset dir="${APP_ROOT}/resources/skin" />
-		</copy>
-	</target>
 	
 	<target name="app-fix-domains">
 		<replaceregexp file="${APP_ROOT}/model/DataModel.as" match="server:String.+;" replace="server:String='${WEB_DOMAIN}';"/>

@@ -11,3 +11,4 @@ Config.php
 bin-debug/
 bin-release/
 dist/
+release/
