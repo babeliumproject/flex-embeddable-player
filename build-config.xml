@@ -1,6 +1,7 @@
 <flex-config>
 	<compiler>
-		<omit-trace-statements>false</omit-trace-statements>
-      	<verbose-stacktraces>true</verbose-stacktraces>
+        <omit-trace-statements>false</omit-trace-statements>
+        <verbose-stacktraces>true</verbose-stacktraces>
 	</compiler>
+    <static-link-runtime-shared-libraries>true</static-link-runtime-shared-libraries>
 </flex-config>

@@ -21,64 +21,15 @@
 # Ant properties file for Babelium Project
 # @author: Juanan Pereira, Inko Perurena
 
-#Flex build tool paths
-FLEX_HOME=/path/to/flex4.6/sdk
-FLEX_ANT_LIB=${FLEX_HOME}/ant/lib/flexTasks.jar
-FLEX_LIB=${FLEX_HOME}/lib
 
+FLEX_HOME=/path/to/flex/sdk
 LOCALE_BUNDLES=en_US,es_ES,eu_ES,fr_FR,de_DE
+DEBUG_BUILD=false
+ACCESSIBLE_BUILD=false
+RELEASE_DIR=${basedir}/release
 
-#Project paths 
-BASE=/path/to/project
-APP_ROOT=${BASE}/src
-DEPLOY_DIR=${BASE}/dist
-APP_LIB=${BASE}/libs
-MXMLC_CUSTOM_CONFIG_FILE=build-config.xml
-
-#Config.php config file's properties
-SMTP_SERVER_PASS=mail_server_password
-SMTP_SERVER_USER=mail_account
-VIDEO_FRAME_HEIGHT=240
-VIDEO_FRAME_WIDTH_16_9=426
-VIDEO_FRAME_WIDTH_4_3=320
-VIDEO_MAX_DURATION=max_video_duration_in_seconds
-VIDEO_MAX_SIZE=max_video_size_in_MB
-GOOGLE_PROJECT_HOSTING_WEBHOOK_KEY=project_hosting_webhook_hash_key
-
-#Database preference table data
-INITIAL_CREDITS=40
-SUBTITLE_ADDITION_CREDITS=4
-EVALUATION_REQUEST_CREDITS=10
-EVALUATION_DONE_CREDITS=20
-UPLOAD_EXERCISE_CREDITS=16
-EVALUATION_COUNT_BEFORE_FINISHED_EVALUATION=3	
-REPORT_COUNT_TO_DELETE_VIDEO=10
-MIN_BANDWIDTH=512
-RED5_EXERCISE_FOLDER=exercises	
-RED5_EVALUATION_FOLDER=evaluations
-RED5_RESPONSE_FOLDER=responses
-MIN_VIDEO_RATING_COUNT=10
-VIDEO_MIN_DURATION=15
-VIDEO_EVAL_MIN_DURATION=5
-
-#Deploy paths
-LOG_PATH=your_log_folder_path
-SCRIPT_PATH=your_script_folder_path
-BACKUP_PATH=your_backup_folder_path
-
-#Database data
-SQL_DRIVER=com.mysql.jdbc.Driver
-SQL_DBMS=mysql
-SQL_DB_NAME=babeliumproject
-SQL_HOST=localhost
-SQL_PORT=3306
-SQL_URL=jdbc\:${SQL_DBMS}\://${SQL_HOST}:${SQL_PORT}
-SQL_BABELIUM_USER=
-SQL_BABELIUM_USER_PASS=
-
-#Deploy paths
-WEB_DOMAIN=your_domain
-WEB_ROOT=your_web_root_path
-SERVICE_PATH=${WEB_DOMAIN}/services
-RED5_PATH=/path/to/red5/instance
-RED5_APPNAME=app_name_for_streaming_service
+FLEXTASKS_FILE=${FLEX_HOME}/ant/lib/flexTasks.jar
+CONFIGFILE_BUILD=build-config.xml
+COMPONENT_REPOSITORY=https://github.com/babeliumproject/babelium-player-component.git
+COMPONENT_BRANCH=master
+COMPONENT_DIR=${basedir}/libs/player
