@@ -1,7 +1,7 @@
 ﻿This repository is the code for [Babelium's][] embeddable player.
 
 [Babelium's]: http://babeliumproject.com
-[Babelium Standalone site readme]: http://https://github.com/babeliumproject/flex-standalone-site
+[Babelium Standalone site readme]: https://github.com/babeliumproject/flex-standalone-site
 
 Here you will find the latest version of the embeddable player.
 
